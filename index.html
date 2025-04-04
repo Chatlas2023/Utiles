@@ -1,205 +1,83 @@
 <!DOCTYPE html>
-<html lang="es">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mapa con Rotación</title>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
-    }
-    #map {
-      width: 100vw;
-      height: 100vh;
-    }
-    .fixed-marker {
-      transition: none;
-    }
-  </style>
+<meta charset="utf-8">
+<title>Guides</title>
+<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
+<link href="https://api.mapbox.com/mapbox-gl-js/v3.10.0/mapbox-gl.css" rel="stylesheet">
+<script src="https://api.mapbox.com/mapbox-gl-js/v3.10.0/mapbox-gl.js"></script>
+<style>
+body { margin: 0; padding: 0; }
+#map { position: absolute; top: 0; bottom: 0; width: 100%; }
+</style>
 </head>
 <body>
-  <div id="map"></div>
-
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  <script>
-    // Variables globales
-    let map;
-    let polyline;
-    let coordinates = [];
-    let userMarker;
-    let currentBearing = 0;
-    let targetBearing = 0;
-    let rotationInterval;
-    const ROTATION_SPEED = 0.2; // Velocidad de rotación del mapa (0-1)
-
-    // Ícono personalizado para el marcador (fijo)
-    const userIcon = L.icon({
-      iconUrl: 'https://raw.githubusercontent.com/Chatlas2023/Iconos/main/Auto_Rojo.png',
-      iconSize: [40, 40],
-      iconAnchor: [20, 20],
-      className: 'fixed-marker'
+<div id="map"></div>
+<script>
+	// TO MAKE THE MAP APPEAR YOU MUST
+	// ADD YOUR ACCESS TOKEN FROM
+	// https://account.mapbox.com
+	mapboxgl.accessToken = 'YOUR_MAPBOX_ACCESS_TOKEN';
+    const map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/mapbox/streets-v9',
+        projection: 'globe', // Display the map as a globe, since satellite-v9 defaults to Mercator
+        zoom: 1,
+        center: [30, 15]
     });
 
-    // Inicializar el mapa
-    function initMap() {
-      // Posición por defecto (Buenos Aires)
-      map = L.map('map', {
-        zoomControl: false,
-        inertia: false
-      }).setView([-34.6037, -58.3816], 15);
-      
-      // Capa del mapa
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors'
-      }).addTo(map);
-      
-      // Línea para mostrar la ruta
-      polyline = L.polyline([], { color: 'blue', weight: 6 }).addTo(map);
-      
-      // Iniciar animación de rotación
-      startRotationAnimation();
-      
-      // Iniciar el seguimiento de la ubicación
-      startTracking();
-    }
+    map.addControl(new mapboxgl.NavigationControl());
+    map.scrollZoom.disable();
 
-    // Función para animar la rotación del mapa
-    function startRotationAnimation() {
-      rotationInterval = setInterval(() => {
-        if (Math.abs(currentBearing - targetBearing) > 1) {
-          // Calcular la diferencia más corta entre ángulos
-          let diff = targetBearing - currentBearing;
-          if (diff > 180) diff -= 360;
-          if (diff < -180) diff += 360;
-          
-          // Aplicar rotación suavizada
-          currentBearing += diff * ROTATION_SPEED;
-          
-          // Normalizar el ángulo
-          currentBearing = (currentBearing + 360) % 360;
-          
-          // Rotar el mapa
-          map.setBearing(currentBearing);
-        }
-      }, 50);
-    }
-
-    // Función para iniciar el seguimiento de la ubicación
-    function startTracking() {
-      if (!navigator.geolocation) {
-        console.error("Geolocalización no soportada en este navegador");
-        return;
-      }
-
-      const options = {
-        enableHighAccuracy: true,
-        maximumAge: 0,
-        timeout: 10000
-      };
-
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          handlePosition(position);
-          navigator.geolocation.watchPosition(handlePosition, handleError, options);
-        },
-        handleError,
-        options
-      );
-    }
-
-    // Manejar nueva posición
-    function handlePosition(position) {
-      const lat = position.coords.latitude;
-      const lng = position.coords.longitude;
-      const heading = position.coords.heading;
-      const speed = position.coords.speed;
-
-      console.log("Nueva posición:", lat, lng, "Dirección:", heading, "Velocidad:", speed);
-
-      // Agregar coordenada a la ruta
-      coordinates.push([lat, lng]);
-      polyline.addLatLng([lat, lng]);
-
-      // Actualizar o crear marcador (sin rotación)
-      if (!userMarker) {
-        userMarker = L.marker([lat, lng], { icon: userIcon }).addTo(map);
-      } else {
-        userMarker.setLatLng([lat, lng]);
-      }
-
-      // Calcular nueva dirección si hay suficiente velocidad (> 1 m/s)
-      if (speed > 1 && coordinates.length > 1) {
-        const prevCoord = coordinates[coordinates.length - 2];
-        const newBearing = calculateBearing(prevCoord[0], prevCoord[1], lat, lng);
-        
-        // Usar heading del GPS si está disponible y es confiable
-        if (heading !== null && !isNaN(heading)) {
-          targetBearing = -heading; // Negativo porque Leaflet gira en sentido contrario
-        } else {
-          targetBearing = -newBearing;
-        }
-      }
-
-      // Centrar el mapa en la nueva posición
-      map.setView([lat, lng], map.getZoom(), {
-        animate: true,
-        duration: 1
-      });
-    }
-
-    // Calcular dirección entre dos puntos geográficos
-    function calculateBearing(lat1, lng1, lat2, lng2) {
-      const φ1 = lat1 * Math.PI / 180;
-      const φ2 = lat2 * Math.PI / 180;
-      const Δλ = (lng2 - lng1) * Math.PI / 180;
-
-      const y = Math.sin(Δλ) * Math.cos(φ2);
-      const x = Math.cos(φ1) * Math.sin(φ2) - Math.sin(φ1) * Math.cos(φ2) * Math.cos(Δλ);
-      const θ = Math.atan2(y, x);
-
-      return (θ * 180 / Math.PI + 360) % 360;
-    }
-
-    // Manejar errores de geolocalización
-    function handleError(error) {
-      let errorMsg = "Error al obtener ubicación: ";
-      switch(error.code) {
-        case error.PERMISSION_DENIED:
-          errorMsg += "Permiso denegado. Por favor habilita la ubicación.";
-          break;
-        case error.POSITION_UNAVAILABLE:
-          errorMsg += "Ubicación no disponible.";
-          break;
-        case error.TIMEOUT:
-          errorMsg += "Tiempo de espera agotado.";
-          break;
-        default:
-          errorMsg += "Error desconocido.";
-      }
-      console.error(errorMsg);
-    }
-
-    // Extender Leaflet para soportar rotación de mapa
-    L.Map.include({
-      setBearing: function(bearing) {
-        this._bearing = bearing;
-        this._update();
-      },
-      
-      _update: function() {
-        if (this._mapPane) {
-          const bearing = this._bearing || 0;
-          this._mapPane.style.transform = `rotate(${bearing}deg)`;
-        }
-        L.Map.prototype._update.call(this);
-      }
+    map.on('style.load', () => {
+        map.setFog({}); // Set the default atmosphere style
     });
 
-    // Iniciar la aplicación cuando el DOM esté listo
-    document.addEventListener('DOMContentLoaded', initMap);
-  </script>
+    // The following values can be changed to control rotation speed:
+
+    // At low zooms, complete a revolution every two minutes.
+    const secondsPerRevolution = 240;
+    // Above zoom level 5, do not rotate.
+    const maxSpinZoom = 5;
+    // Rotate at intermediate speeds between zoom levels 3 and 5.
+    const slowSpinZoom = 3;
+
+    let userInteracting = false;
+    const spinEnabled = true;
+
+    function spinGlobe() {
+        const zoom = map.getZoom();
+        if (spinEnabled && !userInteracting && zoom < maxSpinZoom) {
+            let distancePerSecond = 360 / secondsPerRevolution;
+            if (zoom > slowSpinZoom) {
+                // Slow spinning at higher zooms
+                const zoomDif =
+                    (maxSpinZoom - zoom) / (maxSpinZoom - slowSpinZoom);
+                distancePerSecond *= zoomDif;
+            }
+            const center = map.getCenter();
+            center.lng -= distancePerSecond;
+            // Smoothly animate the map over one second.
+            // When this animation is complete, it calls a 'moveend' event.
+            map.easeTo({ center, duration: 1000, easing: (n) => n });
+        }
+    }
+
+    // Pause spinning on interaction
+    map.on('mousedown', () => {
+        userInteracting = true;
+    });
+    map.on('dragstart', () => {
+        userInteracting = true;
+    });
+
+    // When animation is complete, start spinning if there is no ongoing interaction
+    map.on('moveend', () => {
+        spinGlobe();
+    });
+
+    spinGlobe();
+</script>
+
 </body>
 </html>
