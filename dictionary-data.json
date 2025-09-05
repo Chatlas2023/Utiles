@@ -1,0 +1,1487 @@
+[
+    {
+        "esp": "¡Dígame! o ¡Diga! o ¿Sí? (en el teléfono)",
+        "arg": "¡Hola!",
+        "image": "📞"
+    },
+    {
+        "esp": "¡Hasta luego!",
+        "arg": "Chau. Adiós. Buen día. Buenas tardes (o noches)",
+        "image": "👋"
+    },
+    {
+        "esp": "¡Hola, buenas!",
+        "arg": "Buen día",
+        "image": "🌞"
+    },
+    {
+        "esp": "¡Oye, tía! (o tío)",
+        "arg": "¡Escuchá, che! O ¡Escuchame!",
+        "image": "🗣️"
+    },
+    {
+        "esp": "¡Pónme un café!",
+        "arg": "¿Me trae un café? o ¿Puede ser un cafecito? o Un café, por favor.",
+        "image": "☕"
+    },
+    {
+        "esp": "¡Por narices!",
+        "arg": "(Coloquial) Alguien va a actuar forzado u obligado.",
+        "image": "👃"
+    },
+    {
+        "esp": "¡Quítate! ¡Quítate de la luz! ¡Sal de ahí!",
+        "arg": "¡Salí de ahí! o ¡Correte de la luz! o ¡Salíte de la luz! ¡No me tapes la luz!",
+        "image": "🚶‍♂️"
+    },
+    {
+        "esp": "¡Uau!",
+        "arg": "¡Guau! (la expresión de asombro)",
+        "image": "😲"
+    },
+    {
+        "esp": "¡Vaya país de mierda!",
+        "arg": "¡Qué país de mierda!",
+        "image": "🇪🇸🇦🇷"
+    },
+    {
+        "esp": "¡Vaya rollo!",
+        "arg": "¡Qué despelote!",
+        "image": "🔄"
+    },
+    {
+        "esp": "Andar (Ven andando) (Enseñar a andar) (Vayamos andando)",
+        "arg": "Caminar (Vení caminando) (Vení a pie) (Enseñar a caminar) (Vamos caminando)",
+        "image": "🚶‍♂️"
+    },
+    {
+        "esp": "Aparcamiento",
+        "arg": "Estacionamiento",
+        "image": "🅿️"
+    },
+    {
+        "esp": "Aparcar",
+        "arg": "Estacionar",
+        "image": "🚗"
+    },
+    {
+        "esp": "Beber a morro",
+        "arg": "Tomar de la botella o tomar del pico",
+        "image": "🍾"
+    },
+    {
+        "esp": "Bolígrafo, boli",
+        "arg": "birome, bic",
+        "image": "✏️"
+    },
+    {
+        "esp": "Cacahuete",
+        "arg": "Maní",
+        "image": "🥜"
+    },
+    {
+        "esp": "Camarero",
+        "arg": "Mozo",
+        "image": "🍽️"
+    },
+    {
+        "esp": "Aseos",
+        "arg": "Baños",
+        "image": "🚻"
+    },
+    {
+        "esp": "Azúcar glas",
+        "arg": "Azúcar impalpable",
+        "image": "🍬"
+    },
+    {
+        "esp": "Barreño",
+        "arg": "Palangana grande",
+        "image": "🪣"
+    },
+    {
+        "esp": "Báscula",
+        "arg": "Balanza",
+        "image": "⚖️"
+    },
+    {
+        "esp": "Bocadillo",
+        "arg": "Sandwich de pan francés",
+        "image": "🥪"
+    },
+    {
+        "esp": "Bolso",
+        "arg": "Cartera de mujer",
+        "image": "👜"
+    },
+    {
+        "esp": "Al socaire (1) (figurado)",
+        "arg": "Sirviéndose de la persona o cosa que se expresa: ascendió al socaire de sus influencias.",
+        "image": "🌬️"
+    },
+    {
+        "esp": "Al socaire (2) (literal)",
+        "arg": "Al abrigo del viento: El barco se situó al socaire de la isla para evitar las olas.",
+        "image": "⛵"
+    },
+    {
+        "esp": "Alambre de espino",
+        "arg": "Alambre de púas",
+        "image": "🪔"
+    },
+    {
+        "esp": "Albaricoque",
+        "arg": "Damasco",
+        "image": "🍑"
+    },
+    {
+        "esp": "Albornoz",
+        "arg": "Salida de baño",
+        "image": "🧖"
+    },
+    {
+        "esp": "Alcachofa",
+        "arg": "Alcaucil",
+        "image": "🥬"
+    },
+    {
+        "esp": "Alcachofa",
+        "arg": "La roseta de la ducha",
+        "image": "🚿"
+    },
+    {
+        "esp": "Alicatado",
+        "arg": "Azulejado: una pared alicatada.",
+        "image": "🧱"
+    },
+    {
+        "esp": "Alifafe",
+        "arg": "Enfermedad leve",
+        "image": "🤒"
+    },
+    {
+        "esp": "Almacén",
+        "arg": "Depósito grande",
+        "image": "🏬"
+    },
+    {
+        "esp": "Alopecia",
+        "arg": "Alopecía",
+        "image": "👨‍🦲"
+    },
+    {
+        "esp": "Alubia",
+        "arg": "Poroto",
+        "image": "🫘"
+    },
+    {
+        "esp": "Americana",
+        "arg": "Saco de hombre",
+        "image": "👔"
+    },
+    {
+        "esp": "Andar de romanía",
+        "arg": "Andar tirado (de ánimo)",
+        "image": "😔"
+    },
+    {
+        "esp": "Aniversario",
+        "arg": "Cumpleaños",
+        "image": "🎂"
+    },
+    {
+        "esp": "Apearse (del coche, del bus, del caballo)",
+        "arg": "Bajarse",
+        "image": "🚶"
+    },
+    {
+        "esp": "Apuntar (Apunta lo que voy a decirte).",
+        "arg": "Anotar",
+        "image": "📝"
+    },
+    {
+        "esp": "Apurar[1]",
+        "arg": "Agotar; llegar al límite",
+        "image": "⏳"
+    },
+    {
+        "esp": "Arcén",
+        "arg": "Banquina",
+        "image": "🛣️"
+    },
+    {
+        "esp": "Archivador de anillas",
+        "arg": "Bibliorato",
+        "image": "📁"
+    },
+    {
+        "esp": "Asado",
+        "arg": "Carne al horno",
+        "image": "🍖"
+    },
+    {
+        "esp": "Asiento de detrás (en un auto, etc.)",
+        "arg": "Asiento de atrás",
+        "image": "🚙"
+    },
+    {
+        "esp": "Aspirador",
+        "arg": "Aspiradora",
+        "image": "🧹"
+    },
+    {
+        "esp": "Atajar",
+        "arg": "Tomar un atajo",
+        "image": "↗️"
+    },
+    {
+        "esp": "Austriaco",
+        "arg": "Austríaco",
+        "image": "🇦🇹"
+    },
+    {
+        "esp": "AVE",
+        "arg": "Tren de alta velocidad",
+        "image": "🚄"
+    },
+    {
+        "esp": "Ballet (algunos lo pronuncian baiét)",
+        "arg": "Ballet (balé)",
+        "image": "💃"
+    },
+    {
+        "esp": "Balón",
+        "arg": "Pelota",
+        "image": "⚽"
+    },
+    {
+        "esp": "Balonvolea",
+        "arg": "Volleyball",
+        "image": "🏐"
+    },
+    {
+        "esp": "Bamba (de Wamba, marca comercial)",
+        "arg": "Zapatilla liviana, cerrada, de tela fina y suela de goma.",
+        "image": "👟"
+    },
+    {
+        "esp": "Bañador",
+        "arg": "Traje de baño",
+        "image": "🩱"
+    },
+    {
+        "esp": "Bayeta",
+        "arg": "Franela de limpiar (¿trapo de piso?)",
+        "image": "🧽"
+    },
+    {
+        "esp": "Beber",
+        "arg": "Tomar (en España 'tomar' es comer)",
+        "image": "🥛"
+    },
+    {
+        "esp": "Beicon, bacón",
+        "arg": "Panceta",
+        "image": "🥓"
+    },
+    {
+        "esp": "Beis",
+        "arg": "Beige (besh)",
+        "image": "🎨"
+    },
+    {
+        "esp": "Belén",
+        "arg": "Pesebre (el que se arma para Navidad)",
+        "image": "🎄"
+    },
+    {
+        "esp": "Betún, crema",
+        "arg": "Pomada para limpiar el calzado",
+        "image": "👞"
+    },
+    {
+        "esp": "Billete",
+        "arg": "Pasaje",
+        "image": "🎫"
+    },
+    {
+        "esp": "Birraca",
+        "arg": "Coloquial. Cerveza.",
+        "image": "🍺"
+    },
+    {
+        "esp": "Bofia",
+        "arg": "La policía (Coloquial), la cana",
+        "image": "👮"
+    },
+    {
+        "esp": "Boliche",
+        "arg": "Balero",
+        "image": "🎳"
+    },
+    {
+        "esp": "Bollería",
+        "arg": "Conjunto de bollos, es lo que comen con el desayuno. Son unas facturas grandes, esponjosas, bastante desabridas, muy grasosas.",
+        "image": "🥐"
+    },
+    {
+        "esp": "Bombilla",
+        "arg": "Lamparita eléctrica",
+        "image": "💡"
+    },
+    {
+        "esp": "Bombona",
+        "arg": "Garrafa",
+        "image": "⛽"
+    },
+    {
+        "esp": "Bordillo",
+        "arg": "El cordón de la vereda",
+        "image": "🛣️"
+    },
+    {
+        "esp": "Bragas",
+        "arg": "Bombacha",
+        "image": "👙"
+    },
+    {
+        "esp": "Brécol",
+        "arg": "Broccoli",
+        "image": "🥦"
+    },
+    {
+        "esp": "Bricolador",
+        "arg": "El que fabrica cosas con las manos (bricolaje)",
+        "image": "🔨"
+    },
+    {
+        "esp": "Bricolaje",
+        "arg": "Realización artesanal de trabajos de poca importancia o de corta duración, y en especial las reparaciones caseras.",
+        "image": "�"
+    },
+    {
+        "esp": "Bronca",
+        "arg": "Pelea, discusión",
+        "image": "😠"
+    },
+    {
+        "esp": "Bus",
+        "arg": "Colectivo",
+        "image": "🚌"
+    },
+    {
+        "esp": "Cacerolada",
+        "arg": "Cacerolazo",
+        "image": "🥘"
+    },
+    {
+        "esp": "Cachas (un cachas)",
+        "arg": "Coloquial. [persona] Que tiene un cuerpo fuerte y los músculos muy desarrollados.",
+        "image": "💪"
+    },
+    {
+        "esp": "Café con leche corto de café",
+        "arg": "Café con leche con poco café. Café con leche con mucha leche.",
+        "image": "☕"
+    },
+    {
+        "esp": "Calabacín",
+        "arg": "Zapallito (los largos, los redondos no existen en España)",
+        "image": "🥒"
+    },
+    {
+        "esp": "Calada (cigarrillo, cigarro)",
+        "arg": "Pitada, chupada",
+        "image": "🚬"
+    },
+    {
+        "esp": "Calcetines",
+        "arg": "Soquetes",
+        "image": "🧦"
+    },
+    {
+        "esp": "Calderilla",
+        "arg": "Moneditas, monedas de poco valor, cambio chico",
+        "image": "🪙"
+    },
+    {
+        "esp": "Calle, manzana",
+        "arg": "Cuadra (dicen: 'tres calles más abajo', por ejemplo)",
+        "image": "🗺️"
+    },
+    {
+        "esp": "Callista (también 'podólogo')",
+        "arg": "Pedicuro",
+        "image": "👣"
+    },
+    {
+        "esp": "Cambiar las tornas",
+        "arg": "Invertirse los papeles, cambiar la situación",
+        "image": "🔄"
+    },
+    {
+        "esp": "Camello",
+        "arg": "El que pasa droga",
+        "image": "🐪"
+    },
+    {
+        "esp": "Camerino",
+        "arg": "Camarín",
+        "image": "🎭"
+    },
+    {
+        "esp": "Camiseta",
+        "arg": "Remera. También camiseta.",
+        "image": "👕"
+    },
+    {
+        "esp": "Canguro",
+        "arg": "Niñera, baby-sitter, alguien que cuida a un enfermo o a un chico",
+        "image": "👶"
+    },
+    {
+        "esp": "Canicas",
+        "arg": "Bolitas",
+        "image": "🔴"
+    },
+    {
+        "esp": "Cansado",
+        "arg": "Cansador",
+        "image": "😫"
+    },
+    {
+        "esp": "Cantamañanas",
+        "arg": "Persona informal, fantasiosa, irresponsable, que no merece crédito. // macaneador",
+        "image": "🤥"
+    },
+    {
+        "esp": "Carantoña",
+        "arg": "Caricia, palabra o gesto afectuoso que se hace a una persona, a veces con la intención de conseguir algo de ella.",
+        "image": "🥰"
+    },
+    {
+        "esp": "¿Dónde está? ¿Dónde lo has puesto?",
+        "arg": "¿Adónde está? ¿Adónde lo pusiste?",
+        "image": "❓"
+    },
+    {
+        "esp": "¿Me dejas tu coche?",
+        "arg": "¿Me prestás el auto?",
+        "image": "🚗"
+    },
+    {
+        "esp": "¿Puede darme/dejarme un bolígrafo?",
+        "arg": "¿Tiene una birome? ¿Tenés una birome?",
+        "image": "✒️"
+    },
+    {
+        "esp": "¿Qué cuesta? ¿Qué vale?",
+        "arg": "¿Cuánto cuesta? ¿Cuánto vale?",
+        "image": "💰"
+    },
+    {
+        "esp": "A finales de...",
+        "arg": "A fines de...",
+        "image": "📅"
+    },
+    {
+        "esp": "A juego (con sillas a juego, jersey a juego con la falda)",
+        "arg": "Haciendo juego. Que hace juego.",
+        "image": "👚"
+    },
+    {
+        "esp": "A media manzana de mi casa",
+        "arg": "A media cuadra de mi casa",
+        "image": "🏠"
+    },
+    {
+        "esp": "A medio gas",
+        "arg": "A media máquina",
+        "image": "⚙️"
+    },
+    {
+        "esp": "A posta",
+        "arg": "Adrede",
+        "image": "🎯"
+    },
+    {
+        "esp": "A primeros de ... (año, semana, etc.)",
+        "arg": "A principio de...",
+        "image": "🗓️"
+    },
+    {
+        "esp": "A su bola",
+        "arg": "A su gusto, como le da la gana",
+        "image": "🔮"
+    },
+    {
+        "esp": "Acera",
+        "arg": "Vereda",
+        "image": "🚶"
+    },
+    {
+        "esp": "Acerico",
+        "arg": "Alfiletero",
+        "image": "🪡"
+    },
+    {
+        "esp": "Aclarar Me aclaré el shampú",
+        "arg": "Enjuagar. Me enjuagué el shampú",
+        "image": "🚿"
+    },
+    {
+        "esp": "Actos de gamberrismo",
+        "arg": "Actos de vandalismo, conductas molestas, desagradables o groseras",
+        "image": "🚧"
+    },
+    {
+        "esp": "Adosado (p. ej.: ¿cuántos adosados hay en esa calle?)",
+        "arg": "Edificio o casa adyacente o tocando a otro.",
+        "image": "🏘️"
+    },
+    {
+        "esp": "Aforo",
+        "arg": "Capacidad (la capacidad de un teatro, estadio, cine, etc.)",
+        "image": "🎭"
+    },
+    {
+        "esp": "Aguacate",
+        "arg": "Palta",
+        "image": "🥑"
+    },
+    {
+        "esp": "Aguja de ganchillo",
+        "arg": "Aguja de crochet",
+        "image": "🧶"
+    },
+    {
+        "esp": "Agujetas",
+        "arg": "Los dolores musculares que se tienen al día siguiente de haber hecho un ejercicio desacostumbrado.",
+        "image": "💪"
+    },
+    {
+        "esp": "Carboncillo",
+        "arg": "Carbonilla",
+        "image": "🔳"
+    },
+    {
+        "esp": "Cardar (el pelo)",
+        "arg": "Batir (el pelo)",
+        "image": "💇"
+    },
+    {
+        "esp": "Carrera (en la media)",
+        "arg": "Corrida",
+        "image": "🧦"
+    },
+    {
+        "esp": "Carrete de fotos",
+        "arg": "Rollo",
+        "image": "🎞️"
+    },
+    {
+        "esp": "Carro (de supermercado, aeropuerto)",
+        "arg": "changuito (en el súper), carrito, carro (en el aeropuerto)",
+        "image": "🛒"
+    },
+    {
+        "esp": "Cartabón",
+        "arg": "Escuadra",
+        "image": "📐"
+    },
+    {
+        "esp": "Cartera",
+        "arg": "Billetera",
+        "image": "💼"
+    },
+    {
+        "esp": "Cascar",
+        "arg": "(…) Coloquial. Morir. 'Cascó por sobredosis' 'se cascaba de risa'",
+        "image": "💀"
+    },
+    {
+        "esp": "Cascos",
+        "arg": "Auriculares",
+        "image": "🎧"
+    },
+    {
+        "esp": "Casoplón",
+        "arg": "Casa grande y lujosa",
+        "image": "🏰"
+    },
+    {
+        "esp": "Castaño (el color), café",
+        "arg": "Marrón",
+        "image": "🟫"
+    },
+    {
+        "esp": "Cazadora",
+        "arg": "Campera",
+        "image": "🧥"
+    },
+    {
+        "esp": "Centralita",
+        "arg": "Conmutador",
+        "image": "📞"
+    },
+    {
+        "esp": "Cerillas",
+        "arg": "Fósforos",
+        "image": "🪔"
+    },
+    {
+        "esp": "Chándal",
+        "arg": "(Deporte) Conjunto deportivo de chaqueta o sudadera y pantalón largo a juego; suele ponerse sobre otras prendas deportivas cortas. El plural es chándales o chándals.",
+        "image": "👕"
+    },
+    {
+        "esp": "Chapuza",
+        "arg": "Trabajo de poca importancia que una persona hace ocasionalmente fuera de sus horas de trabajo.",
+        "image": "🔧"
+    },
+    {
+        "esp": "Chaqueta",
+        "arg": "Saco",
+        "image": "👔"
+    },
+    {
+        "esp": "Chaquete",
+        "arg": "Backgammon",
+        "image": "🎲"
+    },
+    {
+        "esp": "China",
+        "arg": "Piedrita",
+        "image": "🪨"
+    },
+    {
+        "esp": "Chiringuito",
+        "arg": "Un puesto que vende alguna comida sencilla (al aire libre)",
+        "image": "🏖️"
+    },
+    {
+        "esp": "Chistera",
+        "arg": "Galera (el sombrero)",
+        "image": "🎩"
+    },
+    {
+        "esp": "Chollo",
+        "arg": "(Coloq.) Ganga (cosa apreciable que se adquiere a poco costo).",
+        "image": "🛍️"
+    },
+    {
+        "esp": "Chorrada",
+        "arg": "boludez, estupidez",
+        "image": "🤪"
+    },
+    {
+        "esp": "Chuleta (de ternera, etc.)",
+        "arg": "Costilla",
+        "image": "🍖"
+    },
+    {
+        "esp": "Chuleta (para exámenes)",
+        "arg": "Machete (¿Te macheteaste en el exámen?)",
+        "image": "📝"
+    },
+    {
+        "esp": "Chutar (la pelota, en el fútbol, por ejemplo)",
+        "arg": "patear",
+        "image": "⚽"
+    },
+    {
+        "esp": "Cisco",
+        "arg": "Altercado, estrépito, desorden",
+        "image": "🔥"
+    },
+    {
+        "esp": "Cisco 'Estoy hecho cisco'",
+        "arg": "Me siento mal, estoy hecho bolsa, estoy hecho pelota, estoy hecho mierda.",
+        "image": "😫"
+    },
+    {
+        "esp": "Cisterna del váter",
+        "arg": "Depósito del inodoro",
+        "image": "🚽"
+    },
+    {
+        "esp": "Claqué",
+        "arg": "Tap, zapateo americano",
+        "image": "👞"
+    },
+    {
+        "esp": "Clavado. Las calles de esa ciudad son clavadas a las nuestras.",
+        "arg": "Idéntico",
+        "image": "📍"
+    },
+    {
+        "esp": "Cocido",
+        "arg": "Puchero",
+        "image": "🍲"
+    },
+    {
+        "esp": "Cofre",
+        "arg": "Caja fuerte",
+        "image": "🗃️"
+    },
+    {
+        "esp": "Coger",
+        "arg": "Agarrar, tomar",
+        "image": "✋"
+    },
+    {
+        "esp": "Coger el bus",
+        "arg": "Tomar el colectivo",
+        "image": "🚌"
+    },
+    {
+        "esp": "Coger el teléfono",
+        "arg": "Atender el teléfono",
+        "image": "📞"
+    },
+    {
+        "esp": "Coger el tranquillo (a algo)",
+        "arg": "Tomarle la mano a algo (¡Nunca le voy a coger el tranquillo a esto!)",
+        "image": "🎯"
+    },
+    {
+        "esp": "Coger una perra ('¡El niño cogió una perra...!')",
+        "arg": "Ataque de llanto y gritos ('El pibe se puso a llorar y a gritar como un loco')",
+        "image": "😭"
+    },
+    {
+        "esp": "Cola",
+        "arg": "Pito (pene, en lenguaje familiar)",
+        "image": "🍆"
+    },
+    {
+        "esp": "Cola Cao",
+        "arg": "Nesquik",
+        "image": "🍫"
+    },
+    {
+        "esp": "Colada. Hacer la colada.",
+        "arg": "El conjunto de la ropa que se lava, se tiende. Lavar la ropa.",
+        "image": "🧺"
+    },
+    {
+        "esp": "Columpio",
+        "arg": "Hamaca",
+        "image": "🪀"
+    },
+    {
+        "esp": "Cometa",
+        "arg": "Barrilete",
+        "image": "🪁"
+    },
+    {
+        "esp": "Comida",
+        "arg": "Almuerzo",
+        "image": "🍽️"
+    },
+    {
+        "esp": "Como una regadera",
+        "arg": "Coloquial. Loco. Está como una regadera.",
+        "image": "🚿"
+    },
+    {
+        "esp": "Comunicando (el teléfono) Está comunicando.",
+        "arg": "Ocupado. Da ocupado.",
+        "image": "📵"
+    },
+    {
+        "esp": "Con faldas y a lo loco (la película)",
+        "arg": "Una Eva y dos Adanes (Some like it hot)",
+        "image": "🎬"
+    },
+    {
+        "esp": "Constipado",
+        "arg": "Resfrío",
+        "image": "🤧"
+    },
+    {
+        "esp": "Consulta",
+        "arg": "Consultorio",
+        "image": "🏥"
+    },
+    {
+        "esp": "Cordel, bramante",
+        "arg": "Piolín",
+        "image": "🧵"
+    },
+    {
+        "esp": "Correrse",
+        "arg": "Coloquial. Tener un orgasmo",
+        "image": "😏"
+    },
+    {
+        "esp": "Correspondencia (en el metro[subterráneo] o en el tren)",
+        "arg": "combinación",
+        "image": "🚇"
+    },
+    {
+        "esp": "Coste",
+        "arg": "Costo",
+        "image": "💰"
+    },
+    {
+        "esp": "Cotilleo",
+        "arg": "Chisme, habladuría, murmuración",
+        "image": "🗣️"
+    },
+    {
+        "esp": "Crema, betún",
+        "arg": "Pomada para limpiar el calzado",
+        "image": "👞"
+    },
+    {
+        "esp": "Cremallera",
+        "arg": "Cierre relámpago",
+        "image": "🤐"
+    },
+    {
+        "esp": "Criada",
+        "arg": "Empleada doméstica, mucama, 'la chica que limpia'",
+        "image": "🧹"
+    },
+    {
+        "esp": "Cristales tintados",
+        "arg": "Vidrios polarizados",
+        "image": "🚗"
+    },
+    {
+        "esp": "Cromos",
+        "arg": "Figuritas",
+        "image": "🃏"
+    },
+    {
+        "esp": "Cuadra",
+        "arg": "Caballeriza",
+        "image": "🏇"
+    },
+    {
+        "esp": "Cuarto de baño",
+        "arg": "Baño",
+        "image": "🚽"
+    },
+    {
+        "esp": "Cuartos",
+        "arg": "Coloquial. Dinero",
+        "image": "💵"
+    },
+    {
+        "esp": "Cubitera",
+        "arg": "Cubetera",
+        "image": "🧊"
+    },
+    {
+        "esp": "Cubo",
+        "arg": "Balde",
+        "image": "🪣"
+    },
+    {
+        "esp": "Cuenta atrás",
+        "arg": "Cuenta regresiva",
+        "image": "⏱️"
+    },
+    {
+        "esp": "Currar[2]",
+        "arg": "Trabajar",
+        "image": "💼"
+    },
+    {
+        "esp": "Cutre",
+        "arg": "1. Coloquial. Que es pobre, barato, de mala calidad, de mal gusto, de aspecto descuidado o sucio. 'un bar cutre; unos zapatos cutres; un apartamento cutre; una revista cutre; un tío cutre'. 2. Coloquial. Que es tacaño o miserable. 'mira que es cutre, no es capaz de pagar un café ni por casualidad'",
+        "image": "👎"
+    },
+    {
+        "esp": "Da comunicando o está comunicando (el teléfono)",
+        "arg": "Da ocupado",
+        "image": "📵"
+    },
+    {
+        "esp": "Dar de sí",
+        "arg": "Extenderse o ensancharse, esp. las telas, pieles, etc., o bien producir utilidades o inconvenientes las personas o cosas. 'Puedes ponerte este vestido aunque hayas engordado, da mucho de sí'",
+        "image": "📏"
+    },
+    {
+        "esp": "Dar la brasa",
+        "arg": "Molestar, fastidiar, hinchar. El profesor nos dio la brasa con los plegamientos.",
+        "image": "🔥"
+    },
+    {
+        "esp": "Darse la vuelta (Se dio la vuelta para mirarlo mejor)",
+        "arg": "Darse vuelta (Se dio vuelta para mirarlo mejor)",
+        "image": "🔄"
+    },
+    {
+        "esp": "Darse prisa",
+        "arg": "Apurarse",
+        "image": "⏩"
+    },
+    {
+        "esp": "De derechas, de izquierdas (en política)",
+        "arg": "De derecha, de izquierda",
+        "image": "🗳️"
+    },
+    {
+        "esp": "De la hostia",
+        "arg": "Muy, mucho, admirable",
+        "image": "💥"
+    },
+    {
+        "esp": "De momento...",
+        "arg": "Por el momento..., por ahora...",
+        "image": "⏳"
+    },
+    {
+        "esp": "De puntillas Entró de puntillas",
+        "arg": "En puntas de pie",
+        "image": "👣"
+    },
+    {
+        "esp": "De punto (Patuco es un calzado hecho de punto o de tela).",
+        "arg": "Tejido.",
+        "image": "🧶"
+    },
+    {
+        "esp": "Dejar (déjame tu coche, un lápiz, etc.)",
+        "arg": "Prestar (prestame el auto)",
+        "image": "🤲"
+    },
+    {
+        "esp": "Del copón, de la hostia",
+        "arg": "Coloquial. Mucho, muy grande.",
+        "image": "💥"
+    },
+    {
+        "esp": "Del tiempo (agua, vino, etc.)",
+        "arg": "A temperatura ambiente",
+        "image": "🌡️"
+    },
+    {
+        "esp": "Dependienta",
+        "arg": "Empleada de tienda",
+        "image": "👩‍💼"
+    },
+    {
+        "esp": "Desvelar Su madre nunca le desveló el nombre de su padre",
+        "arg": "Develar, revelar",
+        "image": "🗝️"
+    },
+    {
+        "esp": "Detallista (comerciante)",
+        "arg": "Minorista",
+        "image": "🛒"
+    },
+    {
+        "esp": "Diadema",
+        "arg": "(…) vincha, Cinta elástica o aro abierto por detrás que se pone en la cabeza, por detrás de las orejas, y sirve para sujetar el pelo o como adorno.",
+        "image": "👑"
+    },
+    {
+        "esp": "Diñarla",
+        "arg": "Estirar la pata, cantar para el carnero, irse al otro mundo",
+        "image": "💀"
+    },
+    {
+        "esp": "Dispense",
+        "arg": "Perdone",
+        "image": "🙏"
+    },
+    {
+        "esp": "Drogota",
+        "arg": "Coloquial. Drogadicto/a",
+        "image": "💊"
+    },
+    {
+        "esp": "Droguería",
+        "arg": "Negocio donde se vende productos de limpieza o pintura (no estoy muy segura de esta)",
+        "image": "🧴"
+    },
+    {
+        "esp": "El batería",
+        "arg": "El baterista",
+        "image": "🥁"
+    },
+    {
+        "esp": "El boli",
+        "arg": "La birome",
+        "image": "✏️"
+    },
+    {
+        "esp": "El KGB",
+        "arg": "La KGB",
+        "image": "🕵️"
+    },
+    {
+        "esp": "El silencioso",
+        "arg": "El silenciador del auto",
+        "image": "🔇"
+    },
+    {
+        "esp": "El váter",
+        "arg": "El inodoro",
+        "image": "🚽"
+    },
+    {
+        "esp": "Emparedado",
+        "arg": "Sandwich",
+        "image": "🥪"
+    },
+    {
+        "esp": "Empieza por h (una palabra)",
+        "arg": "Empieza con h",
+        "image": "🔤"
+    },
+    {
+        "esp": "En bote",
+        "arg": "En lata (alimentos)",
+        "image": "🥫"
+    },
+    {
+        "esp": "En el quinto pino",
+        "arg": "Donde el diablo perdió el poncho, muy lejos.",
+        "image": "🌲"
+    },
+    {
+        "esp": "Encarnado",
+        "arg": "Colorado, rojo",
+        "image": "🔴"
+    },
+    {
+        "esp": "Encerado",
+        "arg": "Pizarrón",
+        "image": "📋"
+    },
+    {
+        "esp": "Enchufado",
+        "arg": "Que tiene influencia",
+        "image": "🔌"
+    },
+    {
+        "esp": "Encimera",
+        "arg": "Mesada de la cocina",
+        "image": "🍳"
+    },
+    {
+        "esp": "Enrollado",
+        "arg": "Que está plenamente dedicado a algo. 'un cura joven muy enrollado'",
+        "image": "📜"
+    },
+    {
+        "esp": "Ensaladilla (pron. ensaladí-ia) rusa",
+        "arg": "Ensalada rusa",
+        "image": "🥗"
+    },
+    {
+        "esp": "Entrante (en un restaurant, primer plato)",
+        "arg": "Entrada",
+        "image": "🍽️"
+    },
+    {
+        "esp": "Entreno",
+        "arg": "Entrenamiento",
+        "image": "🏋️"
+    },
+    {
+        "esp": "Escaparate",
+        "arg": "Vidriera",
+        "image": "🪟"
+    },
+    {
+        "esp": "Escarpín",
+        "arg": "1. Zapato de una sola suela y de una sola costura. 2. Calzado interior de estambre u otra materia, para abrigo del pie, y que se coloca encima de la media o del calcetín.",
+        "image": "🧦"
+    },
+    {
+        "esp": "Escayola (en un brazo, pierna, etc.)",
+        "arg": "Yeso",
+        "image": "🩹"
+    },
+    {
+        "esp": "Escote barco",
+        "arg": "Escote bote",
+        "image": "👗"
+    },
+    {
+        "esp": "Espantajo",
+        "arg": "Espantapájaros",
+        "image": "🌾"
+    },
+    {
+        "esp": "Esparadrapo",
+        "arg": "Tela adhesiva",
+        "image": "🩹"
+    },
+    {
+        "esp": "esquirol",
+        "arg": "Para nosotros: carnero o rompehuelgas",
+        "image": "🚫"
+    },
+    {
+        "esp": "Estación de autobuses",
+        "arg": "estación de ómnibus",
+        "image": "🚏"
+    },
+    {
+        "esp": "Estanco",
+        "arg": "kiosco de cigarrillos, lugar donde venden pipas, tabaco, estampillas...",
+        "image": "🚬"
+    },
+    {
+        "esp": "Estar bien, mal (una prenda) (Este jersey me está bien)",
+        "arg": "Quedar. (Este sweater me queda bien)",
+        "image": "👕"
+    },
+    {
+        "esp": "Estar hasta el gorro",
+        "arg": "Estar harto",
+        "image": "🧢"
+    },
+    {
+        "esp": "Estar hecho cisco",
+        "arg": "Estar hecho bolsa, estar hecho pelota, estar hecho mierda",
+        "image": "😫"
+    },
+    {
+        "esp": "Estar ingresado (en un hospital, en un sanatorio)",
+        "arg": "Estar internado",
+        "image": "🏥"
+    },
+    {
+        "esp": "Estar malo",
+        "arg": "estar enfermo",
+        "image": "🤒"
+    },
+    {
+        "esp": "Estar sin blanca[3]",
+        "arg": "estar sin dinero",
+        "image": "💸"
+    },
+    {
+        "esp": "extintor",
+        "arg": "extinguidor (de fuego)",
+        "image": "🧯"
+    },
+    {
+        "esp": "falda",
+        "arg": "Pollera",
+        "image": "👗"
+    },
+    {
+        "esp": "fallo ('tuvo un fallo')",
+        "arg": "error, falla ('Tuvo una falla')",
+        "image": "❌"
+    },
+    {
+        "esp": "farlopa",
+        "arg": "Marginal. Cocaína",
+        "image": "💊"
+    },
+    {
+        "esp": "farmacia de guardia",
+        "arg": "farmacia de turno",
+        "image": "💊"
+    },
+    {
+        "esp": "flexo",
+        "arg": "Lámpara de mesa con brazo flexible",
+        "image": "💡"
+    },
+    {
+        "esp": "follón",
+        "arg": "Despelote",
+        "image": "🔥"
+    },
+    {
+        "esp": "fontanero",
+        "arg": "Plomero",
+        "image": "🔧"
+    },
+    {
+        "esp": "forofo",
+        "arg": "fanático, seguidor apasionado, especialmente referido a los deportes.",
+        "image": "⚽"
+    },
+    {
+        "esp": "forro polar",
+        "arg": "buzo polar",
+        "image": "🧥"
+    },
+    {
+        "esp": "fotomatón",
+        "arg": "Cabina que saca fotos carnet automáticamente (en aeropuertos, etc.)",
+        "image": "📸"
+    },
+    {
+        "esp": "fregadero",
+        "arg": "La pileta de la cocina",
+        "image": "🚰"
+    },
+    {
+        "esp": "fregar los cacharros",
+        "arg": "Lavar los platos",
+        "image": "🍽️"
+    },
+    {
+        "esp": "fregona",
+        "arg": "Lampazo",
+        "image": "🧹"
+    },
+    {
+        "esp": "fresas",
+        "arg": "Frutillas",
+        "image": "🍓"
+    },
+    {
+        "esp": "fresón con nata",
+        "arg": "frutillas con crema",
+        "image": "🍓"
+    },
+    {
+        "esp": "friegaplatos",
+        "arg": "lavaplatos (la máquina)",
+        "image": "🧽"
+    },
+    {
+        "esp": "frigorífico (o nevera)",
+        "arg": "Heladera",
+        "image": "❄️"
+    },
+    {
+        "esp": "frijol",
+        "arg": "Poroto",
+        "image": "🫘"
+    },
+    {
+        "esp": "friolera / friolero",
+        "arg": "friolenta / friolento",
+        "image": "🥶"
+    },
+    {
+        "esp": "Fruta de sartén (o dulces de sartén)",
+        "arg": "Son dulces fritos, como los buñuelos o los churros.",
+        "image": "🍩"
+    },
+    {
+        "esp": "fue coronado con 25 años",
+        "arg": "Fue coronado a los 25 años",
+        "image": "👑"
+    },
+    {
+        "esp": "fueraborda (motor fueraborda)",
+        "arg": "fuera de borda",
+        "image": "🚤"
+    },
+    {
+        "esp": "funcionario",
+        "arg": "empleado público",
+        "image": "👨‍💼"
+    },
+    {
+        "esp": "futbolín",
+        "arg": "Metegol",
+        "image": "🎮"
+    },
+    {
+        "esp": "gabardina",
+        "arg": "Impermeable",
+        "image": "🧥"
+    },
+    {
+        "esp": "gafas, lentes",
+        "arg": "Anteojos",
+        "image": "👓"
+    },
+    {
+        "esp": "gamberro",
+        "arg": "persona que comete actos inciviles para molestar a los demás",
+        "image": "😈"
+    },
+    {
+        "esp": "ganchillo",
+        "arg": "Crochet",
+        "image": "🧶"
+    },
+    {
+        "esp": "garbeo (Démonos un garbeo)",
+        "arg": "paseo (Vamos a pasear)",
+        "image": "🚶"
+    },
+    {
+        "esp": "garrafa",
+        "arg": "Damajuana",
+        "image": "🍾"
+    },
+    {
+        "esp": "gaseoducto",
+        "arg": "Gasoducto",
+        "image": "🛢️"
+    },
+    {
+        "esp": "gasolina",
+        "arg": "Nafta",
+        "image": "⛽"
+    },
+    {
+        "esp": "gasolinera",
+        "arg": "estación de servicio",
+        "image": "⛽"
+    },
+    {
+        "esp": "gayumbos",
+        "arg": "Coloquial: calzoncillos",
+        "image": "🩲"
+    },
+    {
+        "esp": "gazapo",
+        "arg": "Error inadvertido en un escrito",
+        "image": "📝"
+    },
+    {
+        "esp": "gili, gilí",
+        "arg": "Gilipollas",
+        "image": "🤪"
+    },
+    {
+        "esp": "gilipollas",
+        "arg": "Pelotudo , boludo",
+        "image": "🤡"
+    },
+    {
+        "esp": "gire a la derecha",
+        "arg": "Doble a la derecha",
+        "image": "↪️"
+    },
+    {
+        "esp": "Glamuroso",
+        "arg": "Glamoroso",
+        "image": "✨"
+    },
+    {
+        "esp": "Graduarse (de médico, p. ej.)",
+        "arg": "Recibirse",
+        "image": "🎓"
+    },
+    {
+        "esp": "grifo",
+        "arg": "Canilla",
+        "image": "🚰"
+    },
+    {
+        "esp": "guapo",
+        "arg": "Buenmozo",
+        "image": "😎"
+    },
+    {
+        "esp": "guardameta (en fútbol)",
+        "arg": "arquero",
+        "image": "🥅"
+    },
+    {
+        "esp": "guijarro",
+        "arg": "canto rodado",
+        "image": "🪨"
+    },
+    {
+        "esp": "guiri",
+        "arg": "Turista extranjero (creo que es algo despectivo)",
+        "image": "👨‍👩‍👧‍👦"
+    },
+    {
+        "esp": "guisantes",
+        "arg": "arvejas",
+        "image": "🫛"
+    },
+    {
+        "esp": "hacer cisco",
+        "arg": "hacer bolsa, hacer pelota, romper.",
+        "image": "💥"
+    },
+    {
+        "esp": "Hacer la pelota",
+        "arg": "Coloquial despectivo•España: Alabar o tratar de agradar a una persona con el único objetivo de conseguir un favor o un beneficio. 'hacerle la pelota a un superior'.",
+        "image": "⚽"
+    },
+    {
+        "esp": "hacer novillos / hacer pellas",
+        "arg": "hacerse la rata",
+        "image": "🏃"
+    },
+    {
+        "esp": "hacer punto",
+        "arg": "Tejer",
+        "image": "🧶"
+    },
+    {
+        "esp": "herbolario",
+        "arg": "Dietética",
+        "image": "🌿"
+    },
+    {
+        "esp": "hervidor de agua",
+        "arg": "Pava",
+        "image": "♨️"
+    },
+    {
+        "esp": "hierba",
+        "arg": "Pasto, césped",
+        "image": "🌱"
+    },
+    {
+        "esp": "hilo del teléfono, hilo eléctrico",
+        "arg": "Cable",
+        "image": "📞"
+    },
+    {
+        "esp": "hockey sobre hierba",
+        "arg": "Hockey sobre césped",
+        "image": "🏑"
+    },
+    {
+        "esp": "horas punta",
+        "arg": "Horas pico",
+        "image": "⏰"
+    },
+    {
+        "esp": "hortera",
+        "arg": "Que aunque pretende ser elegante o moderno resulta vulgar, ordinario y de mal gusto.",
+        "image": "👎"
+    },
+    {
+        "esp": "Hucha",
+        "arg": "Alcancía",
+        "image": "🐖"
+    },
+    {
+        "esp": "Huele a chamusquina",
+        "arg": "Hay olor a quemado",
+        "image": "👃"
+    },
+    {
+        "esp": "Hueso de un melocotón",
+        "arg": "Carozo de un durazno",
+        "image": "🍑"
+    },
+    {
+        "esp": "Idos a jugar por ahí, niños",
+        "arg": "Vayan a jugar por ahí, chicos",
+        "image": "👦"
+    },
+    {
+        "esp": "Imperdible",
+        "arg": "Alfiler de gancho",
+        "image": "📌"
+    },
+    {
+        "esp": "Importuno",
+        "arg": "Inoportuno",
+        "image": "⏰"
+    },
+    {
+        "esp": "Ir donde alguien",
+        "arg": "Ir a lo de alguien",
+        "image": "🚶"
+    }
+]
