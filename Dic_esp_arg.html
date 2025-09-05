@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diccionario Visual Español - Argentino</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #ffd700 0%, #f8d568 100%);
+            color: #333;
+            text-align: center;
+            padding: 2rem 1rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .search-container {
+            max-width: 800px;
+            margin: 1.5rem auto;
+            padding: 0 1rem;
+        }
+        
+        #search {
+            width: 100%;
+            padding: 12px 20px;
+            border: 2px solid #ddd;
+            border-radius: 30px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        
+        #search:focus {
+            border-color: #ffd700;
+        }
+        
+        .dictionary {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 2rem;
+            padding: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+        
+        .card-image {
+            height: 200px;
+            background-color: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        
+        .card-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s;
+        }
+        
+        .card:hover .card-image img {
+            transform: scale(1.05);
+        }
+        
+        .card-content {
+            padding: 1.5rem;
+        }
+        
+        .card-number {
+            font-size: 0.8rem;
+            color: #888;
+            margin-bottom: 0.5rem;
+        }
+        
+        .card-title {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            color: #333;
+            font-weight: 600;
+        }
+        
+        .card-desc {
+            margin-bottom: 1rem;
+            color: #555;
+        }
+        
+        .spain, .argentina {
+            display: flex;
+            margin-bottom: 0.5rem;
+        }
+        
+        .flag {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            margin-right: 10px;
+            flex-shrink: 0;
+            background-size: cover;
+            background-position: center;
+        }
+        
+        .spain .flag {
+            background-color: #ffd700;
+            background-image: linear-gradient(
+                90deg, 
+                #c60b1e 25%, 
+                #ffc400 25%, 
+                #ffc400 50%, 
+                #c60b1e 50%, 
+                #c60b1e 75%, 
+                #ffc400 75%, 
+                #ffc400 100%
+            );
+        }
+        
+        .argentina .flag {
+            background-color: #74acdf;
+            background-image: linear-gradient(
+                180deg, 
+                #74acdf 33%, 
+                #fff 33%, 
+                #fff 66%, 
+                #74acdf 66%
+            );
+            position: relative;
+        }
+        
+        .argentina .flag::after {
+            content: "☀";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 10px;
+            color: #f1b434;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 2rem;
+            margin-top: 2rem;
+            background-color: #333;
+            color: white;
+        }
+        
+        .no-results {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 2rem;
+            font-size: 1.2rem;
+            color: #666;
+        }
+        
+        @media (max-width: 768px) {
+            .dictionary {
+                grid-template-columns: 1fr;
+                padding: 1rem;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Diccionario Visual Español - Argentino</h1>
+        <p class="subtitle">Aprende las diferencias entre el español de España y Argentina</p>
+    </header>
+    
+    <div class="search-container">
+        <input type="text" id="search" placeholder="Buscar palabra...">
+    </div>
+    
+    <div class="dictionary" id="dictionary">
+        <!-- Las tarjetas se generarán con JavaScript -->
+    </div>
+    
+    <footer>
+        <p>Diccionario Visual Español - Argentino © 2023</p>
+    </footer>
+
+    <script>
+        // Datos del diccionario
+        const dictionaryData = [
+            {
+                id: 1,
+                esp: "¡Dígame! o ¡Diga! o ¿Sí? (en el teléfono)",
+                arg: "¡Hola!",
+                image: "📞"
+            },
+            {
+                id: 2,
+                esp: "¡Hasta luego!",
+                arg: "Chau. Adiós. Buen día. Buenas tardes (o noches)",
+                image: "👋"
+            },
+            {
+                id: 3,
+                esp: "¡Hola, buenas!",
+                arg: "Buen día",
+                image: "🌞"
+            },
+            {
+                id: 4,
+                esp: "¡Oye, tía! (o tío)",
+                arg: "¡Escuchá, che! O ¡Escuchame!",
+                image: "🗣️"
+            },
+            {
+                id: 5,
+                esp: "¡Pónme un café!",
+                arg: "¿Me trae un café? o ¿Puede ser un cafecito? o Un café, por favor.",
+                image: "☕"
+            },
+            {
+                id: 6,
+                esp: "¡Por narices!",
+                arg: "(Coloquial) Alguien va a actuar forzado u obligado.",
+                image: "👃"
+            },
+            {
+                id: 7,
+                esp: "¡Quítate! ¡Quítate de la luz! ¡Sal de ahí!",
+                arg: "¡Salí de ahí! o ¡Correte de la luz! o ¡Salíte de la luz! ¡No me tapes la luz!",
+                image: "🚶‍♂️"
+            },
+            {
+                id: 8,
+                esp: "¡Uau!",
+                arg: "¡Guau! (la expresión de asombro)",
+                image: "😲"
+            },
+            {
+                id: 9,
+                esp: "¡Vaya país de mierda!",
+                arg: "¡Qué país de mierda!",
+                image: "🇪🇸🇦🇷"
+            },
+            {
+                id: 10,
+                esp: "¡Vaya rollo!",
+                arg: "¡Qué despelote!",
+                image: "🔄"
+            },
+            {
+                id: 45,
+                esp: "Andar (Ven andando) (Enseñar a andar) (Vayamos andando)",
+                arg: "Caminar (Vení caminando) (Vení a pie) (Enseñar a caminar) (Vamos caminando)",
+                image: "🚶‍♂️"
+            },
+            {
+                id: 48,
+                esp: "Aparcamiento",
+                arg: "Estacionamiento",
+                image: "🅿️"
+            },
+            {
+                id: 49,
+                esp: "Aparcar",
+                arg: "Estacionar",
+                image: "🚗"
+            },
+            {
+                id: 73,
+                esp: "Beber a morro",
+                arg: "Tomar de la botella o tomar del pico",
+                image: "🍾"
+            },
+            {
+                id: 83,
+                esp: "Bolígrafo, boli",
+                arg: "birome, bic",
+                image: "✏️"
+            },
+            {
+                id: 95,
+                esp: "Cacahuete",
+                arg: "Maní",
+                image: "🥜"
+            },
+            {
+                id: 105,
+                esp: "Camarero",
+                arg: "Mozo",
+                image: "🍽️"
+            }
+        ];
+
+        // Función para renderizar las tarjetas
+        function renderCards(data) {
+            const dictionaryElement = document.getElementById('dictionary');
+            dictionaryElement.innerHTML = '';
+            
+            if (data.length === 0) {
+                dictionaryElement.innerHTML = '<div class="no-results">No se encontraron resultados</div>';
+                return;
+            }
+            
+            data.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                
+                card.innerHTML = `
+                    <div class="card-image">
+                        <span style="font-size: 80px;">${item.image}</span>
+                    </div>
+                    <div class="card-content">
+                        <div class="card-number">#${item.id}</div>
+                        <div class="card-title">Expresión</div>
+                        <div class="card-desc">
+                            <div class="spain">
+                                <div class="flag"></div>
+                                <div><strong>España:</strong> ${item.esp}</div>
+                            </div>
+                            <div class="argentina">
+                                <div class="flag"></div>
+                                <div><strong>Argentina:</strong> ${item.arg}</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                dictionaryElement.appendChild(card);
+            });
+        }
+        
+        // Función para buscar
+        function setupSearch() {
+            const searchInput = document.getElementById('search');
+            
+            searchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                
+                if (searchTerm.trim() === '') {
+                    renderCards(dictionaryData);
+                    return;
+                }
+                
+                const filteredData = dictionaryData.filter(item => 
+                    item.esp.toLowerCase().includes(searchTerm) || 
+                    item.arg.toLowerCase().includes(searchTerm)
+                );
+                
+                renderCards(filteredData);
+            });
+        }
+        
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', function() {
+            renderCards(dictionaryData);
+            setupSearch();
+        });
+    </script>
+</body>
+</html>
