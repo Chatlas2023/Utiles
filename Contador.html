@@ -1,10 +1,19 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
     <title>CuentaGanado</title>
+    
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-N4J8MM9R5N"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-N4J8MM9R5N');
+    </script>
+    
     <style>
         * {
             margin: 0;
@@ -169,6 +178,13 @@
                 count++;
                 counterElement.textContent = count;
                 
+                // Enviar evento a Google Analytics
+                gtag('event', 'contar', {
+                  'event_category': 'interacción',
+                  'event_label': 'botón_contar',
+                  'value': count
+                });
+                
                 // Añadir animación
                 counterElement.classList.remove('pulse');
                 void counterElement.offsetWidth; // Reiniciar la animación
@@ -179,6 +195,12 @@
             function resetCounter() {
                 count = 0;
                 counterElement.textContent = count;
+                
+                // Enviar evento a Google Analytics
+                gtag('event', 'reiniciar', {
+                  'event_category': 'interacción',
+                  'event_label': 'botón_reiniciar'
+                });
             }
             
             // Event listeners
