@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-N4J8MM9R5N"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-N4J8MM9R5N');
+</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Juegos para el Celu</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #121212;
+            color: #e0e0e0;
+            line-height: 1.6;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        h1 {
+            color: #bb86fc;
+            margin-bottom: 8px;
+            font-size: 24px;
+        }
+        
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            justify-items: center;
+        }
+        
+        .game-icon {
+            background-color: #1e1e1e;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease;
+            text-decoration: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: inherit;
+            width: 100px;
+            height: 120px;
+            border: 1px solid #333;
+            padding: 10px;
+            text-align: center;
+        }
+        
+        .game-icon:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+        }
+        
+        .game-symbol {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 8px;
+            font-size: 20px;
+            font-weight: bold;
+            color: white;
+        }
+        
+        .game-name {
+            font-size: 12px;
+            color: #bb86fc;
+            font-weight: 500;
+            line-height: 1.2;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            height: 28px;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #7f7f7f;
+            font-size: 12px;
+        }
+        
+        @media (max-width: 600px) {
+            .games-grid {
+                grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+                gap: 10px;
+            }
+            
+            .game-icon {
+                width: 80px;
+                height: 100px;
+                padding: 8px;
+            }
+            
+            .game-symbol {
+                width: 50px;
+                height: 50px;
+                font-size: 16px;
+            }
+            
+            .game-name {
+                font-size: 10px;
+                height: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Colección de Utilidades</h1>
+            <p>Elige una utilidad</p>
+        </header>
+        
+        <div class="games-grid">
+            <!-- Juego 1 -->
+            <a href="Contador.html" class="game-icon">
+                <div class="game-symbol" style="background-color: #1E1E1E;font-size: 48px;">
+                     🔢
+                </div>
+                <div class="game-name">Contador</div>
+            </a>
+                     
+            <!-- Juego 2 -->
+            <a href="Mapa.html" class="game-icon">
+                <div class="game-symbol" style="background-color: #1E1E1E;font-size: 48px;">
+                    🌍
+                </div>
+                <div class="game-name">Mapa Ruteador</div>
+            </a>
+            
+        </div>
+        
+        <footer>
+            <p>© 2025 Utilidades de Chatlas | Todos los derechos reservados</p>
+        </footer>
+    </div>
+</body>
+</html>
