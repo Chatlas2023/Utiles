@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Diccionario Visual Español - Argentino</title>
+    <title>Diccionario Español - Argentino</title>
     <style>
         * {
             margin: 0;
@@ -29,6 +29,30 @@
         
         h1 {
             font-size: 1.8rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .search-container {
+            max-width: 500px;
+            margin: 1rem auto;
+            padding: 0 1rem;
+        }
+        
+        #search {
+            width: 100%;
+            padding: 10px 15px;
+            border: 2px solid #ddd;
+            border-radius: 25px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        
+        #search:focus {
+            border-color: #ffd700;
+            box-shadow: 0 0 5px rgba(255, 215, 0, 0.5);
         }
         
         .dictionary {
@@ -140,6 +164,14 @@
             line-height: 1.4;
         }
         
+        .no-results {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 2rem;
+            font-size: 1.1rem;
+            color: #666;
+        }
+        
         footer {
             text-align: center;
             padding: 1.5rem;
@@ -178,34 +210,111 @@
 </head>
 <body>
     <header>
-        <h1>Diccionario Visual Español - Argentino</h1>
+        <h1>Diccionario Español - Argentino</h1>
     </header>
+    
+    <div class="search-container">
+        <input type="text" id="search" placeholder="Buscar palabra o expresión...">
+    </div>
     
     <div class="dictionary" id="dictionary">
         <!-- Las tarjetas se generarán con JavaScript -->
     </div>
     
     <footer>
-        <p>Diccionario Visual Español - Argentino © 2023</p>
+        <p>Diccionario Español - Argentino © 2023</p>
     </footer>
 
     <script>
-        // Función para cargar los datos desde el archivo JSON
-        async function loadDictionaryData() {
-            try {
-                const response = await fetch('dictionary-data.json');
-                const dictionaryData = await response.json();
-                return dictionaryData;
-            } catch (error) {
-                console.error('Error al cargar los datos del diccionario:', error);
-                return [];
+        // Datos del diccionario (ejemplo con algunas entradas)
+        const dictionaryData = [
+            {
+                esp: "¡Dígame! o ¡Diga! o ¿Sí? (en el teléfono)",
+                arg: "¡Hola!",
+                image: "📞"
+            },
+            {
+                esp: "¡Hasta luego!",
+                arg: "Chau. Adiós. Buen día. Buenas tardes (o noches)",
+                image: "👋"
+            },
+            {
+                esp: "¡Hola, buenas!",
+                arg: "Buen día",
+                image: "🌞"
+            },
+            {
+                esp: "¡Oye, tía! (o tío)",
+                arg: "¡Escuchá, che! O ¡Escuchame!",
+                image: "🗣️"
+            },
+            {
+                esp: "¡Pónme un café!",
+                arg: "¿Me trae un café? o ¿Puede ser un cafecito? o Un café, por favor.",
+                image: "☕"
+            },
+            {
+                esp: "Aparcamiento",
+                arg: "Estacionamiento",
+                image: "🅿️"
+            },
+            {
+                esp: "Bolígrafo, boli",
+                arg: "birome, bic",
+                image: "✏️"
+            },
+            {
+                esp: "Cacahuete",
+                arg: "Maní",
+                image: "🥜"
+            },
+            {
+                esp: "Camarero",
+                arg: "Mozo",
+                image: "🍽️"
+            },
+            {
+                esp: "Ordenador",
+                arg: "Computadora",
+                image: "💻"
+            },
+            {
+                esp: "Móvil",
+                arg: "Celular",
+                image: "📱"
+            },
+            {
+                esp: "Zumo",
+                arg: "Jugo",
+                image: "🧃"
+            },
+            {
+                esp: "Coche",
+                arg: "Auto",
+                image: "🚗"
+            },
+            {
+                esp: "Gafas",
+                arg: "Anteojos",
+                image: "👓"
+            },
+            {
+                esp: "Tarta",
+                arg: "Torta",
+                image: "🎂"
             }
-        }
+            // Aquí puedes agregar todas las demás entradas del diccionario
+        ];
 
         // Función para renderizar las tarjetas
         function renderCards(data) {
             const dictionaryElement = document.getElementById('dictionary');
             dictionaryElement.innerHTML = '';
+            
+            if (data.length === 0) {
+                dictionaryElement.innerHTML = '<div class="no-results">No se encontraron resultados</div>';
+                return;
+            }
             
             data.forEach(item => {
                 const card = document.createElement('div');
@@ -233,10 +342,31 @@
             });
         }
         
+        // Función para buscar
+        function setupSearch() {
+            const searchInput = document.getElementById('search');
+            
+            searchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                
+                if (searchTerm.trim() === '') {
+                    renderCards(dictionaryData);
+                    return;
+                }
+                
+                const filteredData = dictionaryData.filter(item => 
+                    item.esp.toLowerCase().includes(searchTerm) || 
+                    item.arg.toLowerCase().includes(searchTerm)
+                );
+                
+                renderCards(filteredData);
+            });
+        }
+        
         // Inicializar
-        document.addEventListener('DOMContentLoaded', async function() {
-            const dictionaryData = await loadDictionaryData();
+        document.addEventListener('DOMContentLoaded', function() {
             renderCards(dictionaryData);
+            setupSearch();
         });
     </script>
 </body>
