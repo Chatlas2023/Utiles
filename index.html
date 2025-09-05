@@ -1,235 +1,270 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+    <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-N4J8MM9R5N"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-N4J8MM9R5N');
+</script>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-    <title>CuentaGanado</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Juegos para el Celu</title>
     <style>
         * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            align-items: center;
+            background-color: #121212;
+            color: #e0e0e0;
+            line-height: 1.6;
             padding: 20px;
-            color: white;
-            text-align: center;
-            overflow: hidden;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
         }
         
         header {
-            margin-top: 20px;
-            width: 100%;
+            text-align: center;
+            margin-bottom: 20px;
         }
         
         h1 {
-            font-size: 2.5rem;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-            margin-bottom: 10px;
+            color: #bb86fc;
+            margin-bottom: 8px;
+            font-size: 24px;
         }
         
-        .subtitle {
-            font-size: 1.2rem;
-            margin-bottom: 30px;
-            color: #f0f0f0;
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            justify-items: center;
         }
         
-        .counter-container {
-            width: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin: 20px 0;
-        }
-        
-        .counter {
-            font-size: 8rem;
-            font-weight: bold;
-            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.6);
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 20px;
-            padding: 10px 30px;
-            min-width: 200px;
-        }
-        
-        .count-button {
-            width: 85vw;
-            height: 85vw;
-            max-width: 300px;
-            max-height: 300px;
-            border-radius: 50%;
-            background: linear-gradient(145deg, #ff3333, #cc0000);
-            border: none;
-            box-shadow: 0 12px 0 #800000, 
-                        0 15px 20px rgba(0, 0, 0, 0.5),
-                        inset 0 -8px 15px rgba(0, 0, 0, 0.3);
-            color: white;
-            font-size: 2.2rem;
-            font-weight: bold;
-            text-transform: uppercase;
-            cursor: pointer;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin: 20px 0;
-            transition: all 0.1s ease;
-            position: relative;
+        .game-icon {
+            background-color: #1e1e1e;
+            border-radius: 12px;
             overflow: hidden;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease;
+            text-decoration: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: inherit;
+            width: 100px;
+            height: 120px;
+            border: 1px solid #333;
+            padding: 10px;
+            text-align: center;
         }
         
-        .count-button:active {
-            transform: translateY(5px);
-            box-shadow: 0 7px 0 #800000, 
-                        0 10px 15px rgba(0, 0, 0, 0.4);
+        .game-icon:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
         }
         
-        .count-button::after {
-            content: "";
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(circle at center, transparent, rgba(255, 255, 255, 0.2));
-            top: 0;
-            left: 0;
-        }
-        
-        .reset-button {
-            background: linear-gradient(145deg, #444444, #222222);
+        .game-symbol {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 8px;
+            font-size: 20px;
+            font-weight: bold;
             color: white;
-            border: none;
-            padding: 12px 25px;
-            border-radius: 30px;
-            font-size: 1rem;
-            margin: 20px 0;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-            cursor: pointer;
         }
         
-        .reset-button:active {
-            transform: translateY(2px);
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        .game-name {
+            font-size: 12px;
+            color: #bb86fc;
+            font-weight: 500;
+            line-height: 1.2;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            height: 28px;
         }
         
         footer {
-            margin-bottom: 15px;
-            font-size: 0.8rem;
-            color: rgba(255, 255, 255, 0.7);
+            text-align: center;
+            margin-top: 30px;
+            color: #7f7f7f;
+            font-size: 12px;
         }
         
-        /* Efecto de confeti */
-        .confetti {
-            position: absolute;
-            width: 10px;
-            height: 10px;
-            background-color: #f0f;
-            opacity: 0.8;
-            animation: fall linear forwards;
-        }
-        
-        @keyframes fall {
-            to {
-                transform: translateY(100vh) rotate(360deg);
-                opacity: 0;
+        @media (max-width: 600px) {
+            .games-grid {
+                grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+                gap: 10px;
             }
-        }
-        
-        /* Animación para el contador */
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
-        }
-        
-        .pulse {
-            animation: pulse 0.3s ease;
+            
+            .game-icon {
+                width: 80px;
+                height: 100px;
+                padding: 8px;
+            }
+            
+            .game-symbol {
+                width: 50px;
+                height: 50px;
+                font-size: 16px;
+            }
+            
+            .game-name {
+                font-size: 10px;
+                height: 24px;
+            }
         }
     </style>
 </head>
 <body>
-    <header>
-        <h1>CuentaGanado</h1>
-        <p class="subtitle">Toca el botón por cada animal contado</p>
-    </header>
-    
-    <div class="counter-container">
-        <div class="counter" id="counter">0</div>
-    </div>
-    
-    <button class="count-button" id="countButton">Contar</button>
-    
-    <button class="reset-button" id="resetButton">Reiniciar</button>
-    
-    <footer>
-        Diseñado específicamente para dispositivos móviles
-    </footer>
+    <div class="container">
+        <header>
+            <h1>Colección de Utilidades</h1>
+            <p>Elige una utilidad</p>
+        </header>
+        
+        <div class="games-grid">
+            <!-- Juego 1 -->
+            <a href="Contador.html" class="game-icon">
+                <div class="game-symbol" style="background-color: #f39c12;">
+                     🧱
+                </div>
+                <div class="game-name">Contador</div>
+            </a>
+                     
+            <!-- Juego 2 -->
+            <a href="Snake.html" class="game-icon">
+                <div class="game-symbol" style="background-color: #3498db;">
+                    🐍
+                </div>
+                <div class="game-name">Juego de Snake</div>
+            </a>
+            
+            <!-- Juego 3 -->
+            <a href="Encuentra_el_5.html" class="game-icon">
+                <div class="game-symbol" style="background-color: #9b59b6;">
+                    5
+                </div>
+                <div class="game-name">Encuentra el 5</div>
+            </a>
+            
+            <!-- Juego 4 -->
+            <a href="tetris.html" class="game-icon">
+                <div class="game-symbol" style="background-color: #f39c12;">
+                    ⎕
+                </div>
+                <div class="game-name">Tetris Clásico</div>
+            </a>
+            
+            <!-- Juego 5 -->
+            <a href="pong.html" class="game-icon">
+                <div class="game-symbol" style="background-color: #2ecc71;">
+                    🏓
+                </div>
+                <div class="game-name">Pong Clásico</div>
+            </a>
+            
+            <!-- Juego 6 -->
+            <a href="arkanoid.html" class="game-icon">
+                <div class="game-symbol" style="background-color: #e67e22;">
+                    🧱
+                </div>
+                <div class="game-name">Arkanoid</div>
+            </a>
+            
+            <!-- Juego 7 -->
+            <a href="Simon.html" class="game-icon">
+                <div class="game-symbol" style="background-color: #1abc9c;">
+                    🟢
+                </div>
+                <div class="game-name">Simon</div>
+            </a>
+            
+            <!-- Juego 8 -->
+            <a href="Driver.html" class="game-icon">
+                <div class="game-symbol" style="background-color: #e67e22;">
+                    🚗
+                </div>
+                <div class="game-name">Night Driver</div>
+            </a>
+            
+            <!-- Juego 9 -->
+            <a href="juegodel15.html" class="game-icon">
+                <div class="game-symbol" style="background-color: #9b59b6;">
+                    15
+                </div>
+                <div class="game-name">Juego del 15</div>
+            </a>
+            
+            <!-- Juego 10 -->
+            <a href="cuatro.html" class="game-icon">
+                <div class="game-symbol" style="background-color: #c0392b;">
+                    🎨
+                </div>
+                <div class="game-name">Cuatro Colores</div>
+            </a>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const counterElement = document.getElementById('counter');
-            const countButton = document.getElementById('countButton');
-            const resetButton = document.getElementById('resetButton');
+            <!-- Juego 11 -->
+            <a href="Memorama.html" class="game-icon">
+                <div class="game-symbol" style="background-color: #9b59b6;">
+                    🃏
+                </div>
+                <div class="game-name">Memorama</div>
+            </a>
+
+            <!-- Juego 12 -->
+            <a href="SpaceInvaders.html" class="game-icon">
+                <div class="game-symbol" style="background-color: #34495e;">
+                    👾
+                </div>
+                <div class="game-name">Space Invaders</div>
+            </a>
             
-            let count = 0;
+            <!-- Juego 13 -->
+            <a href="Preguntas.html" class="game-icon">
+                <div class="game-symbol" style="background-color: #2ecc71;">
+                    👾
+                </div>
+                <div class="game-name">Quiz</div>
+            </a>
             
-            // Función para incrementar el contador
-            function incrementCounter() {
-                count++;
-                counterElement.textContent = count;
-                
-                // Añadir animación
-                counterElement.classList.remove('pulse');
-                void counterElement.offsetWidth; // Reiniciar la animación
-                counterElement.classList.add('pulse');
-                
-                // Efecto de confeti cada 10 conteos
-                if (count % 10 === 0) {
-                    createConfetti();
-                }
-            }
+            <!-- Juego 14 -->
+            <a href="Formas.html" class="game-icon">
+                <div class="game-symbol" style="background-color: #27ae60;">
+                    🔶
+                </div>
+                <div class="game-name">Formas</div>
+            </a>
             
-            // Función para reiniciar el contador
-            function resetCounter() {
-                count = 0;
-                counterElement.textContent = count;
-            }
-            
-            // Función para crear confeti
-            function createConfetti() {
-                for (let i = 0; i < 30; i++) {
-                    const confetti = document.createElement('div');
-                    confetti.classList.add('confetti');
-                    confetti.style.left = Math.random() * 100 + 'vw';
-                    confetti.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 50%)`;
-                    confetti.style.animationDuration = (Math.random() * 3 + 2) + 's';
-                    document.body.appendChild(confetti);
-                    
-                    // Eliminar el confeti después de que termine la animación
-                    setTimeout(() => {
-                        confetti.remove();
-                    }, 5000);
-                }
-            }
-            
-            // Event listeners
-            countButton.addEventListener('click', incrementCounter);
-            resetButton.addEventListener('click', resetCounter);
-            
-            // También permitir el conteo con cualquier toque en la pantalla
-            document.addEventListener('touchstart', function(e) {
-                // Solo contar si no se está tocando un botón u otro elemento interactivo
-                if (e.target === countButton || e.target === resetButton) return;
-                incrementCounter();
-            });
-        });
-    </script>
+            <!-- Juego 15 -->
+            <a href="Numeros09.html" class="game-icon">
+                <div class="game-symbol" style="background-color: #3498db;">
+                    09
+                </div>
+                <div class="game-name">Números 0-9</div>
+            </a>
+        </div>
+        
+        <footer>
+            <p>© 2025 Juegos de Chatlas | Todos los derechos reservados</p>
+        </footer>
+    </div>
 </body>
 </html>
