@@ -31,31 +31,6 @@
             margin-bottom: 0.5rem;
         }
         
-        .subtitle {
-            font-size: 1.2rem;
-            opacity: 0.9;
-        }
-        
-        .search-container {
-            max-width: 800px;
-            margin: 1.5rem auto;
-            padding: 0 1rem;
-        }
-        
-        #search {
-            width: 100%;
-            padding: 12px 20px;
-            border: 2px solid #ddd;
-            border-radius: 30px;
-            font-size: 1rem;
-            outline: none;
-            transition: border-color 0.3s;
-        }
-        
-        #search:focus {
-            border-color: #ffd700;
-        }
-        
         .dictionary {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -179,14 +154,6 @@
             color: white;
         }
         
-        .no-results {
-            grid-column: 1 / -1;
-            text-align: center;
-            padding: 2rem;
-            font-size: 1.2rem;
-            color: #666;
-        }
-        
         @media (max-width: 768px) {
             .dictionary {
                 grid-template-columns: 1fr;
@@ -202,12 +169,7 @@
 <body>
     <header>
         <h1>Diccionario Visual Español - Argentino</h1>
-        <p class="subtitle">Aprende las diferencias entre el español de España y Argentina</p>
     </header>
-    
-    <div class="search-container">
-        <input type="text" id="search" placeholder="Buscar palabra...">
-    </div>
     
     <div class="dictionary" id="dictionary">
         <!-- Las tarjetas se generarán con JavaScript -->
@@ -329,11 +291,6 @@
             const dictionaryElement = document.getElementById('dictionary');
             dictionaryElement.innerHTML = '';
             
-            if (data.length === 0) {
-                dictionaryElement.innerHTML = '<div class="no-results">No se encontraron resultados</div>';
-                return;
-            }
-            
             data.forEach(item => {
                 const card = document.createElement('div');
                 card.className = 'card';
@@ -362,31 +319,9 @@
             });
         }
         
-        // Función para buscar
-        function setupSearch() {
-            const searchInput = document.getElementById('search');
-            
-            searchInput.addEventListener('input', function() {
-                const searchTerm = this.value.toLowerCase();
-                
-                if (searchTerm.trim() === '') {
-                    renderCards(dictionaryData);
-                    return;
-                }
-                
-                const filteredData = dictionaryData.filter(item => 
-                    item.esp.toLowerCase().includes(searchTerm) || 
-                    item.arg.toLowerCase().includes(searchTerm)
-                );
-                
-                renderCards(filteredData);
-            });
-        }
-        
         // Inicializar
         document.addEventListener('DOMContentLoaded', function() {
             renderCards(dictionaryData);
-            setupSearch();
         });
     </script>
 </body>
