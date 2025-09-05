@@ -125,23 +125,6 @@
             color: rgba(255, 255, 255, 0.7);
         }
         
-        /* Efecto de confeti */
-        .confetti {
-            position: absolute;
-            width: 10px;
-            height: 10px;
-            background-color: #f0f;
-            opacity: 0.8;
-            animation: fall linear forwards;
-        }
-        
-        @keyframes fall {
-            to {
-                transform: translateY(100vh) rotate(360deg);
-                opacity: 0;
-            }
-        }
-        
         /* Animación para el contador */
         @keyframes pulse {
             0% { transform: scale(1); }
@@ -189,34 +172,12 @@
                 counterElement.classList.remove('pulse');
                 void counterElement.offsetWidth; // Reiniciar la animación
                 counterElement.classList.add('pulse');
-                
-                // Efecto de confeti cada 10 conteos
-                if (count % 10 === 0) {
-                    createConfetti();
-                }
             }
             
             // Función para reiniciar el contador
             function resetCounter() {
                 count = 0;
                 counterElement.textContent = count;
-            }
-            
-            // Función para crear confeti
-            function createConfetti() {
-                for (let i = 0; i < 30; i++) {
-                    const confetti = document.createElement('div');
-                    confetti.classList.add('confetti');
-                    confetti.style.left = Math.random() * 100 + 'vw';
-                    confetti.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 50%)`;
-                    confetti.style.animationDuration = (Math.random() * 3 + 2) + 's';
-                    document.body.appendChild(confetti);
-                    
-                    // Eliminar el confeti después de que termine la animación
-                    setTimeout(() => {
-                        confetti.remove();
-                    }, 5000);
-                }
             }
             
             // Event listeners
