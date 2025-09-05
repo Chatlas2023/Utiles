@@ -13,101 +13,90 @@
         }
         
         body {
-            background-color: #f5f5f5;
+            background-color: #f9f9f9;
             color: #333;
-            line-height: 1.6;
+            line-height: 1.5;
         }
         
         header {
             background: linear-gradient(135deg, #ffd700 0%, #f8d568 100%);
             color: #333;
             text-align: center;
-            padding: 2rem 1rem;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 1.2rem 1rem;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            margin-bottom: 0.5rem;
         }
         
         h1 {
-            font-size: 2.5rem;
-            margin-bottom: 0.5rem;
+            font-size: 1.8rem;
         }
         
         .dictionary {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 2rem;
-            padding: 2rem;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1rem;
+            padding: 1rem;
             max-width: 1400px;
             margin: 0 auto;
         }
         
         .card {
             background: white;
-            border-radius: 10px;
+            border-radius: 8px;
             overflow: hidden;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s, box-shadow 0.3s;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            transition: transform 0.2s, box-shadow 0.2s;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
         }
         
         .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
         }
         
         .card-image {
-            height: 200px;
+            height: 120px;
             background-color: #f0f0f0;
             display: flex;
             align-items: center;
             justify-content: center;
             overflow: hidden;
+            flex-shrink: 0;
         }
         
-        .card-image img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: transform 0.5s;
-        }
-        
-        .card:hover .card-image img {
-            transform: scale(1.05);
+        .card-image span {
+            font-size: 50px;
         }
         
         .card-content {
-            padding: 1.5rem;
-        }
-        
-        .card-number {
-            font-size: 0.8rem;
-            color: #888;
-            margin-bottom: 0.5rem;
-        }
-        
-        .card-title {
-            font-size: 1.2rem;
-            margin-bottom: 1rem;
-            color: #333;
-            font-weight: 600;
+            padding: 1rem;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
         }
         
         .card-desc {
-            margin-bottom: 1rem;
-            color: #555;
+            margin-bottom: 0.5rem;
+            flex-grow: 1;
         }
         
         .spain, .argentina {
             display: flex;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.6rem;
+            align-items: flex-start;
         }
         
         .flag {
-            width: 24px;
-            height: 24px;
+            width: 20px;
+            height: 20px;
             border-radius: 50%;
-            margin-right: 10px;
+            margin-right: 8px;
             flex-shrink: 0;
             background-size: cover;
             background-position: center;
+            margin-top: 2px;
         }
         
         .spain .flag {
@@ -142,26 +131,47 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            font-size: 10px;
+            font-size: 8px;
             color: #f1b434;
+        }
+        
+        .country-text {
+            font-size: 0.9rem;
+            line-height: 1.4;
         }
         
         footer {
             text-align: center;
-            padding: 2rem;
-            margin-top: 2rem;
+            padding: 1.5rem;
+            margin-top: 1rem;
             background-color: #333;
             color: white;
+            font-size: 0.9rem;
         }
         
         @media (max-width: 768px) {
             .dictionary {
                 grid-template-columns: 1fr;
-                padding: 1rem;
+                padding: 0.8rem;
+                gap: 0.8rem;
             }
             
             h1 {
-                font-size: 2rem;
+                font-size: 1.5rem;
+            }
+            
+            .card-image {
+                height: 100px;
+            }
+            
+            .card-image span {
+                font-size: 40px;
+            }
+        }
+        
+        @media (min-width: 1200px) {
+            .dictionary {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
             }
         }
     </style>
@@ -183,106 +193,119 @@
         // Datos del diccionario
         const dictionaryData = [
             {
-                id: 1,
                 esp: "¡Dígame! o ¡Diga! o ¿Sí? (en el teléfono)",
                 arg: "¡Hola!",
                 image: "📞"
             },
             {
-                id: 2,
                 esp: "¡Hasta luego!",
                 arg: "Chau. Adiós. Buen día. Buenas tardes (o noches)",
                 image: "👋"
             },
             {
-                id: 3,
                 esp: "¡Hola, buenas!",
                 arg: "Buen día",
                 image: "🌞"
             },
             {
-                id: 4,
                 esp: "¡Oye, tía! (o tío)",
                 arg: "¡Escuchá, che! O ¡Escuchame!",
                 image: "🗣️"
             },
             {
-                id: 5,
                 esp: "¡Pónme un café!",
                 arg: "¿Me trae un café? o ¿Puede ser un cafecito? o Un café, por favor.",
                 image: "☕"
             },
             {
-                id: 6,
                 esp: "¡Por narices!",
                 arg: "(Coloquial) Alguien va a actuar forzado u obligado.",
                 image: "👃"
             },
             {
-                id: 7,
                 esp: "¡Quítate! ¡Quítate de la luz! ¡Sal de ahí!",
                 arg: "¡Salí de ahí! o ¡Correte de la luz! o ¡Salíte de la luz! ¡No me tapes la luz!",
                 image: "🚶‍♂️"
             },
             {
-                id: 8,
                 esp: "¡Uau!",
                 arg: "¡Guau! (la expresión de asombro)",
                 image: "😲"
             },
             {
-                id: 9,
                 esp: "¡Vaya país de mierda!",
                 arg: "¡Qué país de mierda!",
                 image: "🇪🇸🇦🇷"
             },
             {
-                id: 10,
                 esp: "¡Vaya rollo!",
                 arg: "¡Qué despelote!",
                 image: "🔄"
             },
             {
-                id: 45,
                 esp: "Andar (Ven andando) (Enseñar a andar) (Vayamos andando)",
                 arg: "Caminar (Vení caminando) (Vení a pie) (Enseñar a caminar) (Vamos caminando)",
                 image: "🚶‍♂️"
             },
             {
-                id: 48,
                 esp: "Aparcamiento",
                 arg: "Estacionamiento",
                 image: "🅿️"
             },
             {
-                id: 49,
                 esp: "Aparcar",
                 arg: "Estacionar",
                 image: "🚗"
             },
             {
-                id: 73,
                 esp: "Beber a morro",
                 arg: "Tomar de la botella o tomar del pico",
                 image: "🍾"
             },
             {
-                id: 83,
                 esp: "Bolígrafo, boli",
                 arg: "birome, bic",
                 image: "✏️"
             },
             {
-                id: 95,
                 esp: "Cacahuete",
                 arg: "Maní",
                 image: "🥜"
             },
             {
-                id: 105,
                 esp: "Camarero",
                 arg: "Mozo",
                 image: "🍽️"
+            },
+            {
+                esp: "Aseos",
+                arg: "Baños",
+                image: "🚻"
+            },
+            {
+                esp: "Azúcar glas",
+                arg: "Azúcar impalpable",
+                image: "🍬"
+            },
+            {
+                esp: "Barreño",
+                arg: "Palangana grande",
+                image: "🪣"
+            },
+            {
+                esp: "Báscula",
+                arg: "Balanza",
+                image: "⚖️"
+            },
+            {
+                esp: "Bocadillo",
+                arg: "Sandwich de pan francés",
+                image: "🥪"
+            },
+            {
+                esp: "Bolso",
+                arg: "Cartera de mujer",
+                image: "👜"
             }
         ];
 
@@ -297,19 +320,17 @@
                 
                 card.innerHTML = `
                     <div class="card-image">
-                        <span style="font-size: 80px;">${item.image}</span>
+                        <span>${item.image}</span>
                     </div>
                     <div class="card-content">
-                        <div class="card-number">#${item.id}</div>
-                        <div class="card-title">Expresión</div>
                         <div class="card-desc">
                             <div class="spain">
                                 <div class="flag"></div>
-                                <div><strong>España:</strong> ${item.esp}</div>
+                                <div class="country-text"><strong>España:</strong> ${item.esp}</div>
                             </div>
                             <div class="argentina">
                                 <div class="flag"></div>
-                                <div><strong>Argentina:</strong> ${item.arg}</div>
+                                <div class="country-text"><strong>Argentina:</strong> ${item.arg}</div>
                             </div>
                         </div>
                     </div>
