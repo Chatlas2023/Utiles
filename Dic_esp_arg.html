@@ -172,6 +172,22 @@
             color: #666;
         }
         
+        .loading {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 2rem;
+            font-size: 1.1rem;
+            color: #666;
+        }
+        
+        .error {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 2rem;
+            font-size: 1.1rem;
+            color: #d32f2f;
+        }
+        
         footer {
             text-align: center;
             padding: 1.5rem;
@@ -218,7 +234,7 @@
     </div>
     
     <div class="dictionary" id="dictionary">
-        <!-- Las tarjetas se generarán con JavaScript -->
+        <div class="loading">Cargando diccionario...</div>
     </div>
     
     <footer>
@@ -226,95 +242,36 @@
     </footer>
 
     <script>
-        // Datos del diccionario (ejemplo con algunas entradas)
-        const dictionaryData = [
-            {
-                esp: "¡Dígame! o ¡Diga! o ¿Sí? (en el teléfono)",
-                arg: "¡Hola!",
-                image: "📞"
-            },
-            {
-                esp: "¡Hasta luego!",
-                arg: "Chau. Adiós. Buen día. Buenas tardes (o noches)",
-                image: "👋"
-            },
-            {
-                esp: "¡Hola, buenas!",
-                arg: "Buen día",
-                image: "🌞"
-            },
-            {
-                esp: "¡Oye, tía! (o tío)",
-                arg: "¡Escuchá, che! O ¡Escuchame!",
-                image: "🗣️"
-            },
-            {
-                esp: "¡Pónme un café!",
-                arg: "¿Me trae un café? o ¿Puede ser un cafecito? o Un café, por favor.",
-                image: "☕"
-            },
-            {
-                esp: "Aparcamiento",
-                arg: "Estacionamiento",
-                image: "🅿️"
-            },
-            {
-                esp: "Bolígrafo, boli",
-                arg: "birome, bic",
-                image: "✏️"
-            },
-            {
-                esp: "Cacahuete",
-                arg: "Maní",
-                image: "🥜"
-            },
-            {
-                esp: "Camarero",
-                arg: "Mozo",
-                image: "🍽️"
-            },
-            {
-                esp: "Ordenador",
-                arg: "Computadora",
-                image: "💻"
-            },
-            {
-                esp: "Móvil",
-                arg: "Celular",
-                image: "📱"
-            },
-            {
-                esp: "Zumo",
-                arg: "Jugo",
-                image: "🧃"
-            },
-            {
-                esp: "Coche",
-                arg: "Auto",
-                image: "🚗"
-            },
-            {
-                esp: "Gafas",
-                arg: "Anteojos",
-                image: "👓"
-            },
-            {
-                esp: "Tarta",
-                arg: "Torta",
-                image: "🎂"
+        // Variable global para almacenar los datos del diccionario
+        let dictionaryData = [];
+        
+        // Función para cargar los datos desde el archivo JSON
+        async function loadDictionaryData() {
+            try {
+                const response = await fetch('dictionary-data.json');
+                
+                if (!response.ok) {
+                    throw new Error(`Error al cargar el diccionario: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                return data;
+            } catch (error) {
+                console.error('Error al cargar los datos del diccionario:', error);
+                throw error;
             }
-            // Aquí puedes agregar todas las demás entradas del diccionario
-        ];
+        }
 
         // Función para renderizar las tarjetas
         function renderCards(data) {
             const dictionaryElement = document.getElementById('dictionary');
-            dictionaryElement.innerHTML = '';
             
             if (data.length === 0) {
                 dictionaryElement.innerHTML = '<div class="no-results">No se encontraron resultados</div>';
                 return;
             }
+            
+            dictionaryElement.innerHTML = '';
             
             data.forEach(item => {
                 const card = document.createElement('div');
@@ -322,7 +279,7 @@
                 
                 card.innerHTML = `
                     <div class="card-image">
-                        <span>${item.image}</span>
+                        <span>${item.image || '📝'}</span>
                     </div>
                     <div class="card-content">
                         <div class="card-desc">
@@ -364,9 +321,21 @@
         }
         
         // Inicializar
-        document.addEventListener('DOMContentLoaded', function() {
-            renderCards(dictionaryData);
-            setupSearch();
+        document.addEventListener('DOMContentLoaded', async function() {
+            try {
+                dictionaryData = await loadDictionaryData();
+                renderCards(dictionaryData);
+                setupSearch();
+            } catch (error) {
+                const dictionaryElement = document.getElementById('dictionary');
+                dictionaryElement.innerHTML = `
+                    <div class="error">
+                        <p>Error al cargar el diccionario.</p>
+                        <p>Por favor, asegúrate de que el archivo "dictionary-data.json" existe.</p>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
         });
     </script>
 </body>
