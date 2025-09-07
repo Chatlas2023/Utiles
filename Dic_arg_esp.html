@@ -263,7 +263,7 @@
     </header>
     
     <div class="search-container">
-        <input type="text" id="search" placeholder="Buscar palabra o expresión argentina...">
+        <input type="text" id="search" placeholder="Buscar palabra o expresión...">
     </div>
     
     <div class="sort-options">
@@ -313,8 +313,8 @@
             });
         }
 
-        // Función para renderizar las tarjetas (versión Argentino-Español)
-        function renderCards(data) {
+        // Función para renderizar las tarjetas con ordenamiento adaptativo
+        function renderCards(data, sortBy) {
             const dictionaryElement = document.getElementById('dictionary');
             
             if (data.length === 0) {
@@ -328,20 +328,47 @@
                 const card = document.createElement('div');
                 card.className = 'card';
                 
+                // Determinar el orden de visualización según el criterio de ordenamiento
+                let firstItem, secondItem;
+                
+                if (sortBy === 'arg') {
+                    // Si ordenamos por argentino, mostramos primero argentino y luego español
+                    firstItem = `
+                        <div class="argentina">
+                            <div class="flag"></div>
+                            <div class="country-text"><strong>Argentina:</strong> ${item.arg}</div>
+                        </div>
+                    `;
+                    secondItem = `
+                        <div class="spain">
+                            <div class="flag"></div>
+                            <div class="country-text"><strong>España:</strong> ${item.esp}</div>
+                        </div>
+                    `;
+                } else {
+                    // Si ordenamos por español, mostramos primero español y luego argentino
+                    firstItem = `
+                        <div class="spain">
+                            <div class="flag"></div>
+                            <div class="country-text"><strong>España:</strong> ${item.esp}</div>
+                        </div>
+                    `;
+                    secondItem = `
+                        <div class="argentina">
+                            <div class="flag"></div>
+                            <div class="country-text"><strong>Argentina:</strong> ${item.arg}</div>
+                        </div>
+                    `;
+                }
+                
                 card.innerHTML = `
                     <div class="card-image">
                         <span>${item.image || '📝'}</span>
                     </div>
                     <div class="card-content">
                         <div class="card-desc">
-                            <div class="argentina">
-                                <div class="flag"></div>
-                                <div class="country-text"><strong>Argentina:</strong> ${item.arg}</div>
-                            </div>
-                            <div class="spain">
-                                <div class="flag"></div>
-                                <div class="country-text"><strong>España:</strong> ${item.esp}</div>
-                            </div>
+                            ${firstItem}
+                            ${secondItem}
                         </div>
                     </div>
                 `;
@@ -359,7 +386,7 @@
                 
                 if (searchTerm.trim() === '') {
                     const sortedData = sortData(dictionaryData, currentSort);
-                    renderCards(sortedData);
+                    renderCards(sortedData, currentSort);
                     return;
                 }
                 
@@ -370,7 +397,7 @@
                 );
                 
                 const sortedData = sortData(filteredData, currentSort);
-                renderCards(sortedData);
+                renderCards(sortedData, currentSort);
             });
         }
         
@@ -389,7 +416,7 @@
                     // Ordenar y renderizar
                     currentSort = sortBy;
                     const sortedData = sortData(dictionaryData, currentSort);
-                    renderCards(sortedData);
+                    renderCards(sortedData, currentSort);
                 });
             });
         }
@@ -401,7 +428,7 @@
                 
                 // Ordenar por términos argentinos por defecto
                 const sortedData = sortData(dictionaryData, 'arg');
-                renderCards(sortedData);
+                renderCards(sortedData, 'arg');
                 
                 setupSearch();
                 setupSortButtons();
