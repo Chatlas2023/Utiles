@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Theremin por Proximidad</title>
+    <title>Theremin por Proximidad Simulado</title>
     <style>
         * {
             box-sizing: border-box;
@@ -163,51 +163,109 @@
             background-color: #444;
         }
         
-        .proximity-demo {
-            text-align: center;
+        .proximity-area {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(to top, #1a2a6c, #bb86fc);
+            border-radius: 10px;
             margin: 20px 0;
             position: relative;
-            height: 150px;
+            overflow: hidden;
+            border: 2px solid #333;
+            touch-action: none;
         }
         
-        .phone-icon {
-            font-size: 60px;
-            margin-bottom: 15px;
-        }
-        
-        .hand-icon {
-            font-size: 40px;
+        .proximity-handle {
+            width: 50px;
+            height: 50px;
+            background-color: #03dac6;
+            border-radius: 50%;
             position: absolute;
-            top: 70px;
+            bottom: -25px;
             left: 50%;
             transform: translateX(-50%);
-            transition: top 0.5s ease;
+            cursor: move;
+            cursor: grab;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            box-shadow: 0 0 15px rgba(3, 218, 198, 0.5);
+            user-select: none;
+        }
+        
+        .proximity-handle:active {
+            cursor: grabbing;
+        }
+        
+        .control-options {
+            display: flex;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .control-btn {
+            flex: 1;
+            padding: 10px;
+            background-color: #333;
+            border: none;
+            border-radius: 8px;
+            color: #e0e0e0;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .control-btn.active {
+            background-color: #bb86fc;
+            color: #121212;
+        }
+        
+        .wave-type {
+            width: 100%;
+            padding: 10px;
+            background-color: #333;
+            border: 1px solid #555;
+            border-radius: 8px;
+            color: #e0e0e0;
+            margin: 10px 0;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Theremin por Proximidad</h1>
+        <h1>Theremin por Proximidad Simulado</h1>
         
         <div class="instructions">
-            <p>🔹 Acerca y aleja tu mano del teléfono para cambiar el tono</p>
+            <p>🔹 Usa el área interactiva para controlar el tono con tu mano (ratón o touch)</p>
             <p>🔹 El volumen se controla con el botón deslizante debajo</p>
-            <p>🔹 Haz clic en "Comenzar" y acepta los permisos del sensor</p>
+            <p>🔹 Selecciona el tipo de onda para cambiar el sonido</p>
+            <p>🔹 Haz clic en "Comenzar" para activar el theremin</p>
         </div>
         
-        <div class="proximity-demo">
-            <div class="phone-icon">📱</div>
-            <div class="hand-icon" id="handIcon">👋</div>
+        <div class="control-options">
+            <button class="control-btn active" id="mouseControl">Control con Ratón</button>
+            <button class="control-btn" id="touchControl">Control Táctil</button>
         </div>
+        
+        <div class="proximity-area" id="proximityArea">
+            <div class="proximity-handle" id="proximityHandle">👆</div>
+        </div>
+        
+        <select class="wave-type" id="waveType">
+            <option value="sine">Sinusoidal (suave)</option>
+            <option value="square">Cuadrada (áspera)</option>
+            <option value="sawtooth">Sierra (brillante)</option>
+            <option value="triangle">Triangular (dulce)</option>
+        </select>
         
         <button id="startBtn">Comenzar</button>
         
         <div class="sensor-data">
             <div class="data-box">
-                <div class="data-label">Proximidad</div>
-                <div id="proximityValue" class="data-value">0%</div>
+                <div class="data-label">Frecuencia</div>
+                <div id="frequencyValue" class="data-value">0 Hz</div>
                 <div class="frequency-bar">
-                    <div id="proximityLevel" class="frequency-level"></div>
+                    <div id="frequencyLevel" class="frequency-level"></div>
                 </div>
             </div>
             
@@ -219,7 +277,7 @@
         </div>
         
         <div class="warning" id="warningMessage">
-            Nota: Esta aplicación requiere un sensor de proximidad y puede no funcionar en todos los dispositivos.
+            Nota: Esta versión simula el sensor de proximidad mediante entrada táctil/ratón.
         </div>
         
         <button class="back-button" onclick="window.location.href='index.html'">Volver a Utilidades</button>
@@ -228,30 +286,38 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const startBtn = document.getElementById('startBtn');
-            const proximityValue = document.getElementById('proximityValue');
+            const frequencyValue = document.getElementById('frequencyValue');
             const volumeValue = document.getElementById('volumeValue');
-            const proximityLevel = document.getElementById('proximityLevel');
+            const frequencyLevel = document.getElementById('frequencyLevel');
             const volumeControl = document.getElementById('volumeControl');
             const warningMessage = document.getElementById('warningMessage');
-            const handIcon = document.getElementById('handIcon');
+            const proximityArea = document.getElementById('proximityArea');
+            const proximityHandle = document.getElementById('proximityHandle');
+            const waveType = document.getElementById('waveType');
+            const mouseControlBtn = document.getElementById('mouseControl');
+            const touchControlBtn = document.getElementById('touchControl');
             
             let audioContext;
             let oscillator;
+            let gainNode;
             let isPlaying = false;
+            let isMouseDown = false;
+            let controlMode = 'mouse'; // 'mouse' or 'touch'
             
             // Valores iniciales
-            let proximity = 0;
+            let frequency = 0;
             let volume = 0.5;
+            let proximity = 0;
             
             // Inicializar audio
             function initAudio() {
                 audioContext = new (window.AudioContext || window.webkitAudioContext)();
                 oscillator = audioContext.createOscillator();
-                oscillator.type = 'sine';
+                oscillator.type = waveType.value;
                 oscillator.frequency.setValueAtTime(0, audioContext.currentTime);
                 
-                const gainNode = audioContext.createGain();
-                gainNode.gain.setValueAtTime(volume, audioContext.currentTime);
+                gainNode = audioContext.createGain();
+                gainNode.gain.setValueAtTime(0, audioContext.currentTime);
                 
                 oscillator.connect(gainNode);
                 gainNode.connect(audioContext.destination);
@@ -262,129 +328,129 @@
                 return gainNode;
             }
             
-            let gainNode;
-            
-            // Actualizar el sonido basado en la proximidad
+            // Actualizar el sonido basado en la proximidad simulada
             function updateSound(proximityValue) {
                 if (!isPlaying) return;
                 
                 // Convertir el valor de proximidad a frecuencia (200-1000 Hz)
-                // Los valores típicos de proximidad son 0 (lejos) a 1 (cerca) o distancia en cm
-                let pitch = 200 + proximityValue * 800;
-                oscillator.frequency.setValueAtTime(pitch, audioContext.currentTime);
+                frequency = 200 + proximityValue * 800;
+                oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
                 
                 // Actualizar el volumen desde el control deslizante
                 gainNode.gain.setValueAtTime(volume, audioContext.currentTime);
                 
                 // Actualizar la interfaz
-                proximityValueEl.textContent = Math.round(proximityValue * 100) + '%';
-                proximityLevel.style.width = (proximityValue * 100) + '%';
+                frequencyValue.textContent = Math.round(frequency) + ' Hz';
+                frequencyLevel.style.width = (proximityValue * 100) + '%';
                 
-                // Mover la mano en la visualización
-                handIcon.style.top = (70 + (1 - proximityValue) * 80) + 'px';
+                // Mover el handle en la visualización
+                const areaHeight = proximityArea.offsetHeight;
+                const handlePos = areaHeight - (proximityValue * areaHeight);
+                proximityHandle.style.bottom = `${handlePos - 25}px`;
             }
             
-            // Solicitar acceso a los sensores
-            function requestSensorPermission() {
-                if ('DeviceProximityEvent' in window || 'ondeviceproximity' in window) {
-                    // El navegador soporta el sensor de proximidad
-                    startSensors();
-                } else if ('ProximitySensor' in window) {
-                    // API genérica de sensores
-                    try {
-                        const sensor = new ProximitySensor();
-                        sensor.start();
-                        sensor.onreading = () => {
-                            updateSound(sensor.value || sensor.distance);
-                        };
-                        sensor.onerror = (event) => {
-                            warningMessage.textContent = 'Error al acceder al sensor de proximidad: ' + event.error.message;
-                        };
-                        startAudio();
-                    } catch (error) {
-                        warningMessage.textContent = 'Error al inicializar el sensor: ' + error.message;
-                    }
-                } else {
-                    warningMessage.textContent = 'Tu navegador no soporta la API de Sensor de Proximidad.';
-                }
-            }
-            
-            // Iniciar el monitoreo de sensores
-            function startSensors() {
-                gainNode = initAudio();
-                
-                // Evento para dispositivos que soportan DeviceProximityEvent
-                if ('ondeviceproximity' in window) {
-                    window.addEventListener('deviceproximity', function(event) {
-                        // El valor puede ser distance (cm) o value (0-1)
-                        let proximityValue = event.value;
-                        if (event.distance !== undefined) {
-                            // Convertir distancia a un valor 0-1 (máximo 10 cm)
-                            proximityValue = Math.max(0, 1 - (event.distance / 10));
-                        }
-                        updateSound(proximityValue);
-                    });
-                } 
-                // Para navegadores que usan la Generic Sensor API
-                else if ('ProximitySensor' in window) {
-                    try {
-                        const sensor = new ProximitySensor();
-                        sensor.start();
-                        sensor.onreading = () => {
-                            let proximityValue = sensor.value;
-                            if (sensor.distance !== null) {
-                                proximityValue = Math.max(0, 1 - (sensor.distance / 10));
-                            }
-                            updateSound(proximityValue);
-                        };
-                    } catch (error) {
-                        warningMessage.textContent = 'Error al acceder al sensor: ' + error.message;
-                    }
-                }
-                
-                // Control de volumen
-                volumeControl.addEventListener('input', function() {
-                    volume = this.value / 100;
-                    volumeValue.textContent = this.value + '%';
-                    if (gainNode) {
-                        gainNode.gain.setValueAtTime(volume, audioContext.currentTime);
-                    }
+            // Configurar eventos del ratón
+            function setupMouseControl() {
+                proximityArea.addEventListener('mousedown', function(e) {
+                    isMouseDown = true;
+                    updateProximityFromMouse(e);
                 });
                 
-                startBtn.textContent = 'Funcionando';
-                startBtn.disabled = true;
-                warningMessage.textContent = '¡Funcionando! Acerca tu mano al teléfono para generar sonidos.';
-                warningMessage.style.color = '#03dac6';
-            }
-            
-            // Iniciar solo el audio (para navegadores sin sensor de proximidad)
-            function startAudio() {
-                gainNode = initAudio();
-                
-                // Simular proximidad con el ratón para dispositivos sin sensor
                 document.addEventListener('mousemove', function(e) {
-                    const height = window.innerHeight;
-                    const proximityValue = 1 - (e.clientY / height);
-                    updateSound(proximityValue);
-                });
-                
-                // Control de volumen
-                volumeControl.addEventListener('input', function() {
-                    volume = this.value / 100;
-                    volumeValue.textContent = this.value + '%';
-                    if (gainNode) {
-                        gainNode.gain.setValueAtTime(volume, audioContext.currentTime);
+                    if (isMouseDown) {
+                        updateProximityFromMouse(e);
                     }
                 });
                 
-                startBtn.textContent = 'Funcionando (Simulación)';
-                startBtn.disabled = true;
-                warningMessage.textContent = 'Modo simulación: Mueve el ratón hacia arriba y abajo para controlar el tono.';
-                warningMessage.style.color = '#03dac6';
+                document.addEventListener('mouseup', function() {
+                    isMouseDown = false;
+                });
             }
             
-            // Evento para el botón de inicio
-            startBtn.addEventListener('click', requestSensorPermission);
+            // Configurar eventos táctiles
+            function setupTouchControl() {
+                proximityArea.addEventListener('touchstart', function(e) {
+                    e.preventDefault();
+                    updateProximityFromTouch(e);
+                }, { passive: false });
+                
+                proximityArea.addEventListener('touchmove', function(e) {
+                    e.preventDefault();
+                    updateProximityFromTouch(e);
+                }, { passive: false });
+            }
+            
+            // Actualizar proximidad desde evento de ratón
+            function updateProximityFromMouse(e) {
+                const rect = proximityArea.getBoundingClientRect();
+                const y = rect.bottom - e.clientY;
+                proximity = Math.max(0, Math.min(1, y / rect.height));
+                updateSound(proximity);
+            }
+            
+            // Actualizar proximidad desde evento táctil
+            function updateProximityFromTouch(e) {
+                if (e.touches.length > 0) {
+                    const rect = proximityArea.getBoundingClientRect();
+                    const y = rect.bottom - e.touches[0].clientY;
+                    proximity = Math.max(0, Math.min(1, y / rect.height));
+                    updateSound(proximity);
+                }
+            }
+            
+            // Cambiar modo de control
+            mouseControlBtn.addEventListener('click', function() {
+                controlMode = 'mouse';
+                mouseControlBtn.classList.add('active');
+                touchControlBtn.classList.remove('active');
+                warningMessage.textContent = "Modo ratón activado: Haz clic y arrastra en el área azul";
+            });
+            
+            touchControlBtn.addEventListener('click', function() {
+                controlMode = 'touch';
+                touchControlBtn.classList.add('active');
+                mouseControlBtn.classList.remove('active');
+                warningMessage.textContent = "Modo táctil activado: Toca y desliza en el área azul";
+            });
+            
+            // Cambiar tipo de onda
+            waveType.addEventListener('change', function() {
+                if (oscillator) {
+                    oscillator.type = this.value;
+                }
+            });
+            
+            // Control de volumen
+            volumeControl.addEventListener('input', function() {
+                volume = this.value / 100;
+                volumeValue.textContent = this.value + '%';
+                if (gainNode) {
+                    gainNode.gain.setValueAtTime(volume, audioContext.currentTime);
+                }
+            });
+            
+            // Iniciar theremin
+            startBtn.addEventListener('click', function() {
+                if (!isPlaying) {
+                    initAudio();
+                    setupMouseControl();
+                    setupTouchControl();
+                    
+                    startBtn.textContent = 'Detener';
+                    warningMessage.textContent = '¡Theremin activado! Usa el área azul para controlar el tono.';
+                    warningMessage.style.color = '#03dac6';
+                    
+                    // Iniciar con un valor por defecto
+                    updateSound(0.5);
+                } else {
+                    // Detener theremin
+                    gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+                    startBtn.textContent = 'Comenzar';
+                    warningMessage.textContent = 'Theremin detenido. Haz clic en Comenzar para reactivar.';
+                    warningMessage.style.color = '#cf6679';
+                    isPlaying = false;
+                }
+            });
         });
     </script>
 </body>
