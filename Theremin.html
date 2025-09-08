@@ -3,14 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Theremin por Movimiento</title>
+    <title>Theremin por Proximidad</title>
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
-            color: white;
-            text-align: center;
+        * {
+            box-sizing: border-box;
             margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #121212;
+            color: #e0e0e0;
+            line-height: 1.6;
             padding: 20px;
             min-height: 100vh;
             display: flex;
@@ -20,23 +25,27 @@
         }
         
         .container {
-            background: rgba(0, 0, 0, 0.7);
+            background-color: #1e1e1e;
             padding: 30px;
             border-radius: 20px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
             max-width: 500px;
             width: 90%;
+            border: 1px solid #333;
         }
         
         h1 {
+            color: #bb86fc;
             margin-top: 0;
-            font-size: 2.5rem;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            font-size: 24px;
+            text-align: center;
+            margin-bottom: 15px;
         }
         
         p {
-            font-size: 1.2rem;
+            font-size: 16px;
             line-height: 1.6;
+            margin-bottom: 15px;
         }
         
         .sensor-data {
@@ -47,45 +56,50 @@
         }
         
         .data-box {
-            background: rgba(255, 255, 255, 0.1);
+            background-color: #252525;
             padding: 15px;
             border-radius: 10px;
+            border: 1px solid #333;
         }
         
         .data-label {
-            font-size: 1rem;
+            font-size: 14px;
             margin-bottom: 5px;
+            color: #bb86fc;
         }
         
         .data-value {
-            font-size: 1.8rem;
+            font-size: 20px;
             font-weight: bold;
         }
         
         .instructions {
-            background: rgba(255, 255, 255, 0.1);
+            background-color: #252525;
             padding: 20px;
             border-radius: 10px;
             margin: 20px 0;
             text-align: left;
+            border: 1px solid #333;
         }
         
         button {
-            background: #fdbb2d;
-            color: #1a2a6c;
+            background-color: #bb86fc;
+            color: #121212;
             border: none;
             padding: 15px 30px;
-            font-size: 1.2rem;
+            font-size: 16px;
             border-radius: 50px;
             cursor: pointer;
             margin: 20px 0;
             font-weight: bold;
             transition: all 0.3s;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            display: block;
+            width: 100%;
         }
         
         button:hover {
-            background: #ffcc44;
+            background-color: #a970f7;
             transform: translateY(-2px);
             box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
         }
@@ -95,95 +109,139 @@
         }
         
         .warning {
-            color: #ffcc00;
+            color: #cf6679;
             font-weight: bold;
             margin-top: 20px;
+            text-align: center;
+            font-size: 14px;
         }
         
         .frequency-bar {
             width: 100%;
-            height: 30px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 15px;
+            height: 20px;
+            background-color: #252525;
+            border-radius: 10px;
             overflow: hidden;
             margin: 15px 0;
+            border: 1px solid #333;
         }
         
         .frequency-level {
             height: 100%;
             width: 50%;
-            background: linear-gradient(90deg, #1a2a6c, #fdbb2d);
+            background: linear-gradient(90deg, #1a2a6c, #bb86fc);
             transition: width 0.3s;
         }
         
         .volume-bar {
             width: 100%;
-            height: 30px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 15px;
+            height: 20px;
+            background-color: #252525;
+            border-radius: 10px;
             overflow: hidden;
             margin: 15px 0;
+            border: 1px solid #333;
         }
         
         .volume-level {
             height: 100%;
             width: 50%;
-            background: linear-gradient(90deg, #1a2a6c, #b21f1f);
+            background: linear-gradient(90deg, #1a2a6c, #cf6679);
             transition: width 0.3s;
+        }
+        
+        .back-button {
+            background-color: #333;
+            color: #e0e0e0;
+            padding: 10px 20px;
+            font-size: 14px;
+            margin-top: 20px;
+            width: auto;
+        }
+        
+        .back-button:hover {
+            background-color: #444;
+        }
+        
+        .proximity-demo {
+            text-align: center;
+            margin: 20px 0;
+            position: relative;
+            height: 150px;
+        }
+        
+        .phone-icon {
+            font-size: 60px;
+            margin-bottom: 15px;
+        }
+        
+        .hand-icon {
+            font-size: 40px;
+            position: absolute;
+            top: 70px;
+            left: 50%;
+            transform: translateX(-50%);
+            transition: top 0.5s ease;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Theremin por Movimiento</h1>
+        <h1>Theremin por Proximidad</h1>
         
         <div class="instructions">
-            <p>🔹 Inclina tu teléfono para cambiar el tono (eje X)</p>
-            <p>🔹 Mueve hacia arriba/abajo para cambiar el volumen (eje Z)</p>
+            <p>🔹 Acerca y aleja tu mano del teléfono para cambiar el tono</p>
+            <p>🔹 El volumen se controla con el botón deslizante debajo</p>
             <p>🔹 Haz clic en "Comenzar" y acepta los permisos del sensor</p>
+        </div>
+        
+        <div class="proximity-demo">
+            <div class="phone-icon">📱</div>
+            <div class="hand-icon" id="handIcon">👋</div>
         </div>
         
         <button id="startBtn">Comenzar</button>
         
         <div class="sensor-data">
             <div class="data-box">
-                <div class="data-label">Frecuencia</div>
-                <div id="pitchValue" class="data-value">0 Hz</div>
+                <div class="data-label">Proximidad</div>
+                <div id="proximityValue" class="data-value">0%</div>
                 <div class="frequency-bar">
-                    <div id="frequencyLevel" class="frequency-level"></div>
+                    <div id="proximityLevel" class="frequency-level"></div>
                 </div>
             </div>
             
             <div class="data-box">
                 <div class="data-label">Volumen</div>
-                <div id="volumeValue" class="data-value">0%</div>
-                <div class="volume-bar">
-                    <div id="volumeLevel" class="volume-level"></div>
-                </div>
+                <div id="volumeValue" class="data-value">50%</div>
+                <input type="range" id="volumeControl" min="0" max="100" value="50" class="volume-bar" style="width: 100%; height: 20px;">
             </div>
         </div>
         
         <div class="warning" id="warningMessage">
-            Nota: Esta aplicación requiere sensores de movimiento y puede no funcionar en todos los dispositivos.
+            Nota: Esta aplicación requiere un sensor de proximidad y puede no funcionar en todos los dispositivos.
         </div>
+        
+        <button class="back-button" onclick="window.location.href='index.html'">Volver a Utilidades</button>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const startBtn = document.getElementById('startBtn');
-            const pitchValue = document.getElementById('pitchValue');
+            const proximityValue = document.getElementById('proximityValue');
             const volumeValue = document.getElementById('volumeValue');
-            const frequencyLevel = document.getElementById('frequencyLevel');
-            const volumeLevel = document.getElementById('volumeLevel');
+            const proximityLevel = document.getElementById('proximityLevel');
+            const volumeControl = document.getElementById('volumeControl');
             const warningMessage = document.getElementById('warningMessage');
+            const handIcon = document.getElementById('handIcon');
             
             let audioContext;
             let oscillator;
             let isPlaying = false;
             
             // Valores iniciales
-            let pitch = 0;
-            let volume = 0;
+            let proximity = 0;
+            let volume = 0.5;
             
             // Inicializar audio
             function initAudio() {
@@ -193,7 +251,7 @@
                 oscillator.frequency.setValueAtTime(0, audioContext.currentTime);
                 
                 const gainNode = audioContext.createGain();
-                gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+                gainNode.gain.setValueAtTime(volume, audioContext.currentTime);
                 
                 oscillator.connect(gainNode);
                 gainNode.connect(audioContext.destination);
@@ -206,42 +264,48 @@
             
             let gainNode;
             
-            // Actualizar el sonido basado en el movimiento
-            function updateSound(alpha, gamma, beta) {
+            // Actualizar el sonido basado en la proximidad
+            function updateSound(proximityValue) {
                 if (!isPlaying) return;
                 
-                // Usar gamma (eje X) para la frecuencia (200-1000 Hz)
-                pitch = 200 + (gamma + 90) * 800 / 180;
+                // Convertir el valor de proximidad a frecuencia (200-1000 Hz)
+                // Los valores típicos de proximidad son 0 (lejos) a 1 (cerca) o distancia en cm
+                let pitch = 200 + proximityValue * 800;
                 oscillator.frequency.setValueAtTime(pitch, audioContext.currentTime);
                 
-                // Usar beta (eje Z) para el volumen (0-100%)
-                volume = Math.abs(beta) / 180;
+                // Actualizar el volumen desde el control deslizante
                 gainNode.gain.setValueAtTime(volume, audioContext.currentTime);
                 
                 // Actualizar la interfaz
-                pitchValue.textContent = Math.round(pitch) + ' Hz';
-                volumeValue.textContent = Math.round(volume * 100) + '%';
-                frequencyLevel.style.width = ((pitch - 200) / 800 * 100) + '%';
-                volumeLevel.style.width = (volume * 100) + '%';
+                proximityValueEl.textContent = Math.round(proximityValue * 100) + '%';
+                proximityLevel.style.width = (proximityValue * 100) + '%';
+                
+                // Mover la mano en la visualización
+                handIcon.style.top = (70 + (1 - proximityValue) * 80) + 'px';
             }
             
             // Solicitar acceso a los sensores
             function requestSensorPermission() {
-                if (typeof DeviceOrientationEvent !== 'undefined' && 
-                    typeof DeviceOrientationEvent.requestPermission === 'function') {
-                    // Dispositivos iOS
-                    DeviceOrientationEvent.requestPermission()
-                        .then(permissionState => {
-                            if (permissionState === 'granted') {
-                                startSensors();
-                            } else {
-                                warningMessage.textContent = 'Se necesitan permisos de sensor para usar esta aplicación.';
-                            }
-                        })
-                        .catch(console.error);
-                } else {
-                    // Navegadores que no requieren solicitud de permisos
+                if ('DeviceProximityEvent' in window || 'ondeviceproximity' in window) {
+                    // El navegador soporta el sensor de proximidad
                     startSensors();
+                } else if ('ProximitySensor' in window) {
+                    // API genérica de sensores
+                    try {
+                        const sensor = new ProximitySensor();
+                        sensor.start();
+                        sensor.onreading = () => {
+                            updateSound(sensor.value || sensor.distance);
+                        };
+                        sensor.onerror = (event) => {
+                            warningMessage.textContent = 'Error al acceder al sensor de proximidad: ' + event.error.message;
+                        };
+                        startAudio();
+                    } catch (error) {
+                        warningMessage.textContent = 'Error al inicializar el sensor: ' + error.message;
+                    }
+                } else {
+                    warningMessage.textContent = 'Tu navegador no soporta la API de Sensor de Proximidad.';
                 }
             }
             
@@ -249,16 +313,74 @@
             function startSensors() {
                 gainNode = initAudio();
                 
-                window.addEventListener('deviceorientation', function(event) {
-                    // alpha: orientación respecto a la brújula (0-360)
-                    // beta: inclinación frontal/trasera (-180 to 180)
-                    // gamma: inclinación lateral (-90 to 90)
-                    updateSound(event.alpha, event.gamma, event.beta);
+                // Evento para dispositivos que soportan DeviceProximityEvent
+                if ('ondeviceproximity' in window) {
+                    window.addEventListener('deviceproximity', function(event) {
+                        // El valor puede ser distance (cm) o value (0-1)
+                        let proximityValue = event.value;
+                        if (event.distance !== undefined) {
+                            // Convertir distancia a un valor 0-1 (máximo 10 cm)
+                            proximityValue = Math.max(0, 1 - (event.distance / 10));
+                        }
+                        updateSound(proximityValue);
+                    });
+                } 
+                // Para navegadores que usan la Generic Sensor API
+                else if ('ProximitySensor' in window) {
+                    try {
+                        const sensor = new ProximitySensor();
+                        sensor.start();
+                        sensor.onreading = () => {
+                            let proximityValue = sensor.value;
+                            if (sensor.distance !== null) {
+                                proximityValue = Math.max(0, 1 - (sensor.distance / 10));
+                            }
+                            updateSound(proximityValue);
+                        };
+                    } catch (error) {
+                        warningMessage.textContent = 'Error al acceder al sensor: ' + error.message;
+                    }
+                }
+                
+                // Control de volumen
+                volumeControl.addEventListener('input', function() {
+                    volume = this.value / 100;
+                    volumeValue.textContent = this.value + '%';
+                    if (gainNode) {
+                        gainNode.gain.setValueAtTime(volume, audioContext.currentTime);
+                    }
                 });
                 
                 startBtn.textContent = 'Funcionando';
                 startBtn.disabled = true;
-                warningMessage.textContent = '¡Funcionando! Mueve tu teléfono para generar sonidos.';
+                warningMessage.textContent = '¡Funcionando! Acerca tu mano al teléfono para generar sonidos.';
+                warningMessage.style.color = '#03dac6';
+            }
+            
+            // Iniciar solo el audio (para navegadores sin sensor de proximidad)
+            function startAudio() {
+                gainNode = initAudio();
+                
+                // Simular proximidad con el ratón para dispositivos sin sensor
+                document.addEventListener('mousemove', function(e) {
+                    const height = window.innerHeight;
+                    const proximityValue = 1 - (e.clientY / height);
+                    updateSound(proximityValue);
+                });
+                
+                // Control de volumen
+                volumeControl.addEventListener('input', function() {
+                    volume = this.value / 100;
+                    volumeValue.textContent = this.value + '%';
+                    if (gainNode) {
+                        gainNode.gain.setValueAtTime(volume, audioContext.currentTime);
+                    }
+                });
+                
+                startBtn.textContent = 'Funcionando (Simulación)';
+                startBtn.disabled = true;
+                warningMessage.textContent = 'Modo simulación: Mueve el ratón hacia arriba y abajo para controlar el tono.';
+                warningMessage.style.color = '#03dac6';
             }
             
             // Evento para el botón de inicio
