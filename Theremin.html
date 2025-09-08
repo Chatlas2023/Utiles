@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Theremin por Movimiento</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            color: white;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .container {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            max-width: 500px;
+            width: 90%;
+        }
+        
+        h1 {
+            margin-top: 0;
+            font-size: 2.5rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        
+        p {
+            font-size: 1.2rem;
+            line-height: 1.6;
+        }
+        
+        .sensor-data {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 25px 0;
+        }
+        
+        .data-box {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+        }
+        
+        .data-label {
+            font-size: 1rem;
+            margin-bottom: 5px;
+        }
+        
+        .data-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+        }
+        
+        .instructions {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: left;
+        }
+        
+        button {
+            background: #fdbb2d;
+            color: #1a2a6c;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            border-radius: 50px;
+            cursor: pointer;
+            margin: 20px 0;
+            font-weight: bold;
+            transition: all 0.3s;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        button:hover {
+            background: #ffcc44;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .warning {
+            color: #ffcc00;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+        
+        .frequency-bar {
+            width: 100%;
+            height: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 15px 0;
+        }
+        
+        .frequency-level {
+            height: 100%;
+            width: 50%;
+            background: linear-gradient(90deg, #1a2a6c, #fdbb2d);
+            transition: width 0.3s;
+        }
+        
+        .volume-bar {
+            width: 100%;
+            height: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 15px 0;
+        }
+        
+        .volume-level {
+            height: 100%;
+            width: 50%;
+            background: linear-gradient(90deg, #1a2a6c, #b21f1f);
+            transition: width 0.3s;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Theremin por Movimiento</h1>
+        
+        <div class="instructions">
+            <p>🔹 Inclina tu teléfono para cambiar el tono (eje X)</p>
+            <p>🔹 Mueve hacia arriba/abajo para cambiar el volumen (eje Z)</p>
+            <p>🔹 Haz clic en "Comenzar" y acepta los permisos del sensor</p>
+        </div>
+        
+        <button id="startBtn">Comenzar</button>
+        
+        <div class="sensor-data">
+            <div class="data-box">
+                <div class="data-label">Frecuencia</div>
+                <div id="pitchValue" class="data-value">0 Hz</div>
+                <div class="frequency-bar">
+                    <div id="frequencyLevel" class="frequency-level"></div>
+                </div>
+            </div>
+            
+            <div class="data-box">
+                <div class="data-label">Volumen</div>
+                <div id="volumeValue" class="data-value">0%</div>
+                <div class="volume-bar">
+                    <div id="volumeLevel" class="volume-level"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="warning" id="warningMessage">
+            Nota: Esta aplicación requiere sensores de movimiento y puede no funcionar en todos los dispositivos.
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const startBtn = document.getElementById('startBtn');
+            const pitchValue = document.getElementById('pitchValue');
+            const volumeValue = document.getElementById('volumeValue');
+            const frequencyLevel = document.getElementById('frequencyLevel');
+            const volumeLevel = document.getElementById('volumeLevel');
+            const warningMessage = document.getElementById('warningMessage');
+            
+            let audioContext;
+            let oscillator;
+            let isPlaying = false;
+            
+            // Valores iniciales
+            let pitch = 0;
+            let volume = 0;
+            
+            // Inicializar audio
+            function initAudio() {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                oscillator = audioContext.createOscillator();
+                oscillator.type = 'sine';
+                oscillator.frequency.setValueAtTime(0, audioContext.currentTime);
+                
+                const gainNode = audioContext.createGain();
+                gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.start();
+                isPlaying = true;
+                
+                return gainNode;
+            }
+            
+            let gainNode;
+            
+            // Actualizar el sonido basado en el movimiento
+            function updateSound(alpha, gamma, beta) {
+                if (!isPlaying) return;
+                
+                // Usar gamma (eje X) para la frecuencia (200-1000 Hz)
+                pitch = 200 + (gamma + 90) * 800 / 180;
+                oscillator.frequency.setValueAtTime(pitch, audioContext.currentTime);
+                
+                // Usar beta (eje Z) para el volumen (0-100%)
+                volume = Math.abs(beta) / 180;
+                gainNode.gain.setValueAtTime(volume, audioContext.currentTime);
+                
+                // Actualizar la interfaz
+                pitchValue.textContent = Math.round(pitch) + ' Hz';
+                volumeValue.textContent = Math.round(volume * 100) + '%';
+                frequencyLevel.style.width = ((pitch - 200) / 800 * 100) + '%';
+                volumeLevel.style.width = (volume * 100) + '%';
+            }
+            
+            // Solicitar acceso a los sensores
+            function requestSensorPermission() {
+                if (typeof DeviceOrientationEvent !== 'undefined' && 
+                    typeof DeviceOrientationEvent.requestPermission === 'function') {
+                    // Dispositivos iOS
+                    DeviceOrientationEvent.requestPermission()
+                        .then(permissionState => {
+                            if (permissionState === 'granted') {
+                                startSensors();
+                            } else {
+                                warningMessage.textContent = 'Se necesitan permisos de sensor para usar esta aplicación.';
+                            }
+                        })
+                        .catch(console.error);
+                } else {
+                    // Navegadores que no requieren solicitud de permisos
+                    startSensors();
+                }
+            }
+            
+            // Iniciar el monitoreo de sensores
+            function startSensors() {
+                gainNode = initAudio();
+                
+                window.addEventListener('deviceorientation', function(event) {
+                    // alpha: orientación respecto a la brújula (0-360)
+                    // beta: inclinación frontal/trasera (-180 to 180)
+                    // gamma: inclinación lateral (-90 to 90)
+                    updateSound(event.alpha, event.gamma, event.beta);
+                });
+                
+                startBtn.textContent = 'Funcionando';
+                startBtn.disabled = true;
+                warningMessage.textContent = '¡Funcionando! Mueve tu teléfono para generar sonidos.';
+            }
+            
+            // Evento para el botón de inicio
+            startBtn.addEventListener('click', requestSensorPermission);
+        });
+    </script>
+</body>
+</html>
