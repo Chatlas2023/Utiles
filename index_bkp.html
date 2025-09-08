@@ -1,14 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-N4J8MM9R5N"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-N4J8MM9R5N');
-    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Utilidades para el Celular</title>
@@ -86,6 +78,21 @@
             color: white;
         }
         
+        .double-flag {
+            display: flex;
+            width: 100%;
+            height: 100%;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .double-flag span {
+            flex: 1;
+            text-align: center;
+            font-size: 30px;
+            line-height: 1;
+        }
+        
         .game-name {
             font-size: 12px;
             color: #bb86fc;
@@ -124,6 +131,10 @@
                 font-size: 22px;
             }
             
+            .double-flag span {
+                font-size: 22px;
+            }
+            
             .game-name {
                 font-size: 10px;
                 height: 24px;
@@ -141,7 +152,7 @@
         <div class="games-grid">
             <!-- Utilidad 1: Contador -->
             <a href="Contador.html" class="game-icon">
-                <div class="game-symbol" style="background-color: #1E1E1E;font-size: 48px;">
+                <div class="game-symbol" style="background-color: #1E1E1E;">
                     🔢
                 </div>
                 <div class="game-name">Contador</div>
@@ -149,18 +160,21 @@
                      
             <!-- Utilidad 2: Mapa -->
             <a href="Mapa.html" class="game-icon">
-                <div class="game-symbol" style="background-color: #1E1E1E;font-size: 48px;">
+                <div class="game-symbol" style="background-color: #1E1E1E;">
                     🗺️
                 </div>
                 <div class="game-name">Mapa Ruteador</div>
             </a>
             
-            <!-- Utilidad 3: Diccionario -->
-            <a href="Dic_esp_arg.html" class="game-icon">
-                <div class="game-symbol" style="background-color: #1E1E1E;font-size: 48px;">
-                    📚
+            <!-- Utilidad 3: Diccionario Argentino-Español (Modificada) -->
+            <a href="Dic_arg_esp.html" class="game-icon">
+                <div class="game-symbol" style="background-color: #1E1E1E;">
+                    <div class="double-flag">
+                        <span>🇪🇸</span>
+                        <span>🇦🇷</span>
+                    </div>
                 </div>
-                <div class="game-name">Diccionario Español Argentino</div>
+                <div class="game-name">Diccionario Esp-Arg</div>
             </a>
         </div>
         
