@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Theremin por Proximidad Simulado</title>
+    <title>Theremin Táctil</title>
     <style>
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            touch-action: none;
         }
         
         body {
@@ -163,10 +164,10 @@
             background-color: #444;
         }
         
-        .proximity-area {
+        .control-area {
             width: 100%;
-            height: 200px;
-            background: linear-gradient(to top, #1a2a6c, #bb86fc);
+            height: 300px;
+            background: linear-gradient(to right, #1a2a6c, #bb86fc);
             border-radius: 10px;
             margin: 20px 0;
             position: relative;
@@ -175,49 +176,49 @@
             touch-action: none;
         }
         
-        .proximity-handle {
-            width: 50px;
-            height: 50px;
+        .control-grid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-rows: 1fr 1fr 1fr;
+            pointer-events: none;
+        }
+        
+        .grid-line {
+            border-right: 1px dashed rgba(255, 255, 255, 0.2);
+            border-bottom: 1px dashed rgba(255, 255, 255, 0.2);
+        }
+        
+        .control-indicator {
+            width: 40px;
+            height: 40px;
             background-color: #03dac6;
             border-radius: 50%;
             position: absolute;
-            bottom: -25px;
+            top: 50%;
             left: 50%;
-            transform: translateX(-50%);
-            cursor: move;
-            cursor: grab;
+            transform: translate(-50%, -50%);
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 20px;
             box-shadow: 0 0 15px rgba(3, 218, 198, 0.5);
             user-select: none;
+            pointer-events: none;
+            transition: transform 0.1s;
         }
         
-        .proximity-handle:active {
-            cursor: grabbing;
-        }
-        
-        .control-options {
-            display: flex;
-            gap: 10px;
-            margin: 15px 0;
-        }
-        
-        .control-btn {
-            flex: 1;
-            padding: 10px;
-            background-color: #333;
-            border: none;
-            border-radius: 8px;
-            color: #e0e0e0;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-        
-        .control-btn.active {
-            background-color: #bb86fc;
-            color: #121212;
+        .axis-labels {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 12px;
+            text-align: right;
         }
         
         .wave-type {
@@ -233,22 +234,27 @@
 </head>
 <body>
     <div class="container">
-        <h1>Theremin por Proximidad Simulado</h1>
+        <h1>Theremin Táctil</h1>
         
         <div class="instructions">
-            <p>🔹 Usa el área interactiva para controlar el tono con tu mano (ratón o touch)</p>
-            <p>🔹 El volumen se controla con el botón deslizante debajo</p>
-            <p>🔹 Selecciona el tipo de onda para cambiar el sonido</p>
-            <p>🔹 Haz clic en "Comenzar" para activar el theremin</p>
+            <p>🔹 Deslízate horizontalmente para controlar la frecuencia</p>
+            <p>🔹 Deslízate verticalmente para controlar el volumen</p>
+            <p>🔹 Izquierda: frecuencia baja | Derecha: frecuencia alta</p>
+            <p>🔹 Arriba: volumen alto | Abajo: volumen bajo</p>
         </div>
         
-        <div class="control-options">
-            <button class="control-btn active" id="mouseControl">Control con Ratón</button>
-            <button class="control-btn" id="touchControl">Control Táctil</button>
-        </div>
-        
-        <div class="proximity-area" id="proximityArea">
-            <div class="proximity-handle" id="proximityHandle">👆</div>
+        <div class="control-area" id="controlArea">
+            <div class="control-grid">
+                <div class="grid-line"></div><div class="grid-line"></div><div class="grid-line"></div>
+                <div class="grid-line"></div><div class="grid-line"></div><div class="grid-line"></div>
+                <div class="grid-line"></div><div class="grid-line"></div><div class="grid-line"></div>
+            </div>
+            <div class="control-indicator" id="controlIndicator">👆</div>
+            <div class="axis-labels">
+                <div>▲ Volumen</div>
+                <div style="margin-top: 130px;">▼</div>
+                <div style="text-align: left; margin-top: 130px;">◀ Frecuencia ▶</div>
+            </div>
         </div>
         
         <select class="wave-type" id="waveType">
@@ -263,7 +269,7 @@
         <div class="sensor-data">
             <div class="data-box">
                 <div class="data-label">Frecuencia</div>
-                <div id="frequencyValue" class="data-value">0 Hz</div>
+                <div id="frequencyValue" class="data-value">440 Hz</div>
                 <div class="frequency-bar">
                     <div id="frequencyLevel" class="frequency-level"></div>
                 </div>
@@ -272,12 +278,14 @@
             <div class="data-box">
                 <div class="data-label">Volumen</div>
                 <div id="volumeValue" class="data-value">50%</div>
-                <input type="range" id="volumeControl" min="0" max="100" value="50" class="volume-bar" style="width: 100%; height: 20px;">
+                <div class="volume-bar">
+                    <div id="volumeLevel" class="volume-level"></div>
+                </div>
             </div>
         </div>
         
         <div class="warning" id="warningMessage">
-            Nota: Esta versión simula el sensor de proximidad mediante entrada táctil/ratón.
+            Desliza tu dedo en el área azul para controlar el theremin
         </div>
         
         <button class="back-button" onclick="window.location.href='index.html'">Volver a Utilidades</button>
@@ -289,35 +297,32 @@
             const frequencyValue = document.getElementById('frequencyValue');
             const volumeValue = document.getElementById('volumeValue');
             const frequencyLevel = document.getElementById('frequencyLevel');
-            const volumeControl = document.getElementById('volumeControl');
+            const volumeLevel = document.getElementById('volumeLevel');
             const warningMessage = document.getElementById('warningMessage');
-            const proximityArea = document.getElementById('proximityArea');
-            const proximityHandle = document.getElementById('proximityHandle');
+            const controlArea = document.getElementById('controlArea');
+            const controlIndicator = document.getElementById('controlIndicator');
             const waveType = document.getElementById('waveType');
-            const mouseControlBtn = document.getElementById('mouseControl');
-            const touchControlBtn = document.getElementById('touchControl');
             
             let audioContext;
             let oscillator;
             let gainNode;
             let isPlaying = false;
-            let isMouseDown = false;
-            let controlMode = 'mouse'; // 'mouse' or 'touch'
             
             // Valores iniciales
-            let frequency = 0;
-            let volume = 0.5;
-            let proximity = 0;
+            let frequency = 440; // Hz (LA estándar)
+            let volume = 0.5; // 50%
+            let touchX = 0.5; // Posición horizontal normalizada (0-1)
+            let touchY = 0.5; // Posición vertical normalizada (0-1)
             
             // Inicializar audio
             function initAudio() {
                 audioContext = new (window.AudioContext || window.webkitAudioContext)();
                 oscillator = audioContext.createOscillator();
                 oscillator.type = waveType.value;
-                oscillator.frequency.setValueAtTime(0, audioContext.currentTime);
+                oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
                 
                 gainNode = audioContext.createGain();
-                gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+                gainNode.gain.setValueAtTime(volume, audioContext.currentTime);
                 
                 oscillator.connect(gainNode);
                 gainNode.connect(audioContext.destination);
@@ -328,90 +333,52 @@
                 return gainNode;
             }
             
-            // Actualizar el sonido basado en la proximidad simulada
-            function updateSound(proximityValue) {
+            // Actualizar el sonido basado en la posición táctil
+            function updateSound(x, y) {
                 if (!isPlaying) return;
                 
-                // Convertir el valor de proximidad a frecuencia (200-1000 Hz)
-                frequency = 200 + proximityValue * 800;
-                oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
+                // Calcular frecuencia (200-1000 Hz) basada en posición X
+                frequency = 200 + x * 800;
                 
-                // Actualizar el volumen desde el control deslizante
+                // Calcular volumen (0-100%) basado en posición Y (invertido: arriba = más volumen)
+                volume = 1 - y;
+                
+                // Aplicar cambios
+                oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
                 gainNode.gain.setValueAtTime(volume, audioContext.currentTime);
                 
                 // Actualizar la interfaz
                 frequencyValue.textContent = Math.round(frequency) + ' Hz';
-                frequencyLevel.style.width = (proximityValue * 100) + '%';
+                volumeValue.textContent = Math.round(volume * 100) + '%';
                 
-                // Mover el handle en la visualización
-                const areaHeight = proximityArea.offsetHeight;
-                const handlePos = areaHeight - (proximityValue * areaHeight);
-                proximityHandle.style.bottom = `${handlePos - 25}px`;
-            }
-            
-            // Configurar eventos del ratón
-            function setupMouseControl() {
-                proximityArea.addEventListener('mousedown', function(e) {
-                    isMouseDown = true;
-                    updateProximityFromMouse(e);
-                });
+                frequencyLevel.style.width = (x * 100) + '%';
+                volumeLevel.style.width = ((1 - y) * 100) + '%';
                 
-                document.addEventListener('mousemove', function(e) {
-                    if (isMouseDown) {
-                        updateProximityFromMouse(e);
-                    }
-                });
-                
-                document.addEventListener('mouseup', function() {
-                    isMouseDown = false;
-                });
+                // Mover el indicador en la visualización
+                const areaWidth = controlArea.offsetWidth;
+                const areaHeight = controlArea.offsetHeight;
+                controlIndicator.style.left = `${x * areaWidth}px`;
+                controlIndicator.style.top = `${y * areaHeight}px`;
             }
             
             // Configurar eventos táctiles
             function setupTouchControl() {
-                proximityArea.addEventListener('touchstart', function(e) {
-                    e.preventDefault();
-                    updateProximityFromTouch(e);
-                }, { passive: false });
+                controlArea.addEventListener('touchstart', handleTouch, { passive: false });
+                controlArea.addEventListener('touchmove', handleTouch, { passive: false });
                 
-                proximityArea.addEventListener('touchmove', function(e) {
+                function handleTouch(e) {
                     e.preventDefault();
-                    updateProximityFromTouch(e);
-                }, { passive: false });
-            }
-            
-            // Actualizar proximidad desde evento de ratón
-            function updateProximityFromMouse(e) {
-                const rect = proximityArea.getBoundingClientRect();
-                const y = rect.bottom - e.clientY;
-                proximity = Math.max(0, Math.min(1, y / rect.height));
-                updateSound(proximity);
-            }
-            
-            // Actualizar proximidad desde evento táctil
-            function updateProximityFromTouch(e) {
-                if (e.touches.length > 0) {
-                    const rect = proximityArea.getBoundingClientRect();
-                    const y = rect.bottom - e.touches[0].clientY;
-                    proximity = Math.max(0, Math.min(1, y / rect.height));
-                    updateSound(proximity);
+                    if (e.touches.length > 0) {
+                        const rect = controlArea.getBoundingClientRect();
+                        
+                        // Calcular posición normalizada (0-1) dentro del área
+                        touchX = Math.max(0, Math.min(1, (e.touches[0].clientX - rect.left) / rect.width));
+                        touchY = Math.max(0, Math.min(1, (e.touches[0].clientY - rect.top) / rect.height));
+                        
+                        updateSound(touchX, touchY);
+                    }
                 }
             }
-            
-            // Cambiar modo de control
-            mouseControlBtn.addEventListener('click', function() {
-                controlMode = 'mouse';
-                mouseControlBtn.classList.add('active');
-                touchControlBtn.classList.remove('active');
-                warningMessage.textContent = "Modo ratón activado: Haz clic y arrastra en el área azul";
-            });
-            
-            touchControlBtn.addEventListener('click', function() {
-                controlMode = 'touch';
-                touchControlBtn.classList.add('active');
-                mouseControlBtn.classList.remove('active');
-                warningMessage.textContent = "Modo táctil activado: Toca y desliza en el área azul";
-            });
             
             // Cambiar tipo de onda
             waveType.addEventListener('change', function() {
@@ -420,33 +387,23 @@
                 }
             });
             
-            // Control de volumen
-            volumeControl.addEventListener('input', function() {
-                volume = this.value / 100;
-                volumeValue.textContent = this.value + '%';
-                if (gainNode) {
-                    gainNode.gain.setValueAtTime(volume, audioContext.currentTime);
-                }
-            });
-            
             // Iniciar theremin
             startBtn.addEventListener('click', function() {
                 if (!isPlaying) {
                     initAudio();
-                    setupMouseControl();
                     setupTouchControl();
                     
                     startBtn.textContent = 'Detener';
-                    warningMessage.textContent = '¡Theremin activado! Usa el área azul para controlar el tono.';
+                    warningMessage.textContent = '¡Theremin activado! Desliza tu dedo para controlar el sonido.';
                     warningMessage.style.color = '#03dac6';
                     
-                    // Iniciar con un valor por defecto
-                    updateSound(0.5);
+                    // Iniciar con valores por defecto
+                    updateSound(touchX, touchY);
                 } else {
                     // Detener theremin
                     gainNode.gain.setValueAtTime(0, audioContext.currentTime);
                     startBtn.textContent = 'Comenzar';
-                    warningMessage.textContent = 'Theremin detenido. Haz clic en Comenzar para reactivar.';
+                    warningMessage.textContent = 'Theremin detenido. Toca Comenzar para reactivar.';
                     warningMessage.style.color = '#cf6679';
                     isPlaying = false;
                 }
