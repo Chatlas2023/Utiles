@@ -282,10 +282,10 @@
             <input type="text" id="search" placeholder="Buscar palabra o expresión...">
         </div>
         
-        <div class="sort-options">
-            <button class="sort-btn active" data-sort="arg">Ordenar por Argentino</button>
-            <button class="sort-btn" data-sort="esp">Ordenar por Español</button>
-        </div>
+<div class="sort-options">
+    <button class="sort-btn" data-sort="arg">Ordenar por Argentino</button>
+    <button class="sort-btn active" data-sort="esp">Ordenar por Español</button>
+</div>
     </div>
     
     <div class="dictionary" id="dictionary">
@@ -299,7 +299,7 @@
     <script>
         // Variable global para almacenar los datos del diccionario
         let dictionaryData = [];
-        let currentSort = 'arg'; // Ordenamiento por defecto: Argentino
+        let currentSort = 'esp'; // Ordenamiento por defecto: Argentino
         
         // Función para cargar los datos desde el archivo JSON
         async function loadDictionaryData() {
@@ -439,27 +439,27 @@
         }
         
         // Inicializar
-        document.addEventListener('DOMContentLoaded', async function() {
-            try {
-                dictionaryData = await loadDictionaryData();
-                
-                // Ordenar por términos argentinos por defecto
-                const sortedData = sortData(dictionaryData, 'arg');
-                renderCards(sortedData, 'arg');
-                
-                setupSearch();
-                setupSortButtons();
-            } catch (error) {
-                const dictionaryElement = document.getElementById('dictionary');
-                dictionaryElement.innerHTML = `
-                    <div class="error">
-                        <p>Error al cargar el diccionario.</p>
-                        <p>Por favor, asegúrate de que el archivo "dictionary-data.json" existe.</p>
-                        <p>${error.message}</p>
-                    </div>
-                `;
-            }
-        });
+document.addEventListener('DOMContentLoaded', async function() {
+    try {
+        dictionaryData = await loadDictionaryData();
+        
+        // Ordenar por términos españoles por defecto (cambiado de 'arg' a 'esp')
+        const sortedData = sortData(dictionaryData, 'esp');
+        renderCards(sortedData, 'esp');
+        
+        setupSearch();
+        setupSortButtons();
+    } catch (error) {
+        const dictionaryElement = document.getElementById('dictionary');
+        dictionaryElement.innerHTML = `
+            <div class="error">
+                <p>Error al cargar el diccionario.</p>
+                <p>Por favor, asegúrate de que el archivo "dictionary-data.json" existe.</p>
+                <p>${error.message}</p>
+            </div>
+        `;
+    }
+});
     </script>
 </body>
 </html>
