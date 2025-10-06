@@ -40,7 +40,7 @@
             justify-content: center;
             align-items: center;
             margin: 10px auto;
-            font-size: 3em;
+            font-size: 2.8em; /* Ajuste ligero para que entre el signo +/- */
             font-weight: bold;
             box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
         }
@@ -135,12 +135,12 @@
             border-radius: 10px;
         }
 
-        /* Estilo para el confetti (simple CSS, para un efecto real se usaría una librería JS) */
+        /* Estilo para el confetti (simple CSS) */
         .confetti {
             position: absolute;
             width: 10px;
             height: 10px;
-            background-color: yellow; /* Color del confetti */
+            background-color: yellow; 
             animation: fall 2s ease-out forwards;
             opacity: 0;
         }
@@ -206,8 +206,8 @@
         // Función para reproducir el pitido
         function playBeep() {
             beepAudio.pause();
-            beepAudio.currentTime = 0; // Reinicia el audio si ya estaba sonando
-            beepAudio.play().catch(e => console.log("Error al reproducir audio:", e)); // Manejo de promesas para evitar errores en algunos navegadores
+            beepAudio.currentTime = 0; 
+            beepAudio.play().catch(e => console.log("Error al reproducir audio:", e));
         }
 
         // Función para generar un número aleatorio entre min y max (incluidos)
@@ -227,8 +227,10 @@
         // Función para crear el elemento visual del número/signo
         function createCircle(content, id = '') {
             const circle = document.createElement('div');
-            circle.classList.add(id === 'equal-sign' ? 'number-circle' : 'number-circle');
-            circle.id = id;
+            circle.classList.add('number-circle');
+            if (id) {
+                circle.id = id;
+            }
             circle.innerHTML = content;
             return circle;
         }
@@ -251,7 +253,7 @@
             display.appendChild(createCircle(initialNumber));
             playBeep();
 
-            // Iniciar la secuencia de rondas después de un retardo (opcional)
+            // Iniciar la secuencia de rondas después de un retardo
             setTimeout(nextRound, DELAY);
         }
 
@@ -264,22 +266,15 @@
                 const operationNumber = generateOperationNumber();
                 runningTotal += operationNumber;
 
-                // Determinar el símbolo a mostrar (el número tiene su propio signo)
-                const symbol = operationNumber >= 0 ? '+' : ''; // Solo muestra '+' si es positivo, si es negativo, el signo '-' ya va en el número.
+                // CORRECCIÓN APLICADA: Incluir el signo '+' si el número es positivo
+                // Si es positivo, anteponemos el signo '+'. Si es negativo, el '-' ya está incluido en el número.
+                const circleContent = operationNumber >= 0 ? `+${operationNumber}` : operationNumber;
 
-                // Mostrar el símbolo (no es un requisito explícito, pero ayuda al seguimiento)
-                const symbolElement = document.createElement('span');
-                symbolElement.textContent = symbol;
-                symbolElement.style.fontSize = '2em';
-                symbolElement.style.margin = '0 10px';
-                symbolElement.style.fontWeight = 'bold';
-                
                 // Limpiar el display para mostrar solo la última operación
                 display.innerHTML = '';
                 
-                // Mostrar el número actual de la operación
-                display.appendChild(symbolElement);
-                display.appendChild(createCircle(operationNumber));
+                // Mostrar el número de la operación (con el signo incluido)
+                display.appendChild(createCircle(circleContent));
                 
                 playBeep();
 
@@ -295,7 +290,8 @@
         // 3. Muestra el signo igual y el teclado
         function showResultPhase() {
             display.innerHTML = '';
-            display.appendChild(createCircle('=', 'equal-sign'));
+            // Usamos el ID 'equal-sign' para aplicar el estilo dorado
+            display.appendChild(createCircle('=', 'equal-sign')); 
             keyboardContainer.style.display = 'block';
             resultInput.value = '';
         }
@@ -303,7 +299,7 @@
         // Funciones para el teclado numérico en pantalla
         function appendToInput(value) {
             let current = resultInput.value;
-            // Manejar el signo negativo solo al inicio o si la entrada está vacía
+            // Manejar el signo negativo
             if (value === '-') {
                 if (current.includes('-')) {
                     resultInput.value = current.replace('-', '');
@@ -327,12 +323,12 @@
         function checkResult() {
             const playerResult = parseInt(resultInput.value);
 
-            // Deshabilitar teclado para evitar múltiples envíos
+            // Deshabilitar teclado y preparar para el reinicio
             keyboardContainer.style.pointerEvents = 'none';
-            startButton.style.display = 'block'; // Muestra el botón de inicio de nuevo
+            startButton.style.display = 'block'; 
             isGameRunning = false;
             
-            display.innerHTML = ''; // Limpiar el display final
+            display.innerHTML = ''; 
             
             if (playerResult === runningTotal) {
                 messageDisplay.textContent = '¡Acertaste! 🎉';
@@ -343,7 +339,7 @@
                 messageDisplay.style.color = '#f44336'; // Rojo
             }
             
-            // Habilitar teclado y limpiar input para el próximo juego (después de la animación, o inmediatamente si es rápido)
+            // Ocultar teclado
             setTimeout(() => {
                  keyboardContainer.style.pointerEvents = 'auto';
                  keyboardContainer.style.display = 'none';
@@ -367,9 +363,6 @@
                 });
             }
         }
-
-        // Inicia el juego automáticamente si lo deseas (descomentar la línea de abajo)
-        // window.onload = startGame;
     </script>
 </body>
 </html>
