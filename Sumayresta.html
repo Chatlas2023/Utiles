@@ -16,9 +16,9 @@
             margin: 0;
             /* --- FONDO DE IMAGEN --- */
             background-image: url('fondo.png'); /* Ruta a tu imagen de fondo */
-            background-size: cover; /* Cubre todo el área */
-            background-position: center; /* Centra la imagen */
-            background-attachment: fixed; /* Fija la imagen de fondo */
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
             /* ------------------------ */
             color: white;
             user-select: none;
@@ -30,7 +30,7 @@
             width: 95%;
             max-width: 400px;
             padding: 20px;
-            background-color: rgba(0, 0, 0, 0.6); /* Fondo semi-transparente para que se vea la imagen */
+            background-color: rgba(0, 0, 0, 0.6);
             border-radius: 20px;
             box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
         }
@@ -69,22 +69,19 @@
         /* Estilos para el mensaje de Resultado */
         #message {
             margin: 10px 0 20px 0;
-            font-size: 1.5em; /* Tamaño base para "No acertaste" */
+            font-size: 1.5em;
             font-weight: bold;
             min-height: 30px;
             width: 100%;
             text-align: center;
-            /* Ajuste para que el color de "No acertaste" sea el de defecto, pero Acertaste sea blanco */
-            color: #f44336; /* Rojo para "No acertaste" */
+            color: #f44336;
         }
 
         /* Estilo para el mensaje de 'Acertaste' con destaque */
         .highlight-success {
-            /* --- CAMBIO DE TAMAÑO Y COLOR --- */
-            font-size: 5em; /* Más grande, para destacar un 80% sobre el original (2.5em) */
-            color: white; /* Letras blancas */
-            text-shadow: 0 0 15px #4CAF50, 0 0 20px #4CAF50; /* Sombra verde más pronunciada */
-            /* -------------------------------- */
+            font-size: 5em;
+            color: white; 
+            text-shadow: 0 0 15px #4CAF50, 0 0 20px #4CAF50;
             animation: tilt-effect 0.8s ease-in-out infinite alternate;
         }
 
@@ -94,6 +91,22 @@
             50% { transform: rotate(3deg) scale(1.05); }
             100% { transform: rotate(-3deg) scale(1.0); }
         }
+
+        /* --- Estilo del botón de inicio CORREGIDO --- */
+        #start-button {
+            padding: 15px 30px;
+            font-size: 1.5em;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            
+            /* Correcciones para centrar y bajar */
+            display: block; /* Asegura que ocupe su propio bloque */
+            margin: 20px auto; /* Centra horizontalmente y añade margen superior (bajar) */
+        }
+        /* ------------------------------------------- */
 
         /* Estilos para el teclado numérico */
         #keyboard-container {
@@ -142,17 +155,6 @@
             height: 50px;
             background-color: #4CAF50; 
             font-size: 1.5em;
-        }
-
-        /* Estilo para el botón de inicio */
-        #start-button {
-            padding: 15px 30px;
-            font-size: 1.5em;
-            cursor: pointer;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 10px;
         }
 
         /* Estilo para el confetti (simple CSS) */
@@ -325,19 +327,19 @@
             const playerResult = parseInt(resultInput.value);
 
             keyboardContainer.style.pointerEvents = 'none';
-            startButton.style.display = 'block'; // Mostrar el botón al finalizar para reiniciar
+            startButton.style.display = 'block'; 
             isGameRunning = false;
             
             display.innerHTML = ''; 
             
             if (playerResult === runningTotal) {
                 messageDisplay.textContent = '¡Acertaste! 🎉';
-                messageDisplay.style.color = 'white'; // Color blanco directo para "Acertaste"
+                messageDisplay.style.color = 'white'; 
                 messageDisplay.classList.add('highlight-success'); 
                 createConfetti(50); 
             } else {
                 messageDisplay.textContent = `No acertaste, la suma era: ${runningTotal}`;
-                messageDisplay.style.color = '#f44336'; // Rojo para "No acertaste"
+                messageDisplay.style.color = '#f44336'; 
                 messageDisplay.classList.remove('highlight-success');
             }
             
