@@ -30,8 +30,8 @@
             box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
         }
 
-        /* Estilo para los números y el signo igual (siguiendo las imágenes) */
-        .number-circle, #equal-sign {
+        /* Estilo para los números y el signo igual */
+        .number-circle {
             width: 80px;
             height: 80px;
             border-radius: 50%;
@@ -40,19 +40,14 @@
             justify-content: center;
             align-items: center;
             margin: 10px auto;
-            font-size: 2.8em; /* Ajuste ligero para que entre el signo +/- */
+            font-size: 2.8em; 
             font-weight: bold;
+            color: silver;
             box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
         }
         
-        /* Estilo del número (ej. el '6' de la imagen) */
-        .number-circle {
-            color: silver; /* Simula el color del '6' */
-        }
-
-        /* Estilo del signo igual (ej. el '=' de la imagen) */
         #equal-sign {
-            color: gold; /* Simula el color del '=' */
+            color: gold; 
             font-size: 4em;
         }
 
@@ -66,9 +61,36 @@
             align-items: center;
         }
 
+        /* --- Estilos para el mensaje de Resultado --- */
+        #message {
+            margin-top: 20px;
+            font-size: 1.5em;
+            font-weight: bold;
+            min-height: 30px;
+            /* Asegura que el mensaje de acierto esté siempre centrado */
+            width: 100%;
+            text-align: center;
+        }
+
+        /* Estilo para el mensaje de 'Acertaste' con destaque */
+        .highlight-success {
+            font-size: 2.5em; /* Más grande que el mensaje normal */
+            color: #ffeb3b; /* Amarillo brillante para destacar */
+            text-shadow: 0 0 10px #4CAF50; /* Sombra verde */
+            animation: tilt-effect 0.8s ease-in-out infinite alternate;
+        }
+
+        /* Animación de TILT (Inclinación/Tambaleo) */
+        @keyframes tilt-effect {
+            0% { transform: rotate(0deg) scale(1.0); }
+            50% { transform: rotate(3deg) scale(1.05); }
+            100% { transform: rotate(-3deg) scale(1.0); }
+        }
+        /* ------------------------------------------- */
+
         /* Estilos para el teclado numérico */
         #keyboard-container {
-            display: none; /* Oculto inicialmente */
+            display: none; 
             margin-top: 20px;
         }
 
@@ -82,7 +104,6 @@
             border: 2px solid #ccc;
             background-color: #f0f0f0;
             color: #333;
-            /* Ocultamos el input del teclado nativo, solo para móvil */
             pointer-events: none;
         }
 
@@ -112,16 +133,8 @@
         #check-button {
             width: 100%;
             height: 50px;
-            background-color: #4CAF50; /* Verde */
+            background-color: #4CAF50; 
             font-size: 1.5em;
-        }
-
-        /* Mensaje de resultado */
-        #message {
-            margin-top: 20px;
-            font-size: 1.5em;
-            font-weight: bold;
-            min-height: 30px;
         }
 
         /* Estilo para el botón de inicio */
@@ -210,12 +223,11 @@
             beepAudio.play().catch(e => console.log("Error al reproducir audio:", e));
         }
 
-        // Función para generar un número aleatorio entre min y max (incluidos)
+        // Función para generar números aleatorios
         function getRandomInt(min, max) {
             return Math.floor(Math.random() * (max - min + 1)) + min;
         }
 
-        // Función para generar el número de la operación (entre -20 y 20, excepto 0)
         function generateOperationNumber() {
             let num;
             do {
@@ -235,7 +247,6 @@
             return circle;
         }
 
-        // 1. Inicia el juego
         function startGame() {
             if (isGameRunning) return;
             isGameRunning = true;
@@ -243,6 +254,8 @@
             runningTotal = 0;
             display.innerHTML = '';
             messageDisplay.textContent = '';
+            // Limpiar la clase de destaque por si se usó antes
+            messageDisplay.classList.remove('highlight-success'); 
             keyboardContainer.style.display = 'none';
             resultInput.value = '';
             startButton.style.display = 'none';
@@ -253,32 +266,24 @@
             display.appendChild(createCircle(initialNumber));
             playBeep();
 
-            // Iniciar la secuencia de rondas después de un retardo
             setTimeout(nextRound, DELAY);
         }
 
-        // 2. Ejecuta la siguiente ronda de suma/resta
         function nextRound() {
             if (currentRound < ROUNDS) {
                 currentRound++;
 
-                // Genera el número de la operación
                 const operationNumber = generateOperationNumber();
                 runningTotal += operationNumber;
 
-                // CORRECCIÓN APLICADA: Incluir el signo '+' si el número es positivo
-                // Si es positivo, anteponemos el signo '+'. Si es negativo, el '-' ya está incluido en el número.
+                // Incluir el signo '+' si el número es positivo
                 const circleContent = operationNumber >= 0 ? `+${operationNumber}` : operationNumber;
 
-                // Limpiar el display para mostrar solo la última operación
                 display.innerHTML = '';
-                
-                // Mostrar el número de la operación (con el signo incluido)
                 display.appendChild(createCircle(circleContent));
                 
                 playBeep();
 
-                // 2) Seguir con la siguiente ronda después de 2 segundos
                 setTimeout(nextRound, DELAY);
 
             } else {
@@ -287,19 +292,15 @@
             }
         }
 
-        // 3. Muestra el signo igual y el teclado
         function showResultPhase() {
             display.innerHTML = '';
-            // Usamos el ID 'equal-sign' para aplicar el estilo dorado
             display.appendChild(createCircle('=', 'equal-sign')); 
             keyboardContainer.style.display = 'block';
             resultInput.value = '';
         }
         
-        // Funciones para el teclado numérico en pantalla
         function appendToInput(value) {
             let current = resultInput.value;
-            // Manejar el signo negativo
             if (value === '-') {
                 if (current.includes('-')) {
                     resultInput.value = current.replace('-', '');
@@ -307,7 +308,6 @@
                     resultInput.value = '-' + current;
                 }
             } else if (current === '-' && value === '0' && current.length === 1) {
-                // Evitar "-0"
                 return;
             }
             else {
@@ -319,11 +319,10 @@
             resultInput.value = resultInput.value.slice(0, -1);
         }
 
-        // 4. Verifica el resultado del jugador
+        // 4. Verifica el resultado del jugador con la corrección de estilo
         function checkResult() {
             const playerResult = parseInt(resultInput.value);
 
-            // Deshabilitar teclado y preparar para el reinicio
             keyboardContainer.style.pointerEvents = 'none';
             startButton.style.display = 'block'; 
             isGameRunning = false;
@@ -331,22 +330,23 @@
             display.innerHTML = ''; 
             
             if (playerResult === runningTotal) {
+                // ***** CAMBIO APLICADO AQUÍ *****
                 messageDisplay.textContent = '¡Acertaste! 🎉';
-                messageDisplay.style.color = '#4CAF50'; // Verde
-                createConfetti(50); // Muestra el efecto confetti
+                messageDisplay.style.color = 'initial'; // Permite que el CSS de la clase controle el color
+                messageDisplay.classList.add('highlight-success'); // Aplica la clase de destaque y TILT
+                createConfetti(50); 
             } else {
                 messageDisplay.textContent = `No acertaste, la suma era: ${runningTotal}`;
                 messageDisplay.style.color = '#f44336'; // Rojo
+                messageDisplay.classList.remove('highlight-success'); // Asegura que no tenga la clase de acierto
             }
             
-            // Ocultar teclado
             setTimeout(() => {
                  keyboardContainer.style.pointerEvents = 'auto';
                  keyboardContainer.style.display = 'none';
             }, 500);
         }
 
-        // Función simple para crear efecto de confetti
         function createConfetti(count) {
             for (let i = 0; i < count; i++) {
                 const confetti = document.createElement('div');
@@ -357,7 +357,6 @@
                 confetti.style.transform = `scale(${Math.random() * 1 + 0.5})`;
                 document.body.appendChild(confetti);
                 
-                // Remover el confetti después de que termine la animación
                 confetti.addEventListener('animationend', () => {
                     confetti.remove();
                 });
