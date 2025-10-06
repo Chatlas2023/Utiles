@@ -1,1 +1,367 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Suma y Resta - El Juego</title>
+    <style>
+        /* Estilos generales para móvil */
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #4e54c8, #8f94fb); /* Fondo degradado */
+            color: white;
+            user-select: none; /* Evita la selección de texto en móvil */
+        }
 
+        /* Contenedor principal del juego */
+        #game-container {
+            text-align: center;
+            width: 95%;
+            max-width: 400px; /* Ancho máximo para mejor experiencia en móvil */
+            padding: 20px;
+            background-color: rgba(0, 0, 0, 0.5);
+            border-radius: 20px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Estilo para los números y el signo igual */
+        .number-circle {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-color: black;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 10px auto;
+            font-size: 2.8em; 
+            font-weight: bold;
+            color: silver;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+        }
+        
+        #equal-sign {
+            color: gold; 
+            font-size: 4em;
+        }
+
+        /* Display principal del juego */
+        #display {
+            min-height: 100px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* --- Estilos para el mensaje de Resultado --- */
+        #message {
+            margin-top: 20px;
+            font-size: 1.5em;
+            font-weight: bold;
+            min-height: 30px;
+            /* Asegura que el mensaje de acierto esté siempre centrado */
+            width: 100%;
+            text-align: center;
+        }
+
+        /* Estilo para el mensaje de 'Acertaste' con destaque */
+        .highlight-success {
+            font-size: 2.5em; /* Más grande que el mensaje normal */
+            color: #ffeb3b; /* Amarillo brillante para destacar */
+            text-shadow: 0 0 10px #4CAF50; /* Sombra verde */
+            animation: tilt-effect 0.8s ease-in-out infinite alternate;
+        }
+
+        /* Animación de TILT (Inclinación/Tambaleo) */
+        @keyframes tilt-effect {
+            0% { transform: rotate(0deg) scale(1.0); }
+            50% { transform: rotate(3deg) scale(1.05); }
+            100% { transform: rotate(-3deg) scale(1.0); }
+        }
+        /* ------------------------------------------- */
+
+        /* Estilos para el teclado numérico */
+        #keyboard-container {
+            display: none; 
+            margin-top: 20px;
+        }
+
+        #result-input {
+            width: 100%;
+            padding: 10px;
+            font-size: 2em;
+            text-align: center;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            border: 2px solid #ccc;
+            background-color: #f0f0f0;
+            color: #333;
+            pointer-events: none;
+        }
+
+        .keyboard-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .key-button {
+            width: 70px;
+            height: 70px;
+            font-size: 1.5em;
+            background-color: #333;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background-color 0.1s;
+        }
+
+        .key-button:active {
+            background-color: #555;
+        }
+
+        /* Estilo del botón 'OK' */
+        #check-button {
+            width: 100%;
+            height: 50px;
+            background-color: #4CAF50; 
+            font-size: 1.5em;
+        }
+
+        /* Estilo para el botón de inicio */
+        #start-button {
+            padding: 15px 30px;
+            font-size: 1.5em;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 10px;
+        }
+
+        /* Estilo para el confetti (simple CSS) */
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: yellow; 
+            animation: fall 2s ease-out forwards;
+            opacity: 0;
+        }
+        @keyframes fall {
+            0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="game-container">
+        <h1>Suma y Resta</h1>
+        <div id="display">
+            </div>
+
+        <button id="start-button" onclick="startGame()">¡Comenzar!</button>
+
+        <div id="keyboard-container">
+            <input type="text" id="result-input" placeholder="Resultado" readonly>
+            <div class="keyboard-row">
+                <button class="key-button" onclick="appendToInput('1')">1</button>
+                <button class="key-button" onclick="appendToInput('2')">2</button>
+                <button class="key-button" onclick="appendToInput('3')">3</button>
+            </div>
+            <div class="keyboard-row">
+                <button class="key-button" onclick="appendToInput('4')">4</button>
+                <button class="key-button" onclick="appendToInput('5')">5</button>
+                <button class="key-button" onclick="appendToInput('6')">6</button>
+            </div>
+            <div class="keyboard-row">
+                <button class="key-button" onclick="appendToInput('7')">7</button>
+                <button class="key-button" onclick="appendToInput('8')">8</button>
+                <button class="key-button" onclick="appendToInput('9')">9</button>
+            </div>
+            <div class="keyboard-row">
+                <button class="key-button" onclick="deleteLast()">DEL</button>
+                <button class="key-button" onclick="appendToInput('0')">0</button>
+                <button class="key-button" onclick="appendToInput('-')">-</button>
+            </div>
+            <button class="key-button" id="check-button" onclick="checkResult()">OK</button>
+        </div>
+
+        <div id="message"></div>
+    </div>
+
+    <audio id="beep-audio" src="beep.mp3" preload="auto"></audio>
+
+    <script>
+        const ROUNDS = 8;
+        const DELAY = 2000; // 2 segundos
+        let currentRound = 0;
+        let runningTotal = 0;
+        let isGameRunning = false;
+        
+        const display = document.getElementById('display');
+        const startButton = document.getElementById('start-button');
+        const keyboardContainer = document.getElementById('keyboard-container');
+        const resultInput = document.getElementById('result-input');
+        const messageDisplay = document.getElementById('message');
+        const beepAudio = document.getElementById('beep-audio');
+
+        // Función para reproducir el pitido
+        function playBeep() {
+            beepAudio.pause();
+            beepAudio.currentTime = 0; 
+            beepAudio.play().catch(e => console.log("Error al reproducir audio:", e));
+        }
+
+        // Función para generar números aleatorios
+        function getRandomInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        function generateOperationNumber() {
+            let num;
+            do {
+                num = getRandomInt(-20, 20);
+            } while (num === 0);
+            return num;
+        }
+
+        // Función para crear el elemento visual del número/signo
+        function createCircle(content, id = '') {
+            const circle = document.createElement('div');
+            circle.classList.add('number-circle');
+            if (id) {
+                circle.id = id;
+            }
+            circle.innerHTML = content;
+            return circle;
+        }
+
+        function startGame() {
+            if (isGameRunning) return;
+            isGameRunning = true;
+            currentRound = 0;
+            runningTotal = 0;
+            display.innerHTML = '';
+            messageDisplay.textContent = '';
+            // Limpiar la clase de destaque por si se usó antes
+            messageDisplay.classList.remove('highlight-success'); 
+            keyboardContainer.style.display = 'none';
+            resultInput.value = '';
+            startButton.style.display = 'none';
+
+            // 1) Presentar número inicial (1 al 20)
+            const initialNumber = getRandomInt(1, 20);
+            runningTotal = initialNumber;
+            display.appendChild(createCircle(initialNumber));
+            playBeep();
+
+            setTimeout(nextRound, DELAY);
+        }
+
+        function nextRound() {
+            if (currentRound < ROUNDS) {
+                currentRound++;
+
+                const operationNumber = generateOperationNumber();
+                runningTotal += operationNumber;
+
+                // Incluir el signo '+' si el número es positivo
+                const circleContent = operationNumber >= 0 ? `+${operationNumber}` : operationNumber;
+
+                display.innerHTML = '';
+                display.appendChild(createCircle(circleContent));
+                
+                playBeep();
+
+                setTimeout(nextRound, DELAY);
+
+            } else {
+                // 3) Fin de la secuencia: mostrar '=' y habilitar teclado
+                showResultPhase();
+            }
+        }
+
+        function showResultPhase() {
+            display.innerHTML = '';
+            display.appendChild(createCircle('=', 'equal-sign')); 
+            keyboardContainer.style.display = 'block';
+            resultInput.value = '';
+        }
+        
+        function appendToInput(value) {
+            let current = resultInput.value;
+            if (value === '-') {
+                if (current.includes('-')) {
+                    resultInput.value = current.replace('-', '');
+                } else {
+                    resultInput.value = '-' + current;
+                }
+            } else if (current === '-' && value === '0' && current.length === 1) {
+                return;
+            }
+            else {
+                resultInput.value += value;
+            }
+        }
+
+        function deleteLast() {
+            resultInput.value = resultInput.value.slice(0, -1);
+        }
+
+        // 4. Verifica el resultado del jugador con la corrección de estilo
+        function checkResult() {
+            const playerResult = parseInt(resultInput.value);
+
+            keyboardContainer.style.pointerEvents = 'none';
+            startButton.style.display = 'block'; 
+            isGameRunning = false;
+            
+            display.innerHTML = ''; 
+            
+            if (playerResult === runningTotal) {
+                // ***** CAMBIO APLICADO AQUÍ *****
+                messageDisplay.textContent = '¡Acertaste! 🎉';
+                messageDisplay.style.color = 'initial'; // Permite que el CSS de la clase controle el color
+                messageDisplay.classList.add('highlight-success'); // Aplica la clase de destaque y TILT
+                createConfetti(50); 
+            } else {
+                messageDisplay.textContent = `No acertaste, la suma era: ${runningTotal}`;
+                messageDisplay.style.color = '#f44336'; // Rojo
+                messageDisplay.classList.remove('highlight-success'); // Asegura que no tenga la clase de acierto
+            }
+            
+            setTimeout(() => {
+                 keyboardContainer.style.pointerEvents = 'auto';
+                 keyboardContainer.style.display = 'none';
+            }, 500);
+        }
+
+        function createConfetti(count) {
+            for (let i = 0; i < count; i++) {
+                const confetti = document.createElement('div');
+                confetti.classList.add('confetti');
+                confetti.style.left = `${Math.random() * 100}vw`;
+                confetti.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 50%)`;
+                confetti.style.animationDelay = `${Math.random() * 0.5}s`;
+                confetti.style.transform = `scale(${Math.random() * 1 + 0.5})`;
+                document.body.appendChild(confetti);
+                
+                confetti.addEventListener('animationend', () => {
+                    confetti.remove();
+                });
+            }
+        }
+    </script>
+</body>
+</html>
