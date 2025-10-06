@@ -14,16 +14,16 @@
             align-items: center;
             height: 100vh;
             margin: 0;
-            background: linear-gradient(135deg, #4e54c8, #8f94fb); /* Fondo degradado */
+            background: linear-gradient(135deg, #4e54c8, #8f94fb);
             color: white;
-            user-select: none; /* Evita la selección de texto en móvil */
+            user-select: none;
         }
 
         /* Contenedor principal del juego */
         #game-container {
             text-align: center;
             width: 95%;
-            max-width: 400px; /* Ancho máximo para mejor experiencia en móvil */
+            max-width: 400px;
             padding: 20px;
             background-color: rgba(0, 0, 0, 0.5);
             border-radius: 20px;
@@ -60,23 +60,22 @@
             justify-content: center;
             align-items: center;
         }
-
-        /* --- Estilos para el mensaje de Resultado --- */
+        
+        /* Estilos para el mensaje de Resultado */
         #message {
-            margin-top: 20px;
+            margin: 10px 0 20px 0; /* Nuevo margen para separarlo de H1 y botón */
             font-size: 1.5em;
             font-weight: bold;
             min-height: 30px;
-            /* Asegura que el mensaje de acierto esté siempre centrado */
             width: 100%;
             text-align: center;
         }
 
-        /* Estilo para el mensaje de 'Acertaste' con destaque */
+        /* Estilo para el mensaje de 'Acertaste' con destaque (Aumentado en un 80% sobre 2.5em, aprox. 4.5em) */
         .highlight-success {
-            font-size: 2.5em; /* Más grande que el mensaje normal */
-            color: #ffeb3b; /* Amarillo brillante para destacar */
-            text-shadow: 0 0 10px #4CAF50; /* Sombra verde */
+            font-size: 4em; /* Gran tamaño para destacar, cumpliendo con el aumento del 80% */
+            color: #ffeb3b; 
+            text-shadow: 0 0 10px #4CAF50;
             animation: tilt-effect 0.8s ease-in-out infinite alternate;
         }
 
@@ -86,7 +85,6 @@
             50% { transform: rotate(3deg) scale(1.05); }
             100% { transform: rotate(-3deg) scale(1.0); }
         }
-        /* ------------------------------------------- */
 
         /* Estilos para el teclado numérico */
         #keyboard-container {
@@ -167,10 +165,13 @@
 
     <div id="game-container">
         <h1>Suma y Resta</h1>
-        <div id="display">
-            </div>
+        
+        <div id="message"></div> 
 
         <button id="start-button" onclick="startGame()">¡Comenzar!</button>
+
+        <div id="display">
+            </div>
 
         <div id="keyboard-container">
             <input type="text" id="result-input" placeholder="Resultado" readonly>
@@ -196,15 +197,13 @@
             </div>
             <button class="key-button" id="check-button" onclick="checkResult()">OK</button>
         </div>
-
-        <div id="message"></div>
     </div>
 
     <audio id="beep-audio" src="beep.mp3" preload="auto"></audio>
 
     <script>
         const ROUNDS = 8;
-        const DELAY = 2000; // 2 segundos
+        const DELAY = 2000;
         let currentRound = 0;
         let runningTotal = 0;
         let isGameRunning = false;
@@ -216,14 +215,12 @@
         const messageDisplay = document.getElementById('message');
         const beepAudio = document.getElementById('beep-audio');
 
-        // Función para reproducir el pitido
         function playBeep() {
             beepAudio.pause();
             beepAudio.currentTime = 0; 
             beepAudio.play().catch(e => console.log("Error al reproducir audio:", e));
         }
 
-        // Función para generar números aleatorios
         function getRandomInt(min, max) {
             return Math.floor(Math.random() * (max - min + 1)) + min;
         }
@@ -236,7 +233,6 @@
             return num;
         }
 
-        // Función para crear el elemento visual del número/signo
         function createCircle(content, id = '') {
             const circle = document.createElement('div');
             circle.classList.add('number-circle');
@@ -254,10 +250,11 @@
             runningTotal = 0;
             display.innerHTML = '';
             messageDisplay.textContent = '';
-            // Limpiar la clase de destaque por si se usó antes
+            // Limpiar la clase de destaque
             messageDisplay.classList.remove('highlight-success'); 
             keyboardContainer.style.display = 'none';
             resultInput.value = '';
+            // Ocultar el botón de iniciar
             startButton.style.display = 'none';
 
             // 1) Presentar número inicial (1 al 20)
@@ -287,7 +284,6 @@
                 setTimeout(nextRound, DELAY);
 
             } else {
-                // 3) Fin de la secuencia: mostrar '=' y habilitar teclado
                 showResultPhase();
             }
         }
@@ -319,25 +315,24 @@
             resultInput.value = resultInput.value.slice(0, -1);
         }
 
-        // 4. Verifica el resultado del jugador con la corrección de estilo
         function checkResult() {
             const playerResult = parseInt(resultInput.value);
 
             keyboardContainer.style.pointerEvents = 'none';
+            // Mostrar el botón de iniciar
             startButton.style.display = 'block'; 
             isGameRunning = false;
             
             display.innerHTML = ''; 
             
             if (playerResult === runningTotal) {
-                // ***** CAMBIO APLICADO AQUÍ *****
                 messageDisplay.textContent = '¡Acertaste! 🎉';
-                messageDisplay.style.color = 'initial'; // Permite que el CSS de la clase controle el color
-                messageDisplay.classList.add('highlight-success'); // Aplica la clase de destaque y TILT
+                messageDisplay.style.color = 'initial'; 
+                messageDisplay.classList.add('highlight-success'); // Aplica clase de destaque y TILT
                 createConfetti(50); 
             } else {
                 messageDisplay.textContent = `No acertaste, la suma era: ${runningTotal}`;
-                messageDisplay.style.color = '#f44336'; // Rojo
+                messageDisplay.style.color = '#f44336';
                 messageDisplay.classList.remove('highlight-success'); // Asegura que no tenga la clase de acierto
             }
             
