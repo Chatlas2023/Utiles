@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prueba Windy Forecast Map</title>
+    <script src="https://unpkg.com/leaflet@1.4.0/dist/leaflet.js"></script>
+    <script src="https://api.windy.com/assets/map-forecast/libBoot.js"></script>
+    <style>
+        #windy { width: 100%; height: 640px; }
+        .btn {
+            padding: 7px 15px;
+            font-size: 14px;
+            font-weight: bold;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            width: 180px;
+        }
+        .btn-center {
+            background-color: #007bff;
+            color: white;
+        }
+        .btn-center:hover {
+            background-color: #0056b3;
+        }
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 640px;
+            background-color: #f0f0f0;
+            font-size: 20px;
+            color: #333;
+        }
+        .loading-text {
+            color: white;
+            background-color: red;
+            padding: 10px;
+            animation: blink 1s infinite;
+        }
+        @keyframes blink {
+            0% { background-color: red; }
+            50% { background-color: darkred; }
+            100% { background-color: red; }
+        }
+    </style>
+</head>
+<body>
+    <div id="loading" class="loading">
+        <span class="loading-text">Cargando Windy...</span>
+    </div>
+    <div id="windy" style="display: none;"></div>
+    <script>
+        function initializeMap(lat, lon) {
+            const options = {
+                key: 'dxDS5A1vfB7PTIRIhqPQ0COHnn9BWNms', // Tu API key
+                lat: lat || 0, // Usa la latitud proporcionada o 0°
+                lon: lon || 0, // Usa la longitud proporcionada o 0°
+                zoom: 5, // Nivel de zoom inicial
+                overlay: 'temp',
+                timeline: true, // Habilita la barra de avance
+            };
+
+            windyInit(options, function(windyAPI) {
+                const { map, overlays } = windyAPI;
+                console.log('Windy API inicializada:', windyAPI);
+
+                // Oculta el mensaje de carga y muestra el mapa
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('windy').style.display = 'block';
+
+                // Redimensiona el mapa para que ocupe todo el espacio disponible
+                map.invalidateSize();
+            });
+        }
+
+        // Recuperar la ubicación almacenada en sessionStorage
+        const lat = parseFloat(sessionStorage.getItem('latitude'));
+        const lon = parseFloat(sessionStorage.getItem('longitude'));
+
+        if (!isNaN(lat) && !isNaN(lon)) {
+            // Usar la ubicación almacenada
+            initializeMap(lat, lon);
+        } else {
+            // Si no hay ubicación almacenada, obtener una nueva
+            function getLocation() {
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(
+                        (position) => initializeMap(position.coords.latitude, position.coords.longitude),
+                        () => initializeMap(0, 0) // En caso de error, usar 0°, 0°
+                    );
+                } else {
+                    initializeMap(0, 0); // Si no hay soporte para geolocalización, usar 0°, 0°
+                }
+            }
+            getLocation();
+        }
+    </script>
+    <button onclick="window.location.href='index.html';" class="btn btn-center">Volver al Mapa Principal</button>
+</body>
+</html>
