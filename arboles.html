@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Árboles de Buenos Aires</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css" />
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -40,7 +42,7 @@
             flex-grow: 1;
             max-width: 300px;
         }
-        #speciesFilter {
+        #speciesFilter, #comunaFilter {
             padding: 6px 12px;
             font-size: 14px;
             border-radius: 5px;
@@ -94,7 +96,8 @@
             background-color: #444;
         }
         body.dark-mode #search,
-        body.dark-mode #speciesFilter {
+        body.dark-mode #speciesFilter,
+        body.dark-mode #comunaFilter {
             background-color: #333;
             color: white;
             border-color: #555;
@@ -106,38 +109,6 @@
         body.dark-mode #speciesList {
             color: #bbb;
         }
-        .tree-cluster {
-            background-color: rgba(76, 175, 80, 0.6);
-            border-radius: 50%;
-            text-align: center;
-            color: white;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .tree-cluster-small {
-            width: 30px;
-            height: 30px;
-            font-size: 12px;
-        }
-        .tree-cluster-medium {
-            width: 40px;
-            height: 40px;
-            font-size: 14px;
-        }
-        .tree-cluster-large {
-            width: 50px;
-            height: 50px;
-            font-size: 16px;
-        }
-        .tree-marker {
-            background-color: #4caf50;
-            border: 2px solid white;
-            border-radius: 50%;
-            width: 12px;
-            height: 12px;
-        }
         .legend {
             position: absolute;
             bottom: 20px;
@@ -147,6 +118,7 @@
             border-radius: 5px;
             box-shadow: 0 1px 5px rgba(0,0,0,0.4);
             z-index: 1000;
+            max-width: 250px;
         }
         body.dark-mode .legend {
             background: #333;
@@ -156,19 +128,57 @@
             display: flex;
             align-items: center;
             margin-bottom: 5px;
+            font-size: 12px;
         }
         .legend-color {
-            width: 20px;
-            height: 20px;
+            width: 15px;
+            height: 15px;
             margin-right: 5px;
             border-radius: 50%;
             border: 1px solid #ccc;
         }
-        .species-1 { background-color: #4caf50; } /* Fresno */
-        .species-2 { background-color: #2196f3; } /* Jacarandá */
-        .species-3 { background-color: #ff9800; } /* Tilo */
-        .species-4 { background-color: #9c27b0; } /* Paraíso */
+        .species-1 { background-color: #4caf50; } /* Tipuana tipu */
+        .species-2 { background-color: #2196f3; } /* Fraxinus */
+        .species-3 { background-color: #ff9800; } /* Jacaranda */
+        .species-4 { background-color: #9c27b0; } /* Peltophorum */
         .species-5 { background-color: #f44336; } /* Otras especies */
+        .species-6 { background-color: #ffeb3b; } /* Platanus */
+        .species-7 { background-color: #00bcd4; } /* Citrus */
+        .species-8 { background-color: #8bc34a; } /* Otras */
+        
+        .marker-cluster-small {
+            background-color: rgba(181, 226, 140, 0.6);
+        }
+        .marker-cluster-small div {
+            background-color: rgba(110, 204, 57, 0.6);
+        }
+        .marker-cluster-medium {
+            background-color: rgba(241, 211, 87, 0.6);
+        }
+        .marker-cluster-medium div {
+            background-color: rgba(240, 194, 12, 0.6);
+        }
+        .marker-cluster-large {
+            background-color: rgba(253, 156, 115, 0.6);
+        }
+        .marker-cluster-large div {
+            background-color: rgba(241, 128, 23, 0.6);
+        }
+        
+        /* Estilos para móviles */
+        @media (max-width: 768px) {
+            #controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            #search, #speciesFilter, #comunaFilter {
+                max-width: none;
+            }
+            .legend {
+                max-width: 200px;
+                font-size: 10px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -177,22 +187,22 @@
             <a href="#" title="Cambiar tipo de mapa" id="layerToggleButton">🌍</a>
         </div>
         <div class="legend">
-            <h4 style="margin-top: 0;">Leyenda</h4>
+            <h4 style="margin-top: 0; font-size: 14px;">Leyenda - Especies</h4>
             <div class="legend-item">
                 <div class="legend-color species-1"></div>
-                <span>Fresno</span>
+                <span>Tipuana tipu</span>
             </div>
             <div class="legend-item">
                 <div class="legend-color species-2"></div>
-                <span>Jacarandá</span>
+                <span>Fraxinus</span>
             </div>
             <div class="legend-item">
                 <div class="legend-color species-3"></div>
-                <span>Tilo</span>
+                <span>Jacaranda</span>
             </div>
             <div class="legend-item">
                 <div class="legend-color species-4"></div>
-                <span>Paraíso</span>
+                <span>Peltophorum</span>
             </div>
             <div class="legend-item">
                 <div class="legend-color species-5"></div>
@@ -202,10 +212,12 @@
     </div>
     
     <div id="controls">
-        <input type="text" id="search" placeholder="Buscar por especie o ubicación...">
+        <input type="text" id="search" placeholder="Buscar por especie o calle...">
         <select id="speciesFilter">
             <option value="all">Todas las especies</option>
-            <!-- Las opciones se cargarán dinámicamente -->
+        </select>
+        <select id="comunaFilter">
+            <option value="all">Todas las comunas</option>
         </select>
         <button id="toggleClusters">Agrupar árboles</button>
         <button id="darkModeButton">Modo oscuro</button>
@@ -227,6 +239,40 @@
         const layerTypes = ['osm', 'satellite'];
         const layerIcons = ['🌍', '🛰️'];
 
+        // Mapeo de especies a colores
+        const speciesColorMap = {
+            'Tipuana tipu': '#4caf50',
+            'Fraxinus pennsylvanica': '#2196f3',
+            'Fraxinus excelsior': '#2196f3',
+            'Fraxinus americana': '#2196f3',
+            'Jacaranda mimosifolia': '#ff9800',
+            'Jacaranda': '#ff9800',
+            'Peltophorum dubium': '#9c27b0',
+            'Platanus x hispanica': '#ffeb3b',
+            'Platanus acerifolia': '#ffeb3b',
+            'Platanus orientalis': '#ffeb3b',
+            'Citrus x aurantium': '#00bcd4',
+            'Citrus sinensis': '#00bcd4',
+            'default': '#f44336'
+        };
+
+        // Mapeo de especies a clases CSS
+        const speciesClassMap = {
+            'Tipuana tipu': 'species-1',
+            'Fraxinus pennsylvanica': 'species-2',
+            'Fraxinus excelsior': 'species-2',
+            'Fraxinus americana': 'species-2',
+            'Jacaranda mimosifolia': 'species-3',
+            'Jacaranda': 'species-3',
+            'Peltophorum dubium': 'species-4',
+            'Platanus x hispanica': 'species-5',
+            'Platanus acerifolia': 'species-5',
+            'Platanus orientalis': 'species-5',
+            'Citrus x aurantium': 'species-6',
+            'Citrus sinensis': 'species-6',
+            'default': 'species-7'
+        };
+
         // Capas del mapa
         let layers = {
             osm: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -247,22 +293,9 @@
             markersCluster = L.markerClusterGroup({
                 chunkedLoading: true,
                 maxClusterRadius: 50,
-                iconCreateFunction: function(cluster) {
-                    const count = cluster.getChildCount();
-                    let size = 'small';
-                    
-                    if (count > 50) {
-                        size = 'large';
-                    } else if (count > 10) {
-                        size = 'medium';
-                    }
-                    
-                    return L.divIcon({
-                        html: '<div><span>' + count + '</span></div>',
-                        className: 'tree-cluster tree-cluster-' + size,
-                        iconSize: L.point(40, 40)
-                    });
-                }
+                spiderfyOnMaxZoom: true,
+                showCoverageOnHover: true,
+                zoomToBoundsOnClick: true
             });
             
             // Cargar datos de árboles
@@ -272,9 +305,8 @@
         // Función para cargar datos de árboles
         async function loadTreeData() {
             try {
-                // En un caso real, aquí cargarías tu GeoJSON
-                // Por ahora, usaré datos de ejemplo
-                const response = await fetch('https://raw.githubusercontent.com/Chatlas2023/Capas_Json/main/arboles_buenos_aires.json');
+                // URL de tu GeoJSON - actualiza esta URL con la ubicación real de tu archivo
+                const response = await fetch('https://raw.githubusercontent.com/Chatlas2023/Capas_Json/main/arbolado.json');
                 const treeData = await response.json();
                 
                 allTrees = treeData.features;
@@ -285,13 +317,13 @@
                 // Actualizar estadísticas
                 updateTreeStats();
                 
-                // Cargar filtro de especies
+                // Cargar filtros
                 loadSpeciesFilter();
+                loadComunaFilter();
                 
             } catch (error) {
                 console.error('Error cargando datos de árboles:', error);
-                // En caso de error, usar datos de ejemplo
-                useSampleData();
+                document.getElementById('treeCount').textContent = 'Error cargando datos de árboles';
             }
         }
 
@@ -308,31 +340,23 @@
             // Crear capa de árboles
             treesLayer = L.geoJSON(null, {
                 pointToLayer: function(feature, latlng) {
-                    // Determinar color según especie
-                    const species = feature.properties.especie || 'Desconocida';
-                    const colorClass = getSpeciesColorClass(species);
+                    // Obtener información del árbol
+                    const props = feature.properties;
+                    const species = props.nombre_cientifico || 'Especie no identificada';
+                    const color = getSpeciesColor(species);
                     
                     // Crear marcador personalizado
                     const marker = L.circleMarker(latlng, {
-                        radius: 6,
-                        fillColor: getSpeciesColor(species),
+                        radius: getMarkerSize(props.diametro_altura_pecho),
+                        fillColor: color,
                         color: '#fff',
                         weight: 1,
                         opacity: 1,
                         fillOpacity: 0.8
                     });
                     
-                    // Agregar popup con información
-                    marker.bindPopup(`
-                        <div style="min-width: 200px;">
-                            <h3>${species}</h3>
-                            <p><strong>Ubicación:</strong> ${feature.properties.calle || 'No disponible'}</p>
-                            <p><strong>Barrio:</strong> ${feature.properties.barrio || 'No disponible'}</p>
-                            <p><strong>Altura:</strong> ${feature.properties.altura || 'No disponible'} m</p>
-                            <p><strong>Diámetro:</strong> ${feature.properties.diametro || 'No disponible'} cm</p>
-                            ${feature.properties.descripcion ? `<p><strong>Descripción:</strong> ${feature.properties.descripcion}</p>` : ''}
-                        </div>
-                    `);
+                    // Agregar popup con información detallada
+                    marker.bindPopup(createPopupContent(props));
                     
                     return marker;
                 }
@@ -356,39 +380,53 @@
             }
         }
 
-        // Función para obtener clase de color según especie
-        function getSpeciesColorClass(species) {
-            const speciesLower = species.toLowerCase();
-            
-            if (speciesLower.includes('fresno')) return 'species-1';
-            if (speciesLower.includes('jacarandá') || speciesLower.includes('jacaranda')) return 'species-2';
-            if (speciesLower.includes('tilo')) return 'species-3';
-            if (speciesLower.includes('paraíso') || speciesLower.includes('paraiso')) return 'species-4';
-            
-            return 'species-5';
+        // Función para determinar tamaño del marcador según diámetro
+        function getMarkerSize(diameter) {
+            if (!diameter) return 4;
+            if (diameter < 10) return 4;
+            if (diameter < 30) return 6;
+            if (diameter < 60) return 8;
+            return 10;
+        }
+
+        // Función para crear contenido del popup
+        function createPopupContent(props) {
+            return `
+                <div style="min-width: 250px;">
+                    <h3 style="margin: 0 0 10px 0; color: #2c3e50;">${props.nombre_cientifico || 'Especie no identificada'}</h3>
+                    <div style="font-size: 14px; line-height: 1.4;">
+                        <p><strong>📍 Ubicación:</strong> ${props.direccion_normalizada || props.calle_nombre || 'No disponible'}</p>
+                        <p><strong>🏛️ Comuna:</strong> ${props.comuna || 'No disponible'}</p>
+                        <p><strong>📏 Diámetro:</strong> ${props.diametro_altura_pecho ? props.diametro_altura_pecho + ' cm' : 'No disponible'}</p>
+                        <p><strong>🌳 Altura:</strong> ${props.altura_arbol ? props.altura_arbol + ' m' : 'No disponible'}</p>
+                        <p><strong>🛣️ Ancho acera:</strong> ${props.ancho_acera ? props.ancho_acera + ' m' : 'No disponible'}</p>
+                        <p><strong>📋 Estado:</strong> ${props.estado_plantera || 'No disponible'}</p>
+                        ${props.tipo_activ ? `<p><strong>📝 Tipo:</strong> ${props.tipo_activ}</p>` : ''}
+                        ${props.nro_registro ? `<p><strong>🔢 Registro:</strong> ${props.nro_registro}</p>` : ''}
+                    </div>
+                </div>
+            `;
         }
 
         // Función para obtener color según especie
         function getSpeciesColor(species) {
-            const speciesLower = species.toLowerCase();
-            
-            if (speciesLower.includes('fresno')) return '#4caf50';
-            if (speciesLower.includes('jacarandá') || speciesLower.includes('jacaranda')) return '#2196f3';
-            if (speciesLower.includes('tilo')) return '#ff9800';
-            if (speciesLower.includes('paraíso') || speciesLower.includes('paraiso')) return '#9c27b0';
-            
-            return '#f44336';
+            return speciesColorMap[species] || speciesColorMap.default;
+        }
+
+        // Función para obtener clase CSS según especie
+        function getSpeciesClass(species) {
+            return speciesClassMap[species] || speciesClassMap.default;
         }
 
         // Función para actualizar estadísticas
         function updateTreeStats() {
             const treeCount = allTrees.length;
-            document.getElementById('treeCount').textContent = `Total de árboles: ${treeCount}`;
+            document.getElementById('treeCount').textContent = `Total de árboles: ${treeCount.toLocaleString()}`;
             
             // Contar especies únicas
             const speciesCount = {};
             allTrees.forEach(tree => {
-                const species = tree.properties.especie || 'Desconocida';
+                const species = tree.properties.nombre_cientifico || 'Especie no identificada';
                 speciesCount[species] = (speciesCount[species] || 0) + 1;
             });
             
@@ -399,7 +437,7 @@
             
             let speciesHTML = '<strong>Especies más comunes:</strong><br>';
             topSpecies.forEach(([species, count]) => {
-                speciesHTML += `${species}: ${count}<br>`;
+                speciesHTML += `${species}: ${count.toLocaleString()}<br>`;
             });
             
             document.getElementById('speciesList').innerHTML = speciesHTML;
@@ -410,12 +448,9 @@
             const speciesFilter = document.getElementById('speciesFilter');
             
             // Obtener especies únicas
-            const uniqueSpecies = [...new Set(allTrees.map(tree => tree.properties.especie || 'Desconocida'))].sort();
-            
-            // Limpiar opciones existentes (excepto "Todas")
-            while (speciesFilter.children.length > 1) {
-                speciesFilter.removeChild(speciesFilter.lastChild);
-            }
+            const uniqueSpecies = [...new Set(allTrees.map(tree => 
+                tree.properties.nombre_cientifico || 'Especie no identificada'
+            ))].sort();
             
             // Agregar opciones
             uniqueSpecies.forEach(species => {
@@ -426,18 +461,44 @@
             });
         }
 
+        // Función para cargar filtro de comunas
+        function loadComunaFilter() {
+            const comunaFilter = document.getElementById('comunaFilter');
+            
+            // Obtener comunas únicas
+            const uniqueComunas = [...new Set(allTrees.map(tree => 
+                tree.properties.comuna
+            ).filter(comuna => comuna != null))].sort((a, b) => a - b);
+            
+            // Agregar opciones
+            uniqueComunas.forEach(comuna => {
+                const option = document.createElement('option');
+                option.value = comuna;
+                option.textContent = `Comuna ${comuna}`;
+                comunaFilter.appendChild(option);
+            });
+        }
+
         // Función para filtrar árboles
         function filterTrees() {
             const searchTerm = document.getElementById('search').value.toLowerCase();
             const selectedSpecies = document.getElementById('speciesFilter').value;
+            const selectedComuna = document.getElementById('comunaFilter').value;
             
             const filteredTrees = allTrees.filter(tree => {
-                const especie = tree.properties.especie || 'Desconocida';
-                const calle = tree.properties.calle || '';
-                const barrio = tree.properties.barrio || '';
+                const props = tree.properties;
+                const especie = props.nombre_cientifico || 'Especie no identificada';
+                const calle = props.calle_nombre || '';
+                const direccion = props.direccion_normalizada || '';
+                const comuna = props.comuna;
                 
                 // Filtrar por especie seleccionada
                 if (selectedSpecies !== 'all' && especie !== selectedSpecies) {
+                    return false;
+                }
+                
+                // Filtrar por comuna seleccionada
+                if (selectedComuna !== 'all' && comuna != selectedComuna) {
                     return false;
                 }
                 
@@ -445,7 +506,7 @@
                 if (searchTerm && 
                     !especie.toLowerCase().includes(searchTerm) && 
                     !calle.toLowerCase().includes(searchTerm) && 
-                    !barrio.toLowerCase().includes(searchTerm)) {
+                    !direccion.toLowerCase().includes(searchTerm)) {
                     return false;
                 }
                 
@@ -456,7 +517,8 @@
             processTrees(filteredTrees);
             
             // Actualizar estadísticas
-            document.getElementById('treeCount').textContent = `Árboles mostrados: ${filteredTrees.length} de ${allTrees.length}`;
+            document.getElementById('treeCount').textContent = 
+                `Árboles mostrados: ${filteredTrees.length.toLocaleString()} de ${allTrees.length.toLocaleString()}`;
         }
 
         // Función para alternar agrupación
@@ -509,63 +571,6 @@
             }
         }
 
-        // Función para usar datos de ejemplo (en caso de error)
-        function useSampleData() {
-            // Datos de ejemplo para demostración
-            allTrees = [
-                {
-                    type: "Feature",
-                    geometry: {
-                        type: "Point",
-                        coordinates: [-58.3816, -34.6037]
-                    },
-                    properties: {
-                        especie: "Fresno",
-                        calle: "Av. Corrientes",
-                        barrio: "San Nicolás",
-                        altura: 8,
-                        diametro: 40,
-                        descripcion: "Árbol de sombra de crecimiento rápido"
-                    }
-                },
-                {
-                    type: "Feature",
-                    geometry: {
-                        type: "Point",
-                        coordinates: [-58.3836, -34.6057]
-                    },
-                    properties: {
-                        especie: "Jacarandá",
-                        calle: "Av. 9 de Julio",
-                        barrio: "San Nicolás",
-                        altura: 10,
-                        diametro: 35,
-                        descripcion: "Conocido por sus flores violetas en primavera"
-                    }
-                },
-                {
-                    type: "Feature",
-                    geometry: {
-                        type: "Point",
-                        coordinates: [-58.3796, -34.6017]
-                    },
-                    properties: {
-                        especie: "Tilo",
-                        calle: "Florida",
-                        barrio: "San Nicolás",
-                        altura: 7,
-                        diametro: 30,
-                        descripcion: "Árbol de flores aromáticas"
-                    }
-                },
-                // Agregar más árboles de ejemplo...
-            ];
-            
-            processTrees(allTrees);
-            updateTreeStats();
-            loadSpeciesFilter();
-        }
-
         // Inicialización
         document.addEventListener('DOMContentLoaded', () => {
             initMap();
@@ -574,6 +579,7 @@
             // Event listeners
             document.getElementById('search').addEventListener('input', filterTrees);
             document.getElementById('speciesFilter').addEventListener('change', filterTrees);
+            document.getElementById('comunaFilter').addEventListener('change', filterTrees);
             document.getElementById('toggleClusters').addEventListener('click', toggleClusters);
             document.getElementById('darkModeButton').addEventListener('click', toggleDarkMode);
             document.getElementById('layerToggleButton').addEventListener('click', function(e) {
