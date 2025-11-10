@@ -109,35 +109,38 @@
     }).addTo(map);
     
     // Cargar datos desde arbolado.json
-    fetch('arbolado_super_optimizado.json')
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Error al cargar el archivo JSON');
-            }
-            return response.json();
-        })
-        .then(arboles => {
-            // Crear marcadores para cada árbol
-            arboles.forEach(arbol => {
-                // Verificar que el árbol tenga coordenadas válidas
-                if (arbol.lat && arbol.lng) {
-                    const marker = L.marker([arbol.lat, arbol.lng]).addTo(map);
-                    
-                    // Contenido de la ventana de información
-                    const popupContent = `
-                        <div class="info-window">
-                            <h3>${arbol.nombre || 'Árbol'}</h3>
-                            ${arbol.especie ? `<p><strong>Especie:</strong> ${arbol.especie}</p>` : ''}
-                            ${arbol.altura ? `<p><strong>Altura:</strong> ${arbol.altura}</p>` : ''}
-                            ${arbol.edad ? `<p><strong>Edad estimada:</strong> ${arbol.edad}</p>` : ''}
-                            ${arbol.caracteristicas ? `<p><strong>Características:</strong> ${arbol.caracteristicas}</p>` : ''}
-                            ${arbol.direccion ? `<p><strong>Ubicación:</strong> ${arbol.direccion}</p>` : ''}
-                        </div>
-                    `;
-                    
-                    marker.bindPopup(popupContent);
-                }
-            });
+// En arboles.html, cambia el fetch por este código:
+fetch('arbolado_super_optimizado.json')
+    .then(response => {
+        if (!response.ok) throw new Error('No se pudo cargar el archivo');
+        return response.json();
+    })
+    .then(arboles => {
+        // Crear marcadores para cada árbol
+        arboles.forEach(arbol => {
+            const marker = L.marker([arbol.lt, arbol.ln]).addTo(map); // lt y ln en lugar de lat y lng
+            
+            // Reconstruir la información para mostrar
+            const popupContent = `
+                <div class="info-window">
+                    <h3>${arbol.n}</h3>
+                    ${arbol.e ? `<p><strong>Especie:</strong> ${arbol.e}</p>` : ''}
+                    ${arbol.a ? `<p><strong>Altura:</strong> ${arbol.a} m</p>` : ''}
+                    ${arbol.d ? `<p><strong>Diámetro:</strong> ${arbol.d} cm</p>` : ''}
+                    ${arbol.dir ? `<p><strong>Dirección:</strong> ${arbol.dir}</p>` : ''}
+                    ${arbol.c ? `<p><strong>Comuna:</strong> ${arbol.c}</p>` : ''}
+                </div>
+            `;
+            
+            marker.bindPopup(popupContent);
+        });
+        
+        console.log(`Cargados ${arboles.length} árboles`);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error cargando los datos.');
+    });
             
             // Si hay árboles, ajustar la vista del mapa para mostrarlos todos
             if (arboles.length > 0 && arboles[0].lat && arboles[0].lng) {
