@@ -109,7 +109,7 @@
     }).addTo(map);
     
     // Cargar datos desde arbolado.json
-    fetch('arbolado.json')
+    fetch('arbolado_super_optimizado.json')
         .then(response => {
             if (!response.ok) {
                 throw new Error('Error al cargar el archivo JSON');
@@ -149,7 +149,7 @@
         })
         .catch(error => {
             console.error('Error cargando los datos:', error);
-            alert('Error al cargar los datos de árboles. Verifica que arbolado.json exista.');
+            alert('Error al cargar los datos de árboles. Verifica que arbolado_super_optimizado.json exista.');
         });
     
     // Intentar obtener la ubicación del usuario
