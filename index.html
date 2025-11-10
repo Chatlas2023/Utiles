@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Utilidades para el Celular</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #121212;
+            color: #e0e0e0;
+            line-height: 1.6;
+            padding: 20px;
+            background: linear-gradient(135deg, #121212 0%, #1a1a2e 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 10px;
+        }
+        
+        h1 {
+            color: #bb86fc;
+            margin-bottom: 8px;
+            font-size: 28px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .subtitle {
+            color: #a0a0a0;
+            font-size: 16px;
+        }
+        
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 20px;
+            justify-items: center;
+            margin-top: 20px;
+        }
+        
+        .game-icon {
+            background-color: #1e1e1e;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: inherit;
+            width: 110px;
+            height: 130px;
+            border: 1px solid #333;
+            padding: 12px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .game-icon:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+            border-color: #bb86fc;
+        }
+        
+        .game-symbol {
+            width: 65px;
+            height: 65px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 10px;
+            font-size: 30px;
+            color: white;
+            background-color: #2a2a2a;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+        
+        .double-flag {
+            display: flex;
+            width: 100%;
+            height: 100%;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .double-flag span {
+            flex: 1;
+            text-align: center;
+            font-size: 30px;
+            line-height: 1;
+        }
+        
+        .game-name {
+            font-size: 13px;
+            color: #bb86fc;
+            font-weight: 500;
+            line-height: 1.3;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            height: 32px;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            color: #7f7f7f;
+            font-size: 12px;
+            padding: 15px;
+            border-top: 1px solid #2a2a2a;
+        }
+        
+        @media (max-width: 600px) {
+            .games-grid {
+                grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+                gap: 15px;
+            }
+            
+            .game-icon {
+                width: 90px;
+                height: 110px;
+                padding: 10px;
+            }
+            
+            .game-symbol {
+                width: 55px;
+                height: 55px;
+                font-size: 24px;
+            }
+            
+            .double-flag span {
+                font-size: 24px;
+            }
+            
+            .game-name {
+                font-size: 11px;
+                height: 26px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Colección de Utilidades</h1>
+            <p class="subtitle">Elige una utilidad para comenzar</p>
+        </header>
+        
+        <div class="games-grid">
+                        <a href="Contador.html" class="game-icon">
+                <div class="game-symbol">
+                    🔢
+                </div>
+                <div class="game-name">Contador</div>
+            </a>
+                     
+                        <a href="Mapa.html" class="game-icon">
+                <div class="game-symbol">
+                    🗺️
+                </div>
+                <div class="game-name">Mapa Ruteador</div>
+            </a>
+            
+                        <a href="Dic_arg_esp.html" class="game-icon">
+                <div class="game-symbol">
+                    <div class="double-flag">
+                        <span>🇪🇸</span>
+                        <span>🇦🇷</span>
+                    </div>
+                </div>
+                <div class="game-name">Diccionario Esp-Arg</div>
+            </a>
+            
+                        <a href="Sumayresta.html" class="game-icon">
+                <div class="game-symbol">
+                    ➕➖
+                </div>
+                <div class="game-name">Suma y Resta</div>
+            </a>
+
+            <a href="arboles.html" class="game-icon">
+                <div class="game-symbol" style="background-color: #4CAF50;">
+                    🌳
+                </div>
+                <div class="game-name">Árboles de CABA</div>
+            </a>
+        </div>
+        
+        <footer>
+            <p>© 2025 Utilidades de Chatlas | Todos los derechos reservados</p>
+        </footer>
+    </div>
+</body>
+</html>
