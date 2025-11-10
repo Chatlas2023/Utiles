@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mapa de Árboles</title>
+    <title>Mapa de Árboles - Radio 500m</title>
     <style>
         * {
             box-sizing: border-box;
@@ -96,6 +96,36 @@
             border-radius: 10px;
             z-index: 1000;
         }
+
+        .controls {
+            position: absolute;
+            top: 80px;
+            right: 15px;
+            background: rgba(30, 30, 30, 0.9);
+            padding: 10px;
+            border-radius: 10px;
+            z-index: 1000;
+        }
+
+        .radio-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 5px;
+        }
+
+        .radio-buttons button {
+            background: #333;
+            color: white;
+            border: 1px solid #555;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .radio-buttons button.active {
+            background: #bb86fc;
+            color: #121212;
+        }
     </style>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -105,49 +135,103 @@
     
     <div class="container">
         <header>
-            <h1>Mapa de Árboles - v2.0</h1>
-            <p class="subtitle">Toca los marcadores para ver información detallada</p>
+            <h1 id="map-title">Mapa de Árboles - Radio 500m</h1>
+            <p class="subtitle" id="subtitle">Obteniendo tu ubicación...</p>
         </header>
         
         <div id="map"></div>
     </div>
 
-    <div id="loading" class="loading">Cargando árboles...</div>
+    <div class="controls">
+        <div>Radio de búsqueda:</div>
+        <div class="radio-buttons">
+            <button id="radio250" onclick="cambiarRadio(250)">250m</button>
+            <button id="radio500" onclick="cambiarRadio(500)" class="active">500m</button>
+            <button id="radio1000" onclick="cambiarRadio(1000)">1km</button>
+        </div>
+    </div>
+
+    <div id="loading" class="loading">Obteniendo tu ubicación...</div>
 
     <script>
-        // Inicializar el mapa
-        const map = L.map('map').setView([-34.6037, -58.3816], 16);
-        
-        // Capa de mapa base (OpenStreetMap)
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors'
-        }).addTo(map);
+        let mapaInicializado = false;
+        let radioActual = 500; // metros
+        let userLat, userLng;
+        let userMarker;
+        let circle;
 
-        // Cargar datos desde arbolado_super_optimizado.json
-        fetch('arbolado_super_optimizado.json')
-            .then(response => {
-                if (!response.ok) throw new Error('No se pudo cargar el archivo');
-                return response.json();
-            })
-            .then(arboles => {
-                // Ocultar loading
-                document.getElementById('loading').style.display = 'none';
-                
-                console.log(`Cargados ${arboles.length} árboles`);
-                
-                if (arboles.length === 0) {
-                    alert('No se encontraron árboles en el archivo');
-                    return;
-                }
+        // Función para calcular distancia entre dos coordenadas (fórmula Haversine)
+        function calcularDistancia(lat1, lon1, lat2, lon2) {
+            const R = 6371000; // Radio de la Tierra en metros
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = 
+                Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c;
+        }
 
-                // Crear marcadores para cada árbol
-                const markers = [];
-                arboles.forEach(arbol => {
-                    // Verificar que tenga coordenadas válidas
-                    if (arbol.lt && arbol.ln) {
+        // Función para cambiar el radio de búsqueda
+        function cambiarRadio(nuevoRadio) {
+            radioActual = nuevoRadio;
+            
+            // Actualizar botones activos
+            document.getElementById('radio250').classList.toggle('active', nuevoRadio === 250);
+            document.getElementById('radio500').classList.toggle('active', nuevoRadio === 500);
+            document.getElementById('radio1000').classList.toggle('active', nuevoRadio === 1000);
+            
+            // Actualizar título
+            document.getElementById('map-title').textContent = `Mapa de Árboles - Radio ${nuevoRadio}m`;
+            
+            // Si ya tenemos ubicación, recargar árboles
+            if (userLat && userLng) {
+                cargarArbolesCercanos(userLat, userLng, nuevoRadio);
+            }
+        }
+
+        // Función para cargar árboles dentro del radio
+        function cargarArbolesCercanos(lat, lng, radio) {
+            const loading = document.getElementById('loading');
+            loading.style.display = 'block';
+            loading.textContent = `Cargando árboles en radio de ${radio}m...`;
+
+            // Actualizar círculo de radio
+            if (circle) {
+                map.removeLayer(circle);
+            }
+            circle = L.circle([lat, lng], {
+                color: '#bb86fc',
+                fillColor: '#bb86fc',
+                fillOpacity: 0.1,
+                radius: radio
+            }).addTo(map);
+
+            fetch('arbolado_super_optimizado.json')
+                .then(response => {
+                    if (!response.ok) throw new Error('No se pudo cargar el archivo');
+                    return response.json();
+                })
+                .then(todosArboles => {
+                    // Filtrar árboles dentro del radio
+                    const arbolesCercanos = todosArboles.filter(arbol => {
+                        if (!arbol.lt || !arbol.ln) return false;
+                        const distancia = calcularDistancia(lat, lng, arbol.lt, arbol.ln);
+                        return distancia <= radio;
+                    });
+
+                    // Limpiar marcadores anteriores (excepto el del usuario)
+                    map.eachLayer(layer => {
+                        if (layer instanceof L.Marker && layer !== userMarker) {
+                            map.removeLayer(layer);
+                        }
+                    });
+
+                    // Crear marcadores para árboles cercanos
+                    arbolesCercanos.forEach(arbol => {
                         const marker = L.marker([arbol.lt, arbol.ln]).addTo(map);
                         
-                        // Reconstruir la información para mostrar
                         const popupContent = `
                             <div class="info-window">
                                 <h3>${arbol.n || 'Árbol'}</h3>
@@ -160,46 +244,72 @@
                         `;
                         
                         marker.bindPopup(popupContent);
-                        markers.push(marker);
-                    }
+                    });
+
+                    loading.style.display = 'none';
+                    
+                    // Actualizar subtítulo
+                    document.getElementById('subtitle').textContent = 
+                        `${arbolesCercanos.length} árboles encontrados en ${radio}m a la redonda`;
+
+                    console.log(`Cargados ${arbolesCercanos.length} árboles de ${todosArboles.length} totales`);
+                })
+                .catch(error => {
+                    loading.style.display = 'none';
+                    console.error('Error:', error);
+                    alert('Error cargando los datos: ' + error.message);
                 });
+        }
 
-                console.log(`Marcadores creados: ${markers.length}`);
-
-                // Ajustar la vista del mapa para mostrar todos los árboles
-                if (markers.length > 0) {
-                    const group = new L.featureGroup(markers);
-                    map.fitBounds(group.getBounds().pad(0.1));
-                } else {
-                    console.log('No se pudieron crear marcadores - coordenadas inválidas');
-                }
-            })
-            .catch(error => {
-                document.getElementById('loading').style.display = 'none';
-                console.error('Error:', error);
-                alert('Error cargando los datos: ' + error.message);
-            });
+        // Inicializar el mapa
+        const map = L.map('map').setView([-34.6037, -58.3816], 15);
         
-        // Intentar obtener la ubicación del usuario
+        // Capa de mapa base (OpenStreetMap)
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        // Obtener ubicación del usuario
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
                 function(position) {
-                    const userLat = position.coords.latitude;
-                    const userLng = position.coords.longitude;
+                    userLat = position.coords.latitude;
+                    userLng = position.coords.longitude;
                     
-                    // Agregar marcador de la ubicación del usuario
-                    L.marker([userLat, userLng])
+                    // Centrar mapa en la ubicación del usuario
+                    map.setView([userLat, userLng], 16);
+                    
+                    // Agregar marcador del usuario
+                    userMarker = L.marker([userLat, userLng])
                         .addTo(map)
                         .bindPopup('<div class="info-window"><h3>Tu ubicación</h3><p>Estás aquí</p></div>')
                         .openPopup();
+
+                    // Cargar árboles cercanos
+                    cargarArbolesCercanos(userLat, userLng, radioActual);
+                    
+                    mapaInicializado = true;
                 },
                 function(error) {
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('subtitle').textContent = 
+                        'No se pudo obtener tu ubicación. Usando vista por defecto.';
                     console.log("Error obteniendo ubicación:", error);
+                    
+                    // Cargar algunos árboles de ejemplo en Buenos Aires
+                    cargarArbolesCercanos(-34.6037, -58.3816, radioActual);
                 }
             );
+        } else {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('subtitle').textContent = 
+                'Geolocalización no soportada. Usando vista por defecto.';
+            
+            // Cargar algunos árboles de ejemplo en Buenos Aires
+            cargarArbolesCercanos(-34.6037, -58.3816, radioActual);
         }
         
-        // Ajustar el tamaño del mapa cuando la ventana cambie de tamaño
+        // Ajustar el tamaño del mapa
         setTimeout(() => {
             map.invalidateSize();
         }, 100);
