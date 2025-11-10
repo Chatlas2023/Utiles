@@ -84,6 +84,18 @@
             justify-content: center;
             text-decoration: none;
         }
+
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            z-index: 1000;
+        }
     </style>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -99,85 +111,98 @@
         
         <div id="map"></div>
     </div>
-<script>
-    // Inicializar el mapa
-    const map = L.map('map').setView([-34.6037, -58.3816], 16); // Buenos Aires por defecto, zoom 16 (~200 metros)
-    
-    // Capa de mapa base (OpenStreetMap)
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors'
-    }).addTo(map);
-    
-    // Cargar datos desde arbolado.json
-// En arboles.html, cambia el fetch por este código:
-fetch('arbolado_super_optimizado.json')
-    .then(response => {
-        if (!response.ok) throw new Error('No se pudo cargar el archivo');
-        return response.json();
-    })
-    .then(arboles => {
-        // Crear marcadores para cada árbol
-        arboles.forEach(arbol => {
-            const marker = L.marker([arbol.lt, arbol.ln]).addTo(map); // lt y ln en lugar de lat y lng
-            
-            // Reconstruir la información para mostrar
-            const popupContent = `
-                <div class="info-window">
-                    <h3>${arbol.n}</h3>
-                    ${arbol.e ? `<p><strong>Especie:</strong> ${arbol.e}</p>` : ''}
-                    ${arbol.a ? `<p><strong>Altura:</strong> ${arbol.a} m</p>` : ''}
-                    ${arbol.d ? `<p><strong>Diámetro:</strong> ${arbol.d} cm</p>` : ''}
-                    ${arbol.dir ? `<p><strong>Dirección:</strong> ${arbol.dir}</p>` : ''}
-                    ${arbol.c ? `<p><strong>Comuna:</strong> ${arbol.c}</p>` : ''}
-                </div>
-            `;
-            
-            marker.bindPopup(popupContent);
-        });
+
+    <div id="loading" class="loading">Cargando árboles...</div>
+
+    <script>
+        // Inicializar el mapa
+        const map = L.map('map').setView([-34.6037, -58.3816], 16);
         
-        console.log(`Cargados ${arboles.length} árboles`);
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('Error cargando los datos.');
-    });
-            
-            // Si hay árboles, ajustar la vista del mapa para mostrarlos todos
-            if (arboles.length > 0 && arboles[0].lat && arboles[0].lng) {
-                const group = new L.featureGroup(arboles.map(arbol => 
-                    arbol.lat && arbol.lng ? L.marker([arbol.lat, arbol.lng]) : null
-                ).filter(Boolean));
-                map.fitBounds(group.getBounds().pad(0.1));
-            }
-        })
-        .catch(error => {
-            console.error('Error cargando los datos:', error);
-            alert('Error al cargar los datos de árboles. Verifica que arbolado_super_optimizado.json exista.');
-        });
-    
-    // Intentar obtener la ubicación del usuario
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-            function(position) {
-                const userLat = position.coords.latitude;
-                const userLng = position.coords.longitude;
+        // Capa de mapa base (OpenStreetMap)
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        // Cargar datos desde arbolado_super_optimizado.json
+        fetch('arbolado_super_optimizado.json')
+            .then(response => {
+                if (!response.ok) throw new Error('No se pudo cargar el archivo');
+                return response.json();
+            })
+            .then(arboles => {
+                // Ocultar loading
+                document.getElementById('loading').style.display = 'none';
                 
-                // Agregar marcador de la ubicación del usuario
-                L.marker([userLat, userLng])
-                    .addTo(map)
-                    .bindPopup('<div class="info-window"><h3>Tu ubicación</h3><p>Estás aquí</p></div>')
-                    .openPopup();
-            },
-            function(error) {
-                console.log("Error obteniendo ubicación:", error);
-            }
-        );
-    }
-    
-    // Ajustar el tamaño del mapa cuando la ventana cambie de tamaño
-    setTimeout(() => {
-        map.invalidateSize();
-    }, 100);
-</script>
+                console.log(`Cargados ${arboles.length} árboles`);
+                
+                if (arboles.length === 0) {
+                    alert('No se encontraron árboles en el archivo');
+                    return;
+                }
+
+                // Crear marcadores para cada árbol
+                const markers = [];
+                arboles.forEach(arbol => {
+                    // Verificar que tenga coordenadas válidas
+                    if (arbol.lt && arbol.ln) {
+                        const marker = L.marker([arbol.lt, arbol.ln]).addTo(map);
+                        
+                        // Reconstruir la información para mostrar
+                        const popupContent = `
+                            <div class="info-window">
+                                <h3>${arbol.n || 'Árbol'}</h3>
+                                ${arbol.e ? `<p><strong>Especie:</strong> ${arbol.e}</p>` : ''}
+                                ${arbol.a ? `<p><strong>Altura:</strong> ${arbol.a} m</p>` : ''}
+                                ${arbol.d ? `<p><strong>Diámetro:</strong> ${arbol.d} cm</p>` : ''}
+                                ${arbol.dir ? `<p><strong>Dirección:</strong> ${arbol.dir}</p>` : ''}
+                                ${arbol.c ? `<p><strong>Comuna:</strong> ${arbol.c}</p>` : ''}
+                            </div>
+                        `;
+                        
+                        marker.bindPopup(popupContent);
+                        markers.push(marker);
+                    }
+                });
+
+                console.log(`Marcadores creados: ${markers.length}`);
+
+                // Ajustar la vista del mapa para mostrar todos los árboles
+                if (markers.length > 0) {
+                    const group = new L.featureGroup(markers);
+                    map.fitBounds(group.getBounds().pad(0.1));
+                } else {
+                    console.log('No se pudieron crear marcadores - coordenadas inválidas');
+                }
+            })
+            .catch(error => {
+                document.getElementById('loading').style.display = 'none';
+                console.error('Error:', error);
+                alert('Error cargando los datos: ' + error.message);
+            });
+        
+        // Intentar obtener la ubicación del usuario
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                function(position) {
+                    const userLat = position.coords.latitude;
+                    const userLng = position.coords.longitude;
+                    
+                    // Agregar marcador de la ubicación del usuario
+                    L.marker([userLat, userLng])
+                        .addTo(map)
+                        .bindPopup('<div class="info-window"><h3>Tu ubicación</h3><p>Estás aquí</p></div>')
+                        .openPopup();
+                },
+                function(error) {
+                    console.log("Error obteniendo ubicación:", error);
+                }
+            );
+        }
+        
+        // Ajustar el tamaño del mapa cuando la ventana cambie de tamaño
+        setTimeout(() => {
+            map.invalidateSize();
+        }, 100);
+    </script>
 </body>
 </html>
