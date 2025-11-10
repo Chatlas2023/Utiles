@@ -99,115 +99,82 @@
         
         <div id="map"></div>
     </div>
-
-    <script>
-        // Inicializar el mapa
-        const map = L.map('map').setView([-34.6037, -58.3816], 16); // Buenos Aires por defecto, zoom 16 (~200 metros)
-        
-        // Capa de mapa base (OpenStreetMap)
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors'
-        }).addTo(map);
-        
-        // Conjunto de datos de árboles de ejemplo
-        const arboles = [
-            {
-                lat: -34.6037,
-                lng: -58.3816,
-                nombre: "Ombú",
-                especie: "Phytolacca dioica",
-                altura: "8 metros",
-                edad: "Aprox. 50 años",
-                caracteristicas: "Árbol emblemático de la pampa, de tronco grueso y copa amplia."
-            },
-            {
-                lat: -34.6040,
-                lng: -58.3820,
-                nombre: "Jacarandá",
-                especie: "Jacaranda mimosifolia",
-                altura: "12 metros",
-                edad: "Aprox. 30 años",
-                caracteristicas: "Conocido por sus flores violetas en primavera."
-            },
-            {
-                lat: -34.6035,
-                lng: -58.3810,
-                nombre: "Palo Borracho",
-                especie: "Ceiba speciosa",
-                altura: "15 metros",
-                edad: "Aprox. 40 años",
-                caracteristicas: "Tronco espinoso y abultado, flores rosadas."
-            },
-            {
-                lat: -34.6045,
-                lng: -58.3815,
-                nombre: "Tipa",
-                especie: "Tipuana tipu",
-                altura: "18 metros",
-                edad: "Aprox. 60 años",
-                caracteristicas: "Árbol de gran porte, flores amarillas en verano."
-            },
-            {
-                lat: -34.6032,
-                lng: -58.3825,
-                nombre: "Lapacho",
-                especie: "Handroanthus impetiginosus",
-                altura: "10 metros",
-                edad: "Aprox. 25 años",
-                caracteristicas: "Flores rosadas intensas, madera muy dura."
+<script>
+    // Inicializar el mapa
+    const map = L.map('map').setView([-34.6037, -58.3816], 16); // Buenos Aires por defecto, zoom 16 (~200 metros)
+    
+    // Capa de mapa base (OpenStreetMap)
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+    
+    // Cargar datos desde arbolado.json
+    fetch('arbolado.json')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Error al cargar el archivo JSON');
             }
-        ];
-        
-        // Crear marcadores para cada árbol
-        arboles.forEach(arbol => {
-            const marker = L.marker([arbol.lat, arbol.lng]).addTo(map);
-            
-            // Contenido de la ventana de información
-            const popupContent = `
-                <div class="info-window">
-                    <h3>${arbol.nombre}</h3>
-                    <p><strong>Especie:</strong> ${arbol.especie}</p>
-                    <p><strong>Altura:</strong> ${arbol.altura}</p>
-                    <p><strong>Edad estimada:</strong> ${arbol.edad}</p>
-                    <p><strong>Características:</strong> ${arbol.caracteristicas}</p>
-                </div>
-            `;
-            
-            marker.bindPopup(popupContent);
-        });
-        
-        // Intentar obtener la ubicación del usuario
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-                function(position) {
-                    const userLat = position.coords.latitude;
-                    const userLng = position.coords.longitude;
+            return response.json();
+        })
+        .then(arboles => {
+            // Crear marcadores para cada árbol
+            arboles.forEach(arbol => {
+                // Verificar que el árbol tenga coordenadas válidas
+                if (arbol.lat && arbol.lng) {
+                    const marker = L.marker([arbol.lat, arbol.lng]).addTo(map);
                     
-                    // Centrar el mapa en la ubicación del usuario con zoom 16 (~200 metros)
-                    map.setView([userLat, userLng], 16);
+                    // Contenido de la ventana de información
+                    const popupContent = `
+                        <div class="info-window">
+                            <h3>${arbol.nombre || 'Árbol'}</h3>
+                            ${arbol.especie ? `<p><strong>Especie:</strong> ${arbol.especie}</p>` : ''}
+                            ${arbol.altura ? `<p><strong>Altura:</strong> ${arbol.altura}</p>` : ''}
+                            ${arbol.edad ? `<p><strong>Edad estimada:</strong> ${arbol.edad}</p>` : ''}
+                            ${arbol.caracteristicas ? `<p><strong>Características:</strong> ${arbol.caracteristicas}</p>` : ''}
+                            ${arbol.direccion ? `<p><strong>Ubicación:</strong> ${arbol.direccion}</p>` : ''}
+                        </div>
+                    `;
                     
-                    // Agregar marcador de la ubicación del usuario
-                    L.marker([userLat, userLng])
-                        .addTo(map)
-                        .bindPopup('<div class="info-window"><h3>Tu ubicación</h3><p>Estás aquí</p></div>')
-                        .openPopup();
-                },
-                function(error) {
-                    console.log("Error obteniendo ubicación:", error);
-                    // Mantener la vista por defecto con zoom 16
-                    map.setView([-34.6037, -58.3816], 16);
+                    marker.bindPopup(popupContent);
                 }
-            );
-        } else {
-            console.log("Geolocalización no soportada");
-            // Mantener la vista por defecto con zoom 16
-            map.setView([-34.6037, -58.3816], 16);
-        }
-        
-        // Ajustar el tamaño del mapa cuando la ventana cambie de tamaño
-        setTimeout(() => {
-            map.invalidateSize();
-        }, 100);
-    </script>
+            });
+            
+            // Si hay árboles, ajustar la vista del mapa para mostrarlos todos
+            if (arboles.length > 0 && arboles[0].lat && arboles[0].lng) {
+                const group = new L.featureGroup(arboles.map(arbol => 
+                    arbol.lat && arbol.lng ? L.marker([arbol.lat, arbol.lng]) : null
+                ).filter(Boolean));
+                map.fitBounds(group.getBounds().pad(0.1));
+            }
+        })
+        .catch(error => {
+            console.error('Error cargando los datos:', error);
+            alert('Error al cargar los datos de árboles. Verifica que arbolado.json exista.');
+        });
+    
+    // Intentar obtener la ubicación del usuario
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            function(position) {
+                const userLat = position.coords.latitude;
+                const userLng = position.coords.longitude;
+                
+                // Agregar marcador de la ubicación del usuario
+                L.marker([userLat, userLng])
+                    .addTo(map)
+                    .bindPopup('<div class="info-window"><h3>Tu ubicación</h3><p>Estás aquí</p></div>')
+                    .openPopup();
+            },
+            function(error) {
+                console.log("Error obteniendo ubicación:", error);
+            }
+        );
+    }
+    
+    // Ajustar el tamaño del mapa cuando la ventana cambie de tamaño
+    setTimeout(() => {
+        map.invalidateSize();
+    }, 100);
+</script>
 </body>
 </html>
