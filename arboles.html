@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapa de Árboles - Radio 500m</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #121212;
+            color: #e0e0e0;
+            line-height: 1.6;
+            padding: 0;
+        }
+        
+        .container {
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        header {
+            background-color: #1e1e1e;
+            padding: 15px;
+            text-align: center;
+            border-bottom: 1px solid #333;
+        }
+        
+        h1 {
+            color: #bb86fc;
+            font-size: 20px;
+        }
+        
+        .subtitle {
+            color: #a0a0a0;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        
+        #map {
+            flex: 1;
+            width: 100%;
+        }
+        
+        .info-window {
+            color: #121212;
+            padding: 10px;
+            max-width: 250px;
+        }
+        
+        .info-window h3 {
+            color: #2d5016;
+            margin-bottom: 8px;
+        }
+        
+        .info-window p {
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+        
+        .back-button {
+            position: absolute;
+            top: 80px;
+            left: 15px;
+            background-color: #bb86fc;
+            color: #121212;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            font-size: 18px;
+            cursor: pointer;
+            z-index: 1000;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+        }
+
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            z-index: 1000;
+        }
+
+        .controls {
+            position: absolute;
+            top: 80px;
+            right: 15px;
+            background: rgba(30, 30, 30, 0.9);
+            padding: 10px;
+            border-radius: 10px;
+            z-index: 1000;
+        }
+
+        .radio-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 5px;
+        }
+
+        .radio-buttons button {
+            background: #333;
+            color: white;
+            border: 1px solid #555;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .radio-buttons button.active {
+            background: #bb86fc;
+            color: #121212;
+        }
+        
+        .mode-toggle {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(30, 30, 30, 0.9);
+            padding: 10px 15px;
+            border-radius: 20px;
+            z-index: 1000;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .mode-toggle button {
+            background: #333;
+            color: white;
+            border: 1px solid #555;
+            padding: 8px 15px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .mode-toggle button.active {
+            background: #bb86fc;
+            color: #121212;
+        }
+    </style>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body>
+    <a href="index.html" class="back-button">←</a>
+    
+    <div class="container">
+        <header>
+            <h1 id="map-title">Mapa de Árboles - Radio 500m</h1>
+            <p class="subtitle" id="subtitle">Obteniendo tu ubicación...</p>
+        </header>
+        
+        <div id="map"></div>
+    </div>
+
+    <div class="controls">
+        <div>Radio de búsqueda:</div>
+        <div class="radio-buttons">
+            <button id="radio250" onclick="cambiarRadio(250)">250m</button>
+            <button id="radio500" onclick="cambiarRadio(500)" class="active">500m</button>
+            <button id="radio1000" onclick="cambiarRadio(1000)">1km</button>
+        </div>
+    </div>
+    
+    <div class="mode-toggle">
+        <button id="mode-gps" onclick="cambiarModo('gps')" class="active">Usar mi ubicación</button>
+        <button id="mode-tap" onclick="cambiarModo('tap')">Tocar en el mapa</button>
+    </div>
+
+    <div id="loading" class="loading">Obteniendo tu ubicación...</div>
+
+    <script>
+        let mapaInicializado = false;
+        let radioActual = 500; // metros
+        let userLat, userLng;
+        let userMarker;
+        let circle;
+        let modoActual = 'gps'; // 'gps' o 'tap'
+        let tapMarker;
+
+        // Función para calcular distancia entre dos coordenadas (fórmula Haversine)
+        function calcularDistancia(lat1, lon1, lat2, lon2) {
+            const R = 6371000; // Radio de la Tierra en metros
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = 
+                Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c;
+        }
+
+        // Función para cambiar el radio de búsqueda
+        function cambiarRadio(nuevoRadio) {
+            radioActual = nuevoRadio;
+            
+            // Actualizar botones activos
+            document.getElementById('radio250').classList.toggle('active', nuevoRadio === 250);
+            document.getElementById('radio500').classList.toggle('active', nuevoRadio === 500);
+            document.getElementById('radio1000').classList.toggle('active', nuevoRadio === 1000);
+            
+            // Actualizar título
+            document.getElementById('map-title').textContent = `Mapa de Árboles - Radio ${nuevoRadio}m`;
+            
+            // Si ya tenemos ubicación, recargar árboles
+            if (modoActual === 'gps' && userLat && userLng) {
+                cargarArbolesCercanos(userLat, userLng, nuevoRadio);
+            } else if (modoActual === 'tap' && tapMarker) {
+                const latlng = tapMarker.getLatLng();
+                cargarArbolesCercanos(latlng.lat, latlng.lng, nuevoRadio);
+            }
+        }
+
+        // Función para cambiar el modo de selección
+        function cambiarModo(modo) {
+            modoActual = modo;
+            
+            // Actualizar botones activos
+            document.getElementById('mode-gps').classList.toggle('active', modo === 'gps');
+            document.getElementById('mode-tap').classList.toggle('active', modo === 'tap');
+            
+            // Actualizar subtítulo
+            if (modo === 'gps') {
+                document.getElementById('subtitle').textContent = 'Usando tu ubicación GPS';
+                
+                // Si tenemos ubicación GPS, cargar árboles
+                if (userLat && userLng) {
+                    cargarArbolesCercanos(userLat, userLng, radioActual);
+                } else {
+                    obtenerUbicacionGPS();
+                }
+                
+                // Eliminar marcador de toque si existe
+                if (tapMarker) {
+                    map.removeLayer(tapMarker);
+                    tapMarker = null;
+                }
+            } else {
+                document.getElementById('subtitle').textContent = 'Toca en el mapa para seleccionar ubicación';
+                
+                // Eliminar marcador de usuario si existe
+                if (userMarker) {
+                    map.removeLayer(userMarker);
+                    userMarker = null;
+                }
+                
+                // Eliminar círculo si existe
+                if (circle) {
+                    map.removeLayer(circle);
+                    circle = null;
+                }
+            }
+        }
+
+        // Función para obtener ubicación GPS
+        function obtenerUbicacionGPS() {
+            const loading = document.getElementById('loading');
+            loading.style.display = 'block';
+            loading.textContent = 'Obteniendo tu ubicación...';
+            
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        userLat = position.coords.latitude;
+                        userLng = position.coords.longitude;
+                        
+                        // Centrar mapa en la ubicación del usuario
+                        map.setView([userLat, userLng], 16);
+                        
+                        // Agregar marcador del usuario
+                        userMarker = L.marker([userLat, userLng])
+                            .addTo(map)
+                            .bindPopup('<div class="info-window"><h3>Tu ubicación</h3><p>Estás aquí</p></div>')
+                            .openPopup();
+
+                        // Cargar árboles cercanos
+                        cargarArbolesCercanos(userLat, userLng, radioActual);
+                        
+                        mapaInicializado = true;
+                        loading.style.display = 'none';
+                    },
+                    function(error) {
+                        loading.style.display = 'none';
+                        document.getElementById('subtitle').textContent = 
+                            'No se pudo obtener tu ubicación. Cambia a modo "Tocar en el mapa".';
+                        console.log("Error obteniendo ubicación:", error);
+                    }
+                );
+            } else {
+                loading.style.display = 'none';
+                document.getElementById('subtitle').textContent = 
+                    'Geolocalización no soportada. Cambia a modo "Tocar en el mapa".';
+            }
+        }
+
+        // Función para cargar árboles dentro del radio
+        function cargarArbolesCercanos(lat, lng, radio) {
+            const loading = document.getElementById('loading');
+            loading.style.display = 'block';
+            loading.textContent = `Cargando árboles en radio de ${radio}m...`;
+
+            // Actualizar círculo de radio
+            if (circle) {
+                map.removeLayer(circle);
+            }
+            circle = L.circle([lat, lng], {
+                color: '#bb86fc',
+                fillColor: '#bb86fc',
+                fillOpacity: 0.1,
+                radius: radio
+            }).addTo(map);
+
+            fetch('arbolado.json')
+                .then(response => {
+                    if (!response.ok) throw new Error('No se pudo cargar el archivo');
+                    return response.json();
+                })
+                .then(todosArboles => {
+                    // Filtrar árboles dentro del radio
+                    const arbolesCercanos = todosArboles.filter(arbol => {
+                        if (!arbol.lt || !arbol.ln) return false;
+                        const distancia = calcularDistancia(lat, lng, arbol.lt, arbol.ln);
+                        return distancia <= radio;
+                    });
+
+                    // Limpiar marcadores anteriores (excepto el del usuario o toque)
+                    map.eachLayer(layer => {
+                        if (layer instanceof L.Marker && layer !== userMarker && layer !== tapMarker) {
+                            map.removeLayer(layer);
+                        }
+                    });
+
+                    // Crear marcadores para árboles cercanos
+                    arbolesCercanos.forEach(arbol => {
+                        const marker = L.marker([arbol.lt, arbol.ln]).addTo(map);
+                        
+                        const popupContent = `
+                            <div class="info-window">
+                                <h3>${arbol.n || 'Árbol'}</h3>
+                                ${arbol.e ? `<p><strong>Especie:</strong> ${arbol.e}</p>` : ''}
+                                ${arbol.a ? `<p><strong>Altura:</strong> ${arbol.a} m</p>` : ''}
+                                ${arbol.d ? `<p><strong>Diámetro:</strong> ${arbol.d} cm</p>` : ''}
+                                ${arbol.dir ? `<p><strong>Dirección:</strong> ${arbol.dir}</p>` : ''}
+                                ${arbol.c ? `<p><strong>Comuna:</strong> ${arbol.c}</p>` : ''}
+                            </div>
+                        `;
+                        
+                        marker.bindPopup(popupContent);
+                    });
+
+                    loading.style.display = 'none';
+                    
+                    // Actualizar subtítulo
+                    document.getElementById('subtitle').textContent = 
+                        `${arbolesCercanos.length} árboles encontrados en ${radio}m a la redonda`;
+
+                    console.log(`Cargados ${arbolesCercanos.length} árboles de ${todosArboles.length} totales`);
+                })
+                .catch(error => {
+                    loading.style.display = 'none';
+                    console.error('Error:', error);
+                    alert('Error cargando los datos: ' + error.message);
+                });
+        }
+
+        // Inicializar el mapa
+        const map = L.map('map').setView([-34.6037, -58.3816], 15);
+        
+        // Capa de mapa base (OpenStreetMap)
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        // Evento para tocar en el mapa
+        map.on('click', function(e) {
+            if (modoActual === 'tap') {
+                const lat = e.latlng.lat;
+                const lng = e.latlng.lng;
+                
+                // Eliminar marcador anterior si existe
+                if (tapMarker) {
+                    map.removeLayer(tapMarker);
+                }
+                
+                // Crear nuevo marcador
+                tapMarker = L.marker([lat, lng])
+                    .addTo(map)
+                    .bindPopup('<div class="info-window"><h3>Ubicación seleccionada</h3><p>Área de búsqueda</p></div>')
+                    .openPopup();
+                
+                // Cargar árboles cercanos
+                cargarArbolesCercanos(lat, lng, radioActual);
+            }
+        });
+
+        // Obtener ubicación inicial
+        obtenerUbicacionGPS();
+        
+        // Ajustar el tamaño del mapa
+        setTimeout(() => {
+            map.invalidateSize();
+        }, 100);
+    </script>
+</body>
+</html>
