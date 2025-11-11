@@ -162,18 +162,37 @@
             font-size: 12px;
         }
 
-        .test-location {
+        .action-buttons {
             position: absolute;
             top: 170px;
             right: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            z-index: 1000;
+        }
+
+        .action-buttons button {
             background: #bb86fc;
             color: #121212;
             border: none;
-            padding: 5px 10px;
+            padding: 8px 12px;
             border-radius: 5px;
             cursor: pointer;
-            z-index: 1000;
             font-size: 12px;
+            white-space: nowrap;
+        }
+
+        .radio-info {
+            position: absolute;
+            top: 80px;
+            right: 15px;
+            background: rgba(30, 30, 30, 0.9);
+            padding: 10px;
+            border-radius: 10px;
+            z-index: 1000;
+            color: #bb86fc;
+            font-size: 14px;
         }
     </style>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -185,27 +204,34 @@
     <div class="container">
         <header>
             <h1>Mapa de Árboles</h1>
-            <div class="version">Versión 2.3 - Nov 2024</div>
+            <div class="version">Versión 3.0 - Nov 2024</div>
             <p class="subtitle" id="subtitle">Obteniendo tu ubicación...</p>
         </header>
         
         <div id="map"></div>
     </div>
+
+    <div class="radio-info" id="radio-info">Radio: 200m</div>
     
     <div class="mode-toggle">
         <button id="mode-gps" onclick="cambiarModo('gps')" class="active">Usar mi ubicación</button>
         <button id="mode-tap" onclick="cambiarModo('tap')">Tocar en el mapa</button>
     </div>
 
+    <div class="action-buttons">
+        <button onclick="irAZonaArboles()">Ir a Buenos Aires</button>
+        <button onclick="aumentarRadio()">Aumentar Radio</button>
+        <button onclick="mostrarTodosArboles()">Mostrar Todos</button>
+    </div>
+
     <button class="debug-toggle" onclick="toggleDebug()">Depuración</button>
-    <button class="test-location" onclick="irAZonaArboles()">Ir a zona con árboles</button>
     <div id="debug-panel" class="debug-panel"></div>
 
     <div id="loading" class="loading">Obteniendo tu ubicación...</div>
 
     <script>
         let mapaInicializado = false;
-        const radioFijo = 200; // Radio fijo de 200 metros
+        let radioActual = 200; // Radio variable
         let userLat, userLng;
         let userMarker;
         let circle;
@@ -227,13 +253,87 @@
             debugPanel.style.display = debugPanel.style.display === 'none' ? 'block' : 'none';
         }
 
-        // Función para ir a una zona conocida con árboles
+        // Función para actualizar la información del radio
+        function actualizarRadioInfo() {
+            document.getElementById('radio-info').textContent = `Radio: ${radioActual}m`;
+        }
+
+        // Función para aumentar el radio de búsqueda
+        function aumentarRadio() {
+            if (radioActual === 200) {
+                radioActual = 1000; // 1km
+            } else if (radioActual === 1000) {
+                radioActual = 5000; // 5km
+            } else if (radioActual === 5000) {
+                radioActual = 20000; // 20km
+            } else {
+                radioActual = 200; // Volver a 200m
+            }
+            
+            actualizarRadioInfo();
+            debugLog(`📏 Radio aumentado a: ${radioActual}m`);
+            
+            // Recargar árboles con nuevo radio
+            if (modoActual === 'gps' && userLat && userLng) {
+                cargarArbolesCercanos(userLat, userLng);
+            } else if (modoActual === 'tap' && tapMarker) {
+                const latlng = tapMarker.getLatLng();
+                cargarArbolesCercanos(latlng.lat, latlng.lng);
+            }
+        }
+
+        // Función para mostrar todos los árboles sin filtrar
+        function mostrarTodosArboles() {
+            debugLog("🌳 Mostrando TODOS los árboles del dataset");
+            
+            const loading = document.getElementById('loading');
+            loading.style.display = 'block';
+            loading.textContent = 'Cargando todos los árboles...';
+
+            fetch('arbolado.json')
+                .then(response => response.json())
+                .then(todosArboles => {
+                    // Limpiar marcadores anteriores
+                    map.eachLayer(layer => {
+                        if (layer instanceof L.Marker && layer !== userMarker && layer !== tapMarker) {
+                            map.removeLayer(layer);
+                        }
+                    });
+
+                    // Crear marcadores para todos los árboles
+                    todosArboles.forEach(arbol => {
+                        if (arbol.lat && arbol.lng) {
+                            const marker = L.marker([arbol.lat, arbol.lng]).addTo(map);
+                            
+                            const popupContent = `
+                                <div class="info-window">
+                                    <h3>${arbol.especie || 'Árbol'}</h3>
+                                    ${arbol.direccion ? `<p><strong>Dirección:</strong> ${arbol.direccion}</p>` : ''}
+                                </div>
+                            `;
+                            
+                            marker.bindPopup(popupContent);
+                        }
+                    });
+
+                    loading.style.display = 'none';
+                    document.getElementById('subtitle').textContent = 
+                        `${todosArboles.length} árboles cargados (todos los datos)`;
+                    debugLog(`✅ Mostrados ${todosArboles.length} árboles`);
+                })
+                .catch(error => {
+                    loading.style.display = 'none';
+                    debugLog(`❌ Error: ${error.message}`);
+                });
+        }
+
+        // Función para ir a Buenos Aires donde están los árboles
         function irAZonaArboles() {
             // Coordenadas del centro de Buenos Aires donde sabemos que hay árboles
             const latArboles = -34.5923;
             const lngArboles = -58.3815;
             
-            debugLog(`📍 Yendo a zona con árboles: ${latArboles}, ${lngArboles}`);
+            debugLog(`📍 Yendo a Buenos Aires: ${latArboles}, ${lngArboles}`);
             
             map.setView([latArboles, lngArboles], 16);
             
@@ -244,7 +344,7 @@
             
             tapMarker = L.marker([latArboles, lngArboles])
                 .addTo(map)
-                .bindPopup('<div class="info-window"><h3>Zona con árboles</h3><p>Ubicación de prueba</p></div>')
+                .bindPopup('<div class="info-window"><h3>Buenos Aires - Centro</h3><p>Zona con árboles registrados</p></div>')
                 .openPopup();
             
             // Cambiar a modo tap y buscar árboles
@@ -252,9 +352,9 @@
             cargarArbolesCercanos(latArboles, lngArboles);
         }
 
-        // Función para calcular distancia entre dos coordenadas (fórmula Haversine)
+        // Función para calcular distancia entre dos coordenadas
         function calcularDistancia(lat1, lon1, lat2, lon2) {
-            const R = 6371000; // Radio de la Tierra en metros
+            const R = 6371000;
             const dLat = (lat2 - lat1) * Math.PI / 180;
             const dLon = (lon2 - lon1) * Math.PI / 180;
             const a = 
@@ -269,40 +369,24 @@
         function cambiarModo(modo) {
             modoActual = modo;
             
-            // Actualizar botones activos
             document.getElementById('mode-gps').classList.toggle('active', modo === 'gps');
             document.getElementById('mode-tap').classList.toggle('active', modo === 'tap');
             
-            // Actualizar subtítulo
             if (modo === 'gps') {
                 document.getElementById('subtitle').textContent = 'Usando tu ubicación GPS';
-                
-                // Si tenemos ubicación GPS, cargar árboles
                 if (userLat && userLng) {
                     cargarArbolesCercanos(userLat, userLng);
                 } else {
                     obtenerUbicacionGPS();
                 }
-                
-                // Eliminar marcador de toque si existe
                 if (tapMarker) {
                     map.removeLayer(tapMarker);
                     tapMarker = null;
                 }
             } else {
                 document.getElementById('subtitle').textContent = 'Toca en el mapa para seleccionar ubicación';
-                
-                // Eliminar marcador de usuario si existe
-                if (userMarker) {
-                    map.removeLayer(userMarker);
-                    userMarker = null;
-                }
-                
-                // Eliminar círculo si existe
-                if (circle) {
-                    map.removeLayer(circle);
-                    circle = null;
-                }
+                if (userMarker) map.removeLayer(userMarker);
+                if (circle) map.removeLayer(circle);
             }
         }
 
@@ -311,7 +395,7 @@
             const loading = document.getElementById('loading');
             loading.style.display = 'block';
             loading.textContent = 'Obteniendo tu ubicación...';
-            debugLog("Solicitando ubicación GPS...");
+            debugLog("📍 Solicitando ubicación GPS...");
             
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
@@ -320,18 +404,14 @@
                         userLng = position.coords.longitude;
                         
                         debugLog(`📍 Tu ubicación: ${userLat.toFixed(6)}, ${userLng.toFixed(6)}`);
-                        debugLog(`📏 Calculando distancias a árboles...`);
                         
-                        // Centrar mapa en la ubicación del usuario
                         map.setView([userLat, userLng], 16);
                         
-                        // Agregar marcador del usuario
                         userMarker = L.marker([userLat, userLng])
                             .addTo(map)
                             .bindPopup('<div class="info-window"><h3>Tu ubicación</h3><p>Estás aquí</p></div>')
                             .openPopup();
 
-                        // Cargar árboles cercanos
                         cargarArbolesCercanos(userLat, userLng);
                         
                         mapaInicializado = true;
@@ -341,14 +421,14 @@
                         loading.style.display = 'none';
                         debugLog(`❌ Error GPS: ${error.message}`);
                         document.getElementById('subtitle').textContent = 
-                            'No se pudo obtener tu ubicación. Usa "Ir a zona con árboles".';
+                            'No se pudo obtener tu ubicación. Usa "Ir a Buenos Aires".';
                     }
                 );
             } else {
                 loading.style.display = 'none';
                 debugLog("❌ Geolocalización no soportada");
                 document.getElementById('subtitle').textContent = 
-                    'Geolocalización no soportada. Usa "Ir a zona con árboles".';
+                    'Geolocalización no soportada. Usa "Ir a Buenos Aires".';
             }
         }
 
@@ -356,87 +436,68 @@
         function cargarArbolesCercanos(lat, lng) {
             const loading = document.getElementById('loading');
             loading.style.display = 'block';
-            loading.textContent = 'Buscando árboles cercanos...';
-            debugLog(`🔍 Buscando árboles cerca de: ${lat.toFixed(6)}, ${lng.toFixed(6)}`);
+            loading.textContent = `Buscando árboles en ${radioActual}m...`;
+            debugLog(`🔍 Buscando en: ${lat.toFixed(6)}, ${lng.toFixed(6)} - Radio: ${radioActual}m`);
 
-            // Actualizar círculo de radio
-            if (circle) {
-                map.removeLayer(circle);
-            }
+            if (circle) map.removeLayer(circle);
             circle = L.circle([lat, lng], {
                 color: '#bb86fc',
                 fillColor: '#bb86fc',
                 fillOpacity: 0.1,
-                radius: radioFijo
+                radius: radioActual
             }).addTo(map);
 
-            // Cargar el JSON de árboles
             fetch('arbolado.json')
                 .then(response => {
-                    if (!response.ok) throw new Error('No se pudo cargar el archivo arbolado.json');
+                    if (!response.ok) throw new Error('No se pudo cargar arbolado.json');
                     return response.json();
                 })
                 .then(todosArboles => {
-                    debugLog(`📊 JSON cargado: ${todosArboles.length} árboles en total`);
+                    debugLog(`📊 ${todosArboles.length} árboles en total`);
                     
-                    // Mostrar las coordenadas de búsqueda vs árboles
-                    debugLog(`📍 Buscando en: ${lat.toFixed(6)}, ${lng.toFixed(6)}`);
-                    
-                    // Calcular distancias a los primeros 5 árboles
-                    debugLog("📏 Distancias a los primeros 5 árboles:");
-                    todosArboles.slice(0, 5).forEach((arbol, i) => {
+                    // Calcular distancias a los primeros 3 árboles
+                    debugLog("📏 Distancias a árboles cercanos:");
+                    todosArboles.slice(0, 3).forEach((arbol, i) => {
                         const distancia = calcularDistancia(lat, lng, arbol.lat, arbol.lng);
-                        debugLog(`   #${i+1}: ${distancia.toFixed(0)}m - ${arbol.especie}`);
+                        debugLog(`   ${distancia.toFixed(0)}m - ${arbol.especie}`);
                     });
 
-                    // Filtrar árboles dentro del radio
                     const arbolesCercanos = todosArboles.filter(arbol => {
-                        if (!arbol.lat || !arbol.lng) {
-                            return false;
-                        }
+                        if (!arbol.lat || !arbol.lng) return false;
                         const distancia = calcularDistancia(lat, lng, arbol.lat, arbol.lng);
-                        const estaCerca = distancia <= radioFijo;
-                        if (estaCerca) {
-                            debugLog(`✅ Árbol cerca: ${arbol.especie} - ${distancia.toFixed(0)}m`);
-                        }
-                        return estaCerca;
+                        return distancia <= radioActual;
                     });
 
-                    debugLog(`🎯 Árboles encontrados: ${arbolesCercanos.length}`);
+                    debugLog(`🎯 Encontrados: ${arbolesCercanos.length} árboles`);
 
-                    // Limpiar marcadores anteriores (excepto el del usuario o toque)
+                    // Limpiar y crear marcadores
                     map.eachLayer(layer => {
                         if (layer instanceof L.Marker && layer !== userMarker && layer !== tapMarker) {
                             map.removeLayer(layer);
                         }
                     });
 
-                    // Crear marcadores para árboles cercanos
                     arbolesCercanos.forEach(arbol => {
                         const marker = L.marker([arbol.lat, arbol.lng]).addTo(map);
-                        
                         const popupContent = `
                             <div class="info-window">
                                 <h3>${arbol.especie || 'Árbol'}</h3>
                                 ${arbol.direccion ? `<p><strong>Dirección:</strong> ${arbol.direccion}</p>` : ''}
-                                <p><strong>Coordenadas:</strong> ${arbol.lat.toFixed(6)}, ${arbol.lng.toFixed(6)}</p>
                             </div>
                         `;
-                        
                         marker.bindPopup(popupContent);
                     });
 
                     loading.style.display = 'none';
                     
-                    // Actualizar subtítulo
                     if (arbolesCercanos.length === 0) {
                         document.getElementById('subtitle').textContent = 
-                            'No se encontraron árboles cercanos. Prueba "Ir a zona con árboles".';
-                        debugLog("❌ No hay árboles en 200m. Prueba otra ubicación.");
+                            `No hay árboles en ${radioActual}m. Prueba aumentar el radio.`;
+                        debugLog("❌ No hay árboles cerca. Usa 'Aumentar Radio' o 'Ir a Buenos Aires'");
                     } else {
                         document.getElementById('subtitle').textContent = 
-                            `${arbolesCercanos.length} árboles encontrados cerca`;
-                        debugLog("🎉 ¡Árboles encontrados y mostrados!");
+                            `${arbolesCercanos.length} árboles encontrados`;
+                        debugLog("✅ Árboles mostrados en el mapa");
                     }
                 })
                 .catch(error => {
@@ -449,8 +510,6 @@
 
         // Inicializar el mapa
         const map = L.map('map').setView([-34.6037, -58.3816], 15);
-        
-        // Capa de mapa base (OpenStreetMap)
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap contributors'
         }).addTo(map);
@@ -460,32 +519,22 @@
             if (modoActual === 'tap') {
                 const lat = e.latlng.lat;
                 const lng = e.latlng.lng;
-                
                 debugLog(`📍 Ubicación seleccionada: ${lat.toFixed(6)}, ${lng.toFixed(6)}`);
                 
-                // Eliminar marcador anterior si existe
-                if (tapMarker) {
-                    map.removeLayer(tapMarker);
-                }
-                
-                // Crear nuevo marcador
+                if (tapMarker) map.removeLayer(tapMarker);
                 tapMarker = L.marker([lat, lng])
                     .addTo(map)
                     .bindPopup('<div class="info-window"><h3>Ubicación seleccionada</h3><p>Área de búsqueda</p></div>')
                     .openPopup();
                 
-                // Cargar árboles cercanos
                 cargarArbolesCercanos(lat, lng);
             }
         });
 
-        // Obtener ubicación inicial
+        // Inicializar
+        actualizarRadioInfo();
         obtenerUbicacionGPS();
-        
-        // Ajustar el tamaño del mapa
-        setTimeout(() => {
-            map.invalidateSize();
-        }, 100);
+        setTimeout(() => map.invalidateSize(), 100);
     </script>
 </body>
 </html>
