@@ -204,7 +204,7 @@
     <div class="container">
         <header>
             <h1>Mapa de Árboles</h1>
-            <div class="version">Versión 3.0 - Nov 2024</div>
+            <div class="version">Versión 4.0 - GeoJSON</div>
             <p class="subtitle" id="subtitle">Obteniendo tu ubicación...</p>
         </header>
         
@@ -219,7 +219,7 @@
     </div>
 
     <div class="action-buttons">
-        <button onclick="irAZonaArboles()">Ir a Buenos Aires</button>
+        <button onclick="irAZonaArboles()">Ir a zona con árboles</button>
         <button onclick="aumentarRadio()">Aumentar Radio</button>
         <button onclick="mostrarTodosArboles()">Mostrar Todos</button>
     </div>
@@ -284,15 +284,19 @@
 
         // Función para mostrar todos los árboles sin filtrar
         function mostrarTodosArboles() {
-            debugLog("🌳 Mostrando TODOS los árboles del dataset");
+            debugLog("🌳 Mostrando TODOS los árboles del dataset GeoJSON");
             
             const loading = document.getElementById('loading');
             loading.style.display = 'block';
             loading.textContent = 'Cargando todos los árboles...';
 
-            fetch('arbolado.json')
+            fetch('arbolado2.geojson')
                 .then(response => response.json())
-                .then(todosArboles => {
+                .then(geojsonData => {
+                    // Extraer features del GeoJSON
+                    const features = geojsonData.features || [];
+                    debugLog(`📊 GeoJSON cargado: ${features.length} features`);
+
                     // Limpiar marcadores anteriores
                     map.eachLayer(layer => {
                         if (layer instanceof L.Marker && layer !== userMarker && layer !== tapMarker) {
@@ -301,14 +305,22 @@
                     });
 
                     // Crear marcadores para todos los árboles
-                    todosArboles.forEach(arbol => {
-                        if (arbol.lat && arbol.lng) {
-                            const marker = L.marker([arbol.lat, arbol.lng]).addTo(map);
+                    features.forEach((feature, index) => {
+                        const propiedades = feature.properties || {};
+                        const coordenadas = feature.geometry?.coordinates || [];
+                        
+                        if (coordenadas.length >= 2) {
+                            // GeoJSON usa [longitud, latitud]
+                            const lng = coordenadas[0];
+                            const lat = coordenadas[1];
+                            
+                            const marker = L.marker([lat, lng]).addTo(map);
                             
                             const popupContent = `
                                 <div class="info-window">
-                                    <h3>${arbol.especie || 'Árbol'}</h3>
-                                    ${arbol.direccion ? `<p><strong>Dirección:</strong> ${arbol.direccion}</p>` : ''}
+                                    <h3>${propiedades.Nombre || 'Árbol'}</h3>
+                                    ${propiedades.Dir ? `<p><strong>Dirección:</strong> ${propiedades.Dir}</p>` : ''}
+                                    <p><strong>Coordenadas:</strong> ${lat.toFixed(6)}, ${lng.toFixed(6)}</p>
                                 </div>
                             `;
                             
@@ -318,38 +330,67 @@
 
                     loading.style.display = 'none';
                     document.getElementById('subtitle').textContent = 
-                        `${todosArboles.length} árboles cargados (todos los datos)`;
-                    debugLog(`✅ Mostrados ${todosArboles.length} árboles`);
+                        `${features.length} árboles cargados (todos los datos)`;
+                    debugLog(`✅ Mostrados ${features.length} árboles del GeoJSON`);
+                })
+                .catch(error => {
+                    loading.style.display = 'none';
+                    debugLog(`❌ Error cargando GeoJSON: ${error.message}`);
+                    document.getElementById('subtitle').textContent = 
+                        `Error cargando datos: ${error.message}`;
+                });
+        }
+
+        // Función para ir a una zona conocida con árboles
+        function irAZonaArboles() {
+            debugLog("📍 Buscando zona con árboles en el GeoJSON...");
+            
+            const loading = document.getElementById('loading');
+            loading.style.display = 'block';
+            loading.textContent = 'Buscando zona con árboles...';
+
+            fetch('arbolado2.geojson')
+                .then(response => response.json())
+                .then(geojsonData => {
+                    const features = geojsonData.features || [];
+                    
+                    if (features.length > 0) {
+                        // Tomar el primer árbol como referencia
+                        const primerArbol = features[0];
+                        const coordenadas = primerArbol.geometry?.coordinates || [];
+                        
+                        if (coordenadas.length >= 2) {
+                            const lng = coordenadas[0];
+                            const lat = coordenadas[1];
+                            
+                            debugLog(`📍 Yendo a: ${lat.toFixed(6)}, ${lng.toFixed(6)}`);
+                            
+                            map.setView([lat, lng], 16);
+                            
+                            // Crear marcador en esa ubicación
+                            if (tapMarker) {
+                                map.removeLayer(tapMarker);
+                            }
+                            
+                            tapMarker = L.marker([lat, lng])
+                                .addTo(map)
+                                .bindPopup('<div class="info-window"><h3>Zona con árboles</h3><p>Ubicación de prueba</p></div>')
+                                .openPopup();
+                            
+                            // Cambiar a modo tap y buscar árboles
+                            cambiarModo('tap');
+                            cargarArbolesCercanos(lat, lng);
+                        }
+                    } else {
+                        debugLog("❌ No hay features en el GeoJSON");
+                    }
+                    
+                    loading.style.display = 'none';
                 })
                 .catch(error => {
                     loading.style.display = 'none';
                     debugLog(`❌ Error: ${error.message}`);
                 });
-        }
-
-        // Función para ir a Buenos Aires donde están los árboles
-        function irAZonaArboles() {
-            // Coordenadas del centro de Buenos Aires donde sabemos que hay árboles
-            const latArboles = -34.5923;
-            const lngArboles = -58.3815;
-            
-            debugLog(`📍 Yendo a Buenos Aires: ${latArboles}, ${lngArboles}`);
-            
-            map.setView([latArboles, lngArboles], 16);
-            
-            // Crear marcador en esa ubicación
-            if (tapMarker) {
-                map.removeLayer(tapMarker);
-            }
-            
-            tapMarker = L.marker([latArboles, lngArboles])
-                .addTo(map)
-                .bindPopup('<div class="info-window"><h3>Buenos Aires - Centro</h3><p>Zona con árboles registrados</p></div>')
-                .openPopup();
-            
-            // Cambiar a modo tap y buscar árboles
-            cambiarModo('tap');
-            cargarArbolesCercanos(latArboles, lngArboles);
         }
 
         // Función para calcular distancia entre dos coordenadas
@@ -421,14 +462,14 @@
                         loading.style.display = 'none';
                         debugLog(`❌ Error GPS: ${error.message}`);
                         document.getElementById('subtitle').textContent = 
-                            'No se pudo obtener tu ubicación. Usa "Ir a Buenos Aires".';
+                            'No se pudo obtener tu ubicación. Usa "Ir a zona con árboles".';
                     }
                 );
             } else {
                 loading.style.display = 'none';
                 debugLog("❌ Geolocalización no soportada");
                 document.getElementById('subtitle').textContent = 
-                    'Geolocalización no soportada. Usa "Ir a Buenos Aires".';
+                    'Geolocalización no soportada. Usa "Ir a zona con árboles".';
             }
         }
 
@@ -447,25 +488,40 @@
                 radius: radioActual
             }).addTo(map);
 
-            fetch('arbolado.json')
+            fetch('arbolado2.geojson')
                 .then(response => {
-                    if (!response.ok) throw new Error('No se pudo cargar arbolado.json');
+                    if (!response.ok) throw new Error('No se pudo cargar arbolado2.geojson');
                     return response.json();
                 })
-                .then(todosArboles => {
-                    debugLog(`📊 ${todosArboles.length} árboles en total`);
+                .then(geojsonData => {
+                    const features = geojsonData.features || [];
+                    debugLog(`📊 GeoJSON cargado: ${features.length} features`);
                     
-                    // Calcular distancias a los primeros 3 árboles
-                    debugLog("📏 Distancias a árboles cercanos:");
-                    todosArboles.slice(0, 3).forEach((arbol, i) => {
-                        const distancia = calcularDistancia(lat, lng, arbol.lat, arbol.lng);
-                        debugLog(`   ${distancia.toFixed(0)}m - ${arbol.especie}`);
-                    });
+                    // Mostrar estructura del primer feature para debug
+                    if (features.length > 0) {
+                        const primerFeature = features[0];
+                        debugLog("📋 Estructura del primer feature:");
+                        debugLog(`   Geometry: ${JSON.stringify(primerFeature.geometry)}`);
+                        debugLog(`   Properties: ${JSON.stringify(primerFeature.properties)}`);
+                    }
 
-                    const arbolesCercanos = todosArboles.filter(arbol => {
-                        if (!arbol.lat || !arbol.lng) return false;
-                        const distancia = calcularDistancia(lat, lng, arbol.lat, arbol.lng);
-                        return distancia <= radioActual;
+                    const arbolesCercanos = features.filter(feature => {
+                        const coordenadas = feature.geometry?.coordinates || [];
+                        if (coordenadas.length < 2) return false;
+                        
+                        // GeoJSON usa [longitud, latitud]
+                        const arbolLng = coordenadas[0];
+                        const arbolLat = coordenadas[1];
+                        
+                        const distancia = calcularDistancia(lat, lng, arbolLat, arbolLng);
+                        const estaCerca = distancia <= radioActual;
+                        
+                        if (estaCerca) {
+                            const propiedades = feature.properties || {};
+                            debugLog(`✅ Árbol cerca: ${propiedades.Nombre || 'Sin nombre'} - ${distancia.toFixed(0)}m`);
+                        }
+                        
+                        return estaCerca;
                     });
 
                     debugLog(`🎯 Encontrados: ${arbolesCercanos.length} árboles`);
@@ -477,14 +533,23 @@
                         }
                     });
 
-                    arbolesCercanos.forEach(arbol => {
-                        const marker = L.marker([arbol.lat, arbol.lng]).addTo(map);
+                    arbolesCercanos.forEach(feature => {
+                        const coordenadas = feature.geometry.coordinates;
+                        const propiedades = feature.properties || {};
+                        
+                        const lng = coordenadas[0];
+                        const lat = coordenadas[1];
+                        
+                        const marker = L.marker([lat, lng]).addTo(map);
+                        
                         const popupContent = `
                             <div class="info-window">
-                                <h3>${arbol.especie || 'Árbol'}</h3>
-                                ${arbol.direccion ? `<p><strong>Dirección:</strong> ${arbol.direccion}</p>` : ''}
+                                <h3>${propiedades.Nombre || 'Árbol'}</h3>
+                                ${propiedades.Dir ? `<p><strong>Dirección:</strong> ${propiedades.Dir}</p>` : ''}
+                                <p><strong>Coordenadas:</strong> ${lat.toFixed(6)}, ${lng.toFixed(6)}</p>
                             </div>
                         `;
+                        
                         marker.bindPopup(popupContent);
                     });
 
@@ -493,7 +558,7 @@
                     if (arbolesCercanos.length === 0) {
                         document.getElementById('subtitle').textContent = 
                             `No hay árboles en ${radioActual}m. Prueba aumentar el radio.`;
-                        debugLog("❌ No hay árboles cerca. Usa 'Aumentar Radio' o 'Ir a Buenos Aires'");
+                        debugLog("❌ No hay árboles cerca. Usa 'Aumentar Radio' o 'Ir a zona con árboles'");
                     } else {
                         document.getElementById('subtitle').textContent = 
                             `${arbolesCercanos.length} árboles encontrados`;
@@ -502,7 +567,7 @@
                 })
                 .catch(error => {
                     loading.style.display = 'none';
-                    debugLog(`💥 Error: ${error.message}`);
+                    debugLog(`💥 Error cargando GeoJSON: ${error.message}`);
                     document.getElementById('subtitle').textContent = 
                         `Error cargando datos: ${error.message}`;
                 });
