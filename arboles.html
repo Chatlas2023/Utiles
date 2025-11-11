@@ -165,6 +165,8 @@
             border-radius: 5px;
             font-size: 12px;
             max-width: 300px;
+            max-height: 200px;
+            overflow-y: auto;
             z-index: 1000;
         }
         
@@ -212,6 +214,7 @@
     </div>
 
     <button class="test-button" onclick="probarCoordenadas()">Probar Coordenadas</button>
+    <button class="test-button" onclick="inspeccionarJSON()" style="top: 190px;">Inspeccionar JSON</button>
 
     <div id="debug" class="debug-info" style="display: none;"></div>
 
@@ -230,13 +233,70 @@
         // Función para mostrar información de depuración
         function mostrarDebug(mensaje) {
             const debugDiv = document.getElementById('debug');
-            debugDiv.innerHTML = mensaje;
+            debugDiv.innerHTML += mensaje + '<br>';
             debugDiv.style.display = 'block';
+            debugDiv.scrollTop = debugDiv.scrollHeight;
             console.log(mensaje);
+        }
+
+        // Función para limpiar la depuración
+        function limpiarDebug() {
+            const debugDiv = document.getElementById('debug');
+            debugDiv.innerHTML = '';
+        }
+
+        // Función para inspeccionar la estructura del JSON
+        function inspeccionarJSON() {
+            limpiarDebug();
+            mostrarDebug("=== INSPECCIÓN COMPLETA DEL JSON ===");
+            
+            if (datosArboles.length === 0) {
+                mostrarDebug("No hay datos cargados aún");
+                return;
+            }
+            
+            mostrarDebug(`Total de elementos: ${datosArboles.length}`);
+            
+            // Mostrar las claves del primer elemento
+            if (datosArboles.length > 0) {
+                const primerElemento = datosArboles[0];
+                mostrarDebug("Claves del primer elemento:");
+                Object.keys(primerElemento).forEach(key => {
+                    mostrarDebug(`- "${key}": ${primerElemento[key]} (tipo: ${typeof primerElemento[key]})`);
+                });
+            }
+            
+            // Buscar posibles claves de coordenadas
+            mostrarDebug("Buscando claves de coordenadas...");
+            const primerElemento = datosArboles[0];
+            const posiblesCoordenadas = [];
+            
+            Object.keys(primerElemento).forEach(key => {
+                const valor = primerElemento[key];
+                if (typeof valor === 'number' && (Math.abs(valor) > 1 || Math.abs(valor) < 0.001)) {
+                    posiblesCoordenadas.push({key, valor});
+                }
+            });
+            
+            if (posiblesCoordenadas.length > 0) {
+                mostrarDebug("Posibles coordenadas encontradas:");
+                posiblesCoordenadas.forEach(coord => {
+                    mostrarDebug(`- ${coord.key}: ${coord.valor}`);
+                });
+            } else {
+                mostrarDebug("No se encontraron números que parezcan coordenadas");
+            }
+            
+            // Mostrar primeros 3 elementos completos
+            mostrarDebug("Primeros 3 elementos completos:");
+            datosArboles.slice(0, 3).forEach((elemento, i) => {
+                mostrarDebug(`Elemento ${i+1}: ${JSON.stringify(elemento)}`);
+            });
         }
 
         // Función para probar coordenadas específicas
         function probarCoordenadas() {
+            limpiarDebug();
             mostrarDebug("=== PRUEBA DE COORDENADAS ===");
             
             if (datosArboles.length === 0) {
@@ -247,7 +307,23 @@
             // Mostrar las primeras 5 coordenadas de árboles
             mostrarDebug("Primeros 5 árboles en la DB:");
             datosArboles.slice(0, 5).forEach((arbol, i) => {
-                mostrarDebug(`Árbol ${i+1}: lat=${arbol.lt}, lng=${arbol.ln}`);
+                // Buscar cualquier propiedad que pueda ser coordenada
+                const coordenadas = [];
+                Object.keys(arbol).forEach(key => {
+                    const valor = arbol[key];
+                    if (typeof valor === 'number' && (Math.abs(valor) > 1 || Math.abs(valor) < 0.001)) {
+                        coordenadas.push({key, valor});
+                    }
+                });
+                
+                if (coordenadas.length > 0) {
+                    mostrarDebug(`Árbol ${i+1}:`);
+                    coordenadas.forEach(coord => {
+                        mostrarDebug(`  ${coord.key}: ${coord.valor}`);
+                    });
+                } else {
+                    mostrarDebug(`Árbol ${i+1}: No se encontraron coordenadas numéricas`);
+                }
             });
             
             // Mostrar coordenadas actuales del usuario/marcador
@@ -266,38 +342,66 @@
                 return;
             }
             
-            // Calcular distancias a los primeros 5 árboles
-            mostrarDebug("Distancias a los primeros 5 árboles:");
-            datosArboles.slice(0, 5).forEach((arbol, i) => {
-                if (arbol.lt && arbol.ln) {
-                    const distancia = calcularDistancia(currentLat, currentLng, arbol.lt, arbol.ln);
-                    mostrarDebug(`Árbol ${i+1}: ${distancia.toFixed(1)}m`);
-                }
-            });
-            
-            // Buscar el árbol más cercano
+            // Buscar el árbol más cercano usando cualquier propiedad numérica que parezca coordenada
+            mostrarDebug("Buscando árbol más cercano...");
             let arbolMasCercano = null;
             let distanciaMinima = Infinity;
+            let coordenadasUsadas = null;
             
             datosArboles.forEach(arbol => {
-                if (arbol.lt && arbol.ln) {
-                    const distancia = calcularDistancia(currentLat, currentLng, arbol.lt, arbol.ln);
-                    if (distancia < distanciaMinima) {
-                        distanciaMinima = distancia;
-                        arbolMasCercano = arbol;
+                // Buscar posibles coordenadas en el objeto
+                const posiblesCoords = [];
+                Object.keys(arbol).forEach(key => {
+                    const valor = arbol[key];
+                    if (typeof valor === 'number') {
+                        posiblesCoords.push({key, valor});
+                    }
+                });
+                
+                // Si tenemos al menos 2 números, probar combinaciones
+                if (posiblesCoords.length >= 2) {
+                    for (let i = 0; i < posiblesCoords.length; i++) {
+                        for (let j = i + 1; j < posiblesCoords.length; j++) {
+                            const coord1 = posiblesCoords[i];
+                            const coord2 = posiblesCoords[j];
+                            
+                            // Probar ambas combinaciones (coord1 como lat, coord2 como lng y viceversa)
+                            const distancia1 = calcularDistancia(currentLat, currentLng, coord1.valor, coord2.valor);
+                            const distancia2 = calcularDistancia(currentLat, currentLng, coord2.valor, coord1.valor);
+                            
+                            if (distancia1 < distanciaMinima) {
+                                distanciaMinima = distancia1;
+                                arbolMasCercano = arbol;
+                                coordenadasUsadas = {lat: coord1.key, lng: coord2.key, latVal: coord1.valor, lngVal: coord2.valor};
+                            }
+                            
+                            if (distancia2 < distanciaMinima) {
+                                distanciaMinima = distancia2;
+                                arbolMasCercano = arbol;
+                                coordenadasUsadas = {lat: coord2.key, lng: coord1.key, latVal: coord2.valor, lngVal: coord1.valor};
+                            }
+                        }
                     }
                 }
             });
             
-            if (arbolMasCercano) {
-                mostrarDebug(`Árbol más cercano: ${distanciaMinima.toFixed(1)}m`);
-                mostrarDebug(`Coords: ${arbolMasCercano.lt}, ${arbolMasCercano.ln}`);
+            if (arbolMasCercano && distanciaMinima < 100000) { // Menos de 100km
+                mostrarDebug(`Árbol más cercano encontrado: ${distanciaMinima.toFixed(1)}m`);
+                mostrarDebug(`Coordenadas usadas: ${coordenadasUsadas.lat}=${coordenadasUsadas.latVal}, ${coordenadasUsadas.lng}=${coordenadasUsadas.lngVal}`);
                 
                 // Agregar marcador al árbol más cercano
-                L.marker([arbolMasCercano.lt, arbolMasCercano.ln])
+                L.marker([coordenadasUsadas.latVal, coordenadasUsadas.lngVal])
                     .addTo(map)
-                    .bindPopup(`<div class="info-window"><h3>Árbol más cercano</h3><p>Distancia: ${distanciaMinima.toFixed(1)}m</p></div>`)
+                    .bindPopup(`<div class="info-window"><h3>Árbol más cercano</h3><p>Distancia: ${distanciaMinima.toFixed(1)}m</p><p>Coords: ${coordenadasUsadas.latVal}, ${coordenadasUsadas.lngVal}</p></div>`)
                     .openPopup();
+                    
+                // Centrar el mapa en el árbol más cercano
+                map.setView([coordenadasUsadas.latVal, coordenadasUsadas.lngVal], 16);
+            } else {
+                mostrarDebug("No se encontró ningún árbol cercano (distancia mínima > 100km)");
+                if (arbolMasCercano) {
+                    mostrarDebug(`Distancia mínima encontrada: ${distanciaMinima.toFixed(1)}m (demasiado lejos)`);
+                }
             }
         }
 
@@ -436,27 +540,13 @@
                         return response.json();
                     })
                     .then(arboles => {
-                        mostrarDebug(`JSON cargado: ${arboles.length} árboles encontrados`);
+                        mostrarDebug(`JSON cargado: ${arboles.length} elementos encontrados`);
                         
                         // Verificar la estructura de los datos
                         if (arboles.length > 0) {
-                            const primerArbol = arboles[0];
-                            mostrarDebug(`Ejemplo de árbol: ${JSON.stringify(primerArbol).substring(0, 100)}...`);
-                            
-                            // Verificar coordenadas
-                            const conCoordenadas = arboles.filter(a => a.lt && a.ln).length;
-                            mostrarDebug(`Árboles con coordenadas: ${conCoordenadas}/${arboles.length}`);
-                            
-                            // Verificar rangos de coordenadas
-                            const lats = arboles.filter(a => a.lt).map(a => a.lt);
-                            const lngs = arboles.filter(a => a.ln).map(a => a.ln);
-                            const minLat = Math.min(...lats);
-                            const maxLat = Math.max(...lats);
-                            const minLng = Math.min(...lngs);
-                            const maxLng = Math.max(...lngs);
-                            
-                            mostrarDebug(`Rango de latitudes: ${minLat.toFixed(6)} a ${maxLat.toFixed(6)}`);
-                            mostrarDebug(`Rango de longitudes: ${minLng.toFixed(6)} a ${maxLng.toFixed(6)}`);
+                            const primerElemento = arboles[0];
+                            mostrarDebug(`Tipo del primer elemento: ${typeof primerElemento}`);
+                            mostrarDebug(`Primer elemento: ${JSON.stringify(primerElemento).substring(0, 200)}...`);
                         }
                         
                         datosArboles = arboles;
@@ -491,16 +581,12 @@
 
             cargarDatosArboles()
                 .then(todosArboles => {
-                    mostrarDebug(`Filtrando ${todosArboles.length} árboles...`);
+                    mostrarDebug(`Filtrando ${todosArboles.length} elementos...`);
                     
-                    // Filtrar árboles dentro del radio
-                    const arbolesCercanos = todosArboles.filter(arbol => {
-                        if (!arbol.lt || !arbol.ln) return false;
-                        const distancia = calcularDistancia(lat, lng, arbol.lt, arbol.ln);
-                        return distancia <= radio;
-                    });
-
-                    mostrarDebug(`Encontrados ${arbolesCercanos.length} árboles en el radio`);
+                    // Por ahora, no filtramos nada hasta que sepamos la estructura
+                    const arbolesCercanos = [];
+                    
+                    mostrarDebug(`Encontrados ${arbolesCercanos.length} elementos en el radio`);
 
                     // Limpiar marcadores anteriores (excepto el del usuario o toque)
                     map.eachLayer(layer => {
@@ -509,31 +595,13 @@
                         }
                     });
 
-                    // Crear marcadores para árboles cercanos
-                    arbolesCercanos.forEach(arbol => {
-                        const marker = L.marker([arbol.lt, arbol.ln]).addTo(map);
-                        
-                        const popupContent = `
-                            <div class="info-window">
-                                <h3>${arbol.n || 'Árbol'}</h3>
-                                ${arbol.e ? `<p><strong>Especie:</strong> ${arbol.e}</p>` : ''}
-                                ${arbol.a ? `<p><strong>Altura:</strong> ${arbol.a} m</p>` : ''}
-                                ${arbol.d ? `<p><strong>Diámetro:</strong> ${arbol.d} cm</p>` : ''}
-                                ${arbol.dir ? `<p><strong>Dirección:</strong> ${arbol.dir}</p>` : ''}
-                                ${arbol.c ? `<p><strong>Comuna:</strong> ${arbol.c}</p>` : ''}
-                            </div>
-                        `;
-                        
-                        marker.bindPopup(popupContent);
-                    });
-
                     loading.style.display = 'none';
                     
                     // Actualizar subtítulo
                     document.getElementById('subtitle').textContent = 
-                        `${arbolesCercanos.length} árboles encontrados en ${radio}m a la redonda`;
+                        `${arbolesCercanos.length} árboles encontrados en ${radio}m a la redonda (estructura desconocida)`;
 
-                    console.log(`Cargados ${arbolesCercanos.length} árboles de ${todosArboles.length} totales`);
+                    console.log(`Cargados ${arbolesCercanos.length} elementos de ${todosArboles.length} totales`);
                 })
                 .catch(error => {
                     loading.style.display = 'none';
@@ -577,7 +645,7 @@
 
         // Cargar datos iniciales
         cargarDatosArboles().then(() => {
-            mostrarDebug("Datos de árboles cargados correctamente");
+            mostrarDebug("Datos cargados correctamente - Usa 'Inspeccionar JSON' para ver la estructura");
         }).catch(error => {
             mostrarDebug("Error cargando datos iniciales: " + error.message);
         });
