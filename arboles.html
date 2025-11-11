@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mapa de Árboles - Radio 200m</title>
+    <title>Mapa de Árboles</title>
     <style>
         * {
             box-sizing: border-box;
@@ -132,18 +132,6 @@
             color: #121212;
         }
 
-        .radio-info {
-            position: absolute;
-            top: 80px;
-            right: 15px;
-            background: rgba(30, 30, 30, 0.9);
-            padding: 10px;
-            border-radius: 10px;
-            z-index: 1000;
-            color: #bb86fc;
-            font-size: 14px;
-        }
-
         .debug-panel {
             position: absolute;
             top: 130px;
@@ -182,15 +170,13 @@
     
     <div class="container">
         <header>
-            <h1>Mapa de Árboles - Radio 200m</h1>
-            <div class="version">Versión 2.1 - Nov 2024</div>
+            <h1>Mapa de Árboles</h1>
+            <div class="version">Versión 2.2 - Nov 2024</div>
             <p class="subtitle" id="subtitle">Obteniendo tu ubicación...</p>
         </header>
         
         <div id="map"></div>
     </div>
-
-    <div class="radio-info">Radio de búsqueda: 200m</div>
     
     <div class="mode-toggle">
         <button id="mode-gps" onclick="cambiarModo('gps')" class="active">Usar mi ubicación</button>
@@ -341,7 +327,7 @@
         function cargarArbolesCercanos(lat, lng) {
             const loading = document.getElementById('loading');
             loading.style.display = 'block';
-            loading.textContent = `Buscando árboles en ${radioFijo}m a la redonda...`;
+            loading.textContent = 'Buscando árboles cercanos...';
             debugLog(`Buscando árboles cerca de: ${lat.toFixed(6)}, ${lng.toFixed(6)}`);
 
             // Actualizar círculo de radio
@@ -386,7 +372,7 @@
                         return estaCerca;
                     });
 
-                    debugLog(`Árboles dentro de ${radioFijo}m: ${arbolesCercanos.length}`);
+                    debugLog(`Árboles encontrados: ${arbolesCercanos.length}`);
 
                     // Limpiar marcadores anteriores (excepto el del usuario o toque)
                     map.eachLayer(layer => {
@@ -415,11 +401,11 @@
                     // Actualizar subtítulo
                     if (arbolesCercanos.length === 0) {
                         document.getElementById('subtitle').textContent = 
-                            `No se encontraron árboles en ${radioFijo}m. Prueba otra ubicación.`;
+                            'No se encontraron árboles cercanos. Prueba otra ubicación.';
                         debugLog("⚠️ No hay árboles cerca. ¿Estás en una zona con árboles?");
                     } else {
                         document.getElementById('subtitle').textContent = 
-                            `${arbolesCercanos.length} árboles encontrados en ${radioFijo}m a la redonda`;
+                            `${arbolesCercanos.length} árboles encontrados cerca`;
                         debugLog("✅ Árboles mostrados en el mapa");
                     }
                 })
