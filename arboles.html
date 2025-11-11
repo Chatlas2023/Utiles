@@ -154,6 +154,19 @@
             background: #bb86fc;
             color: #121212;
         }
+        
+        .debug-info {
+            position: absolute;
+            bottom: 70px;
+            left: 10px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            max-width: 300px;
+            z-index: 1000;
+        }
     </style>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -184,6 +197,8 @@
         <button id="mode-tap" onclick="cambiarModo('tap')">Tocar en el mapa</button>
     </div>
 
+    <div id="debug" class="debug-info" style="display: none;"></div>
+
     <div id="loading" class="loading">Obteniendo tu ubicación...</div>
 
     <script>
@@ -194,6 +209,15 @@
         let circle;
         let modoActual = 'gps'; // 'gps' o 'tap'
         let tapMarker;
+        let datosArboles = []; // Almacenar datos de árboles cargados
+
+        // Función para mostrar información de depuración
+        function mostrarDebug(mensaje) {
+            const debugDiv = document.getElementById('debug');
+            debugDiv.innerHTML = mensaje;
+            debugDiv.style.display = 'block';
+            console.log(mensaje);
+        }
 
         // Función para calcular distancia entre dos coordenadas (fórmula Haversine)
         function calcularDistancia(lat1, lon1, lat2, lon2) {
@@ -311,6 +335,48 @@
             }
         }
 
+        // Función para cargar el archivo JSON de árboles
+        function cargarDatosArboles() {
+            return new Promise((resolve, reject) => {
+                // Si ya tenemos los datos cargados, los usamos
+                if (datosArboles.length > 0) {
+                    resolve(datosArboles);
+                    return;
+                }
+
+                mostrarDebug("Cargando datos de árboles...");
+                
+                fetch('arbolado.json')
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`Error HTTP: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(arboles => {
+                        mostrarDebug(`JSON cargado: ${arboles.length} árboles encontrados`);
+                        
+                        // Verificar la estructura de los datos
+                        if (arboles.length > 0) {
+                            const primerArbol = arboles[0];
+                            mostrarDebug(`Ejemplo de árbol: ${JSON.stringify(primerArbol).substring(0, 100)}...`);
+                            
+                            // Verificar coordenadas
+                            const conCoordenadas = arboles.filter(a => a.lt && a.ln).length;
+                            mostrarDebug(`Árboles con coordenadas: ${conCoordenadas}/${arboles.length}`);
+                        }
+                        
+                        datosArboles = arboles;
+                        resolve(arboles);
+                    })
+                    .catch(error => {
+                        const mensajeError = `Error cargando arbolado.json: ${error.message}`;
+                        mostrarDebug(mensajeError);
+                        reject(error);
+                    });
+            });
+        }
+
         // Función para cargar árboles dentro del radio
         function cargarArbolesCercanos(lat, lng, radio) {
             const loading = document.getElementById('loading');
@@ -328,18 +394,18 @@
                 radius: radio
             }).addTo(map);
 
-            fetch('arbolado.json')
-                .then(response => {
-                    if (!response.ok) throw new Error('No se pudo cargar el archivo');
-                    return response.json();
-                })
+            cargarDatosArboles()
                 .then(todosArboles => {
+                    mostrarDebug(`Filtrando ${todosArboles.length} árboles...`);
+                    
                     // Filtrar árboles dentro del radio
                     const arbolesCercanos = todosArboles.filter(arbol => {
                         if (!arbol.lt || !arbol.ln) return false;
                         const distancia = calcularDistancia(lat, lng, arbol.lt, arbol.ln);
                         return distancia <= radio;
                     });
+
+                    mostrarDebug(`Encontrados ${arbolesCercanos.length} árboles en el radio`);
 
                     // Limpiar marcadores anteriores (excepto el del usuario o toque)
                     map.eachLayer(layer => {
@@ -376,8 +442,9 @@
                 })
                 .catch(error => {
                     loading.style.display = 'none';
-                    console.error('Error:', error);
-                    alert('Error cargando los datos: ' + error.message);
+                    const mensajeError = `Error: ${error.message}. Asegúrate de que arbolado.json esté en la misma carpeta.`;
+                    mostrarDebug(mensajeError);
+                    alert(mensajeError);
                 });
         }
 
@@ -395,6 +462,8 @@
                 const lat = e.latlng.lat;
                 const lng = e.latlng.lng;
                 
+                mostrarDebug(`Ubicación seleccionada: ${lat.toFixed(6)}, ${lng.toFixed(6)}`);
+                
                 // Eliminar marcador anterior si existe
                 if (tapMarker) {
                     map.removeLayer(tapMarker);
@@ -409,6 +478,13 @@
                 // Cargar árboles cercanos
                 cargarArbolesCercanos(lat, lng, radioActual);
             }
+        });
+
+        // Cargar datos iniciales
+        cargarDatosArboles().then(() => {
+            mostrarDebug("Datos de árboles cargados correctamente");
+        }).catch(error => {
+            mostrarDebug("Error cargando datos iniciales: " + error.message);
         });
 
         // Obtener ubicación inicial
