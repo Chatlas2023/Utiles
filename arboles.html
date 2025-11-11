@@ -143,6 +143,36 @@
             color: #bb86fc;
             font-size: 14px;
         }
+
+        .debug-panel {
+            position: absolute;
+            top: 130px;
+            left: 15px;
+            background: rgba(0,0,0,0.8);
+            color: #00ff00;
+            padding: 10px;
+            border-radius: 5px;
+            z-index: 1000;
+            font-size: 12px;
+            max-width: 300px;
+            max-height: 150px;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .debug-toggle {
+            position: absolute;
+            top: 130px;
+            right: 15px;
+            background: #333;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            z-index: 1000;
+            font-size: 12px;
+        }
     </style>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -153,7 +183,7 @@
     <div class="container">
         <header>
             <h1>Mapa de Árboles - Radio 200m</h1>
-            <div class="version">Versión 2.0 - Nov 2024</div>
+            <div class="version">Versión 2.1 - Nov 2024</div>
             <p class="subtitle" id="subtitle">Obteniendo tu ubicación...</p>
         </header>
         
@@ -167,6 +197,9 @@
         <button id="mode-tap" onclick="cambiarModo('tap')">Tocar en el mapa</button>
     </div>
 
+    <button class="debug-toggle" onclick="toggleDebug()">Depuración</button>
+    <div id="debug-panel" class="debug-panel"></div>
+
     <div id="loading" class="loading">Obteniendo tu ubicación...</div>
 
     <script>
@@ -178,6 +211,20 @@
         let modoActual = 'gps'; // 'gps' o 'tap'
         let tapMarker;
         let datosArboles = []; // Almacenar datos de árboles cargados
+
+        // Función para mostrar mensajes de depuración
+        function debugLog(mensaje) {
+            const debugPanel = document.getElementById('debug-panel');
+            debugPanel.innerHTML += `<div>${new Date().toLocaleTimeString()}: ${mensaje}</div>`;
+            debugPanel.scrollTop = debugPanel.scrollHeight;
+            console.log(mensaje);
+        }
+
+        // Función para mostrar/ocultar panel de depuración
+        function toggleDebug() {
+            const debugPanel = document.getElementById('debug-panel');
+            debugPanel.style.display = debugPanel.style.display === 'none' ? 'block' : 'none';
+        }
 
         // Función para calcular distancia entre dos coordenadas (fórmula Haversine)
         function calcularDistancia(lat1, lon1, lat2, lon2) {
@@ -238,12 +285,15 @@
             const loading = document.getElementById('loading');
             loading.style.display = 'block';
             loading.textContent = 'Obteniendo tu ubicación...';
+            debugLog("Solicitando ubicación GPS...");
             
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
                     function(position) {
                         userLat = position.coords.latitude;
                         userLng = position.coords.longitude;
+                        
+                        debugLog(`Ubicación obtenida: ${userLat.toFixed(6)}, ${userLng.toFixed(6)}`);
                         
                         // Centrar mapa en la ubicación del usuario
                         map.setView([userLat, userLng], 16);
@@ -262,9 +312,9 @@
                     },
                     function(error) {
                         loading.style.display = 'none';
+                        debugLog(`Error GPS: ${error.message}`);
                         document.getElementById('subtitle').textContent = 
                             'No se pudo obtener tu ubicación. Cambia a modo "Tocar en el mapa".';
-                        console.log("Error obteniendo ubicación:", error);
                         
                         // Usar ubicación por defecto en Buenos Aires
                         userLat = -34.6037;
@@ -275,6 +325,7 @@
                 );
             } else {
                 loading.style.display = 'none';
+                debugLog("Geolocalización no soportada");
                 document.getElementById('subtitle').textContent = 
                     'Geolocalización no soportada. Cambia a modo "Tocar en el mapa".';
                 
@@ -291,6 +342,7 @@
             const loading = document.getElementById('loading');
             loading.style.display = 'block';
             loading.textContent = `Buscando árboles en ${radioFijo}m a la redonda...`;
+            debugLog(`Buscando árboles cerca de: ${lat.toFixed(6)}, ${lng.toFixed(6)}`);
 
             // Actualizar círculo de radio
             if (circle) {
@@ -310,20 +362,31 @@
                     return response.json();
                 })
                 .then(todosArboles => {
-                    console.log(`JSON cargado: ${todosArboles.length} árboles encontrados`);
+                    debugLog(`JSON cargado: ${todosArboles.length} árboles en total`);
                     
+                    // Mostrar primeros 3 árboles para verificar estructura
+                    if (todosArboles.length > 0) {
+                        debugLog("Primeros 3 árboles:");
+                        todosArboles.slice(0, 3).forEach((arbol, i) => {
+                            debugLog(`#${i+1}: ${arbol.especie} - ${arbol.lat}, ${arbol.lng}`);
+                        });
+                    }
+
                     // Filtrar árboles dentro del radio
                     const arbolesCercanos = todosArboles.filter(arbol => {
                         if (!arbol.lat || !arbol.lng) {
-                            console.log('Árbol sin coordenadas:', arbol);
+                            debugLog('Árbol sin coordenadas válidas');
                             return false;
                         }
                         const distancia = calcularDistancia(lat, lng, arbol.lat, arbol.lng);
-                        console.log(`Árbol en ${arbol.lat}, ${arbol.lng} - Distancia: ${distancia}m`);
-                        return distancia <= radioFijo;
+                        const estaCerca = distancia <= radioFijo;
+                        if (estaCerca) {
+                            debugLog(`✓ Árbol cerca: ${arbol.especie} - ${distancia.toFixed(0)}m`);
+                        }
+                        return estaCerca;
                     });
 
-                    console.log(`Árboles dentro del radio: ${arbolesCercanos.length}`);
+                    debugLog(`Árboles dentro de ${radioFijo}m: ${arbolesCercanos.length}`);
 
                     // Limpiar marcadores anteriores (excepto el del usuario o toque)
                     map.eachLayer(layer => {
@@ -353,16 +416,16 @@
                     if (arbolesCercanos.length === 0) {
                         document.getElementById('subtitle').textContent = 
                             `No se encontraron árboles en ${radioFijo}m. Prueba otra ubicación.`;
+                        debugLog("⚠️ No hay árboles cerca. ¿Estás en una zona con árboles?");
                     } else {
                         document.getElementById('subtitle').textContent = 
                             `${arbolesCercanos.length} árboles encontrados en ${radioFijo}m a la redonda`;
+                        debugLog("✅ Árboles mostrados en el mapa");
                     }
-
-                    console.log(`Cargados ${arbolesCercanos.length} árboles de ${todosArboles.length} totales`);
                 })
                 .catch(error => {
                     loading.style.display = 'none';
-                    console.error('Error cargando JSON:', error);
+                    debugLog(`❌ Error: ${error.message}`);
                     document.getElementById('subtitle').textContent = 
                         `Error cargando datos: ${error.message}`;
                 });
@@ -382,6 +445,8 @@
                 const lat = e.latlng.lat;
                 const lng = e.latlng.lng;
                 
+                debugLog(`📍 Ubicación seleccionada: ${lat.toFixed(6)}, ${lng.toFixed(6)}`);
+                
                 // Eliminar marcador anterior si existe
                 if (tapMarker) {
                     map.removeLayer(tapMarker);
@@ -397,6 +462,11 @@
                 cargarArbolesCercanos(lat, lng);
             }
         });
+
+        // Mostrar panel de depuración inicialmente
+        setTimeout(() => {
+            document.getElementById('debug-panel').style.display = 'block';
+        }, 1000);
 
         // Obtener ubicación inicial
         obtenerUbicacionGPS();
