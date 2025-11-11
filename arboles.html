@@ -34,7 +34,7 @@
         }
         
         h1 {
-            color: #bb86fc;
+            color: #4fc3f7; /* Azul celeste */
             font-size: 20px;
             margin-bottom: 5px;
         }
@@ -108,8 +108,18 @@
         }
         
         .mode-toggle button.active {
-            background: #bb86fc;
+            background: #4fc3f7; /* Azul celeste */
             color: #121212;
+        }
+
+        /* Estilos para los puntos verdes personalizados */
+        .green-dot {
+            background-color: #4CAF50;
+            border: 2px solid white;
+            border-radius: 50%;
+            width: 12px;
+            height: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
     </style>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -119,7 +129,7 @@
     <div class="container">
         <header>
             <h1>Mapa de Árboles</h1>
-            <div class="version">Versión 6.0 - Minimalista</div>
+            <div class="version">Versión 7.0 - Azul y Verde</div>
             <p class="subtitle" id="subtitle">Obteniendo tu ubicación...</p>
         </header>
         
@@ -135,13 +145,28 @@
 
     <script>
         let mapaInicializado = false;
-        let radioActual = 200; // Radio variable
+        let radioActual = 200;
         let userLat, userLng;
         let userMarker;
         let circle;
-        let modoActual = 'gps'; // 'gps' o 'tap'
+        let modoActual = 'gps';
         let tapMarker;
-        let datosArboles = []; // Almacenar datos de árboles cargados
+        let datosArboles = [];
+
+        // Crear ícono personalizado para árboles (punto verde)
+        const greenIcon = L.divIcon({
+            className: 'green-dot',
+            iconSize: [12, 12],
+            iconAnchor: [6, 6]
+        });
+
+        // Crear ícono para ubicación del usuario (azul celeste)
+        const blueIcon = L.divIcon({
+            className: 'blue-dot',
+            html: '<div style="background-color: #4fc3f7; border: 2px solid white; border-radius: 50%; width: 16px; height: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>',
+            iconSize: [16, 16],
+            iconAnchor: [8, 8]
+        });
 
         // Función para calcular distancia entre dos coordenadas
         function calcularDistancia(lat1, lon1, lat2, lon2) {
@@ -196,7 +221,7 @@
                         // Usar zoom alto para mejor visualización
                         map.setView([userLat, userLng], 18);
                         
-                        userMarker = L.marker([userLat, userLng])
+                        userMarker = L.marker([userLat, userLng], { icon: blueIcon })
                             .addTo(map)
                             .bindPopup('<div class="info-window"><h3>Tu ubicación</h3><p>Estás aquí</p></div>')
                             .openPopup();
@@ -239,8 +264,8 @@
 
             if (circle) map.removeLayer(circle);
             circle = L.circle([lat, lng], {
-                color: '#bb86fc',
-                fillColor: '#bb86fc',
+                color: '#4fc3f7', // Azul celeste
+                fillColor: '#4fc3f7', // Azul celeste
                 fillOpacity: 0.1,
                 radius: radioActual
             }).addTo(map);
@@ -279,7 +304,7 @@
                         const lng = coordenadas[0];
                         const lat = coordenadas[1];
                         
-                        const marker = L.marker([lat, lng]).addTo(map);
+                        const marker = L.marker([lat, lng], { icon: greenIcon }).addTo(map);
                         
                         const popupContent = `
                             <div class="info-window">
@@ -338,7 +363,7 @@
                 const lng = e.latlng.lng;
                 
                 if (tapMarker) map.removeLayer(tapMarker);
-                tapMarker = L.marker([lat, lng])
+                tapMarker = L.marker([lat, lng], { icon: blueIcon })
                     .addTo(map)
                     .bindPopup('<div class="info-window"><h3>Ubicación seleccionada</h3><p>Área de búsqueda</p></div>')
                     .openPopup();
