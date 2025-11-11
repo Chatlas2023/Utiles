@@ -167,6 +167,20 @@
             max-width: 300px;
             z-index: 1000;
         }
+        
+        .test-button {
+            position: absolute;
+            top: 150px;
+            left: 15px;
+            background: #bb86fc;
+            color: #121212;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            z-index: 1000;
+            font-size: 12px;
+        }
     </style>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -197,6 +211,8 @@
         <button id="mode-tap" onclick="cambiarModo('tap')">Tocar en el mapa</button>
     </div>
 
+    <button class="test-button" onclick="probarCoordenadas()">Probar Coordenadas</button>
+
     <div id="debug" class="debug-info" style="display: none;"></div>
 
     <div id="loading" class="loading">Obteniendo tu ubicación...</div>
@@ -217,6 +233,72 @@
             debugDiv.innerHTML = mensaje;
             debugDiv.style.display = 'block';
             console.log(mensaje);
+        }
+
+        // Función para probar coordenadas específicas
+        function probarCoordenadas() {
+            mostrarDebug("=== PRUEBA DE COORDENADAS ===");
+            
+            if (datosArboles.length === 0) {
+                mostrarDebug("No hay datos cargados aún");
+                return;
+            }
+            
+            // Mostrar las primeras 5 coordenadas de árboles
+            mostrarDebug("Primeros 5 árboles en la DB:");
+            datosArboles.slice(0, 5).forEach((arbol, i) => {
+                mostrarDebug(`Árbol ${i+1}: lat=${arbol.lt}, lng=${arbol.ln}`);
+            });
+            
+            // Mostrar coordenadas actuales del usuario/marcador
+            let currentLat, currentLng;
+            if (modoActual === 'gps' && userLat && userLng) {
+                currentLat = userLat;
+                currentLng = userLng;
+                mostrarDebug(`Ubicación actual (GPS): ${currentLat}, ${currentLng}`);
+            } else if (modoActual === 'tap' && tapMarker) {
+                const latlng = tapMarker.getLatLng();
+                currentLat = latlng.lat;
+                currentLng = latlng.lng;
+                mostrarDebug(`Ubicación actual (Tap): ${currentLat}, ${currentLng}`);
+            } else {
+                mostrarDebug("No hay ubicación actual definida");
+                return;
+            }
+            
+            // Calcular distancias a los primeros 5 árboles
+            mostrarDebug("Distancias a los primeros 5 árboles:");
+            datosArboles.slice(0, 5).forEach((arbol, i) => {
+                if (arbol.lt && arbol.ln) {
+                    const distancia = calcularDistancia(currentLat, currentLng, arbol.lt, arbol.ln);
+                    mostrarDebug(`Árbol ${i+1}: ${distancia.toFixed(1)}m`);
+                }
+            });
+            
+            // Buscar el árbol más cercano
+            let arbolMasCercano = null;
+            let distanciaMinima = Infinity;
+            
+            datosArboles.forEach(arbol => {
+                if (arbol.lt && arbol.ln) {
+                    const distancia = calcularDistancia(currentLat, currentLng, arbol.lt, arbol.ln);
+                    if (distancia < distanciaMinima) {
+                        distanciaMinima = distancia;
+                        arbolMasCercano = arbol;
+                    }
+                }
+            });
+            
+            if (arbolMasCercano) {
+                mostrarDebug(`Árbol más cercano: ${distanciaMinima.toFixed(1)}m`);
+                mostrarDebug(`Coords: ${arbolMasCercano.lt}, ${arbolMasCercano.ln}`);
+                
+                // Agregar marcador al árbol más cercano
+                L.marker([arbolMasCercano.lt, arbolMasCercano.ln])
+                    .addTo(map)
+                    .bindPopup(`<div class="info-window"><h3>Árbol más cercano</h3><p>Distancia: ${distanciaMinima.toFixed(1)}m</p></div>`)
+                    .openPopup();
+            }
         }
 
         // Función para calcular distancia entre dos coordenadas (fórmula Haversine)
@@ -364,6 +446,17 @@
                             // Verificar coordenadas
                             const conCoordenadas = arboles.filter(a => a.lt && a.ln).length;
                             mostrarDebug(`Árboles con coordenadas: ${conCoordenadas}/${arboles.length}`);
+                            
+                            // Verificar rangos de coordenadas
+                            const lats = arboles.filter(a => a.lt).map(a => a.lt);
+                            const lngs = arboles.filter(a => a.ln).map(a => a.ln);
+                            const minLat = Math.min(...lats);
+                            const maxLat = Math.max(...lats);
+                            const minLng = Math.min(...lngs);
+                            const maxLng = Math.max(...lngs);
+                            
+                            mostrarDebug(`Rango de latitudes: ${minLat.toFixed(6)} a ${maxLat.toFixed(6)}`);
+                            mostrarDebug(`Rango de longitudes: ${minLng.toFixed(6)} a ${maxLng.toFixed(6)}`);
                         }
                         
                         datosArboles = arboles;
@@ -382,6 +475,8 @@
             const loading = document.getElementById('loading');
             loading.style.display = 'block';
             loading.textContent = `Cargando árboles en radio de ${radio}m...`;
+
+            mostrarDebug(`Buscando en: ${lat.toFixed(6)}, ${lng.toFixed(6)} - Radio: ${radio}m`);
 
             // Actualizar círculo de radio
             if (circle) {
