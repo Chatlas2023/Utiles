@@ -208,7 +208,7 @@
                 radius: radio
             }).addTo(map);
 
-            fetch('arbolado_super_optimizado.json')
+            fetch('arbolado.json')
                 .then(response => {
                     if (!response.ok) throw new Error('No se pudo cargar el archivo');
                     return response.json();
