@@ -303,12 +303,18 @@
                         document.getElementById('subtitle').textContent = 
                             'No se pudo obtener tu ubicación. Cambia a modo "Tocar en el mapa".';
                         console.log("Error obteniendo ubicación:", error);
+                        
+                        // Cargar algunos árboles de ejemplo en Buenos Aires
+                        cargarArbolesCercanos(-34.6037, -58.3816, radioActual);
                     }
                 );
             } else {
                 loading.style.display = 'none';
                 document.getElementById('subtitle').textContent = 
                     'Geolocalización no soportada. Cambia a modo "Tocar en el mapa".';
+                
+                // Cargar algunos árboles de ejemplo en Buenos Aires
+                cargarArbolesCercanos(-34.6037, -58.3816, radioActual);
             }
         }
 
@@ -335,14 +341,14 @@
                     return response.json();
                 })
                 .then(todosArboles => {
-                    // Filtrar árboles dentro del radio usando "lat" y "lng"
+                    // Filtrar árboles dentro del radio
                     const arbolesCercanos = todosArboles.filter(arbol => {
                         if (!arbol.lat || !arbol.lng) return false;
                         const distancia = calcularDistancia(lat, lng, arbol.lat, arbol.lng);
                         return distancia <= radio;
                     });
 
-                    // Limpiar marcadores anteriores (excepto el del usuario)
+                    // Limpiar marcadores anteriores (excepto el del usuario o toque)
                     map.eachLayer(layer => {
                         if (layer instanceof L.Marker && layer !== userMarker && layer !== tapMarker) {
                             map.removeLayer(layer);
@@ -355,13 +361,9 @@
                         
                         const popupContent = `
                             <div class="info-window">
-                                <h3>${arbol.nombre || arbol.especie || 'Árbol'}</h3>
-                                ${arbol.especie ? `<p><strong>Especie:</strong> ${arbol.especie}</p>` : ''}
-                                ${arbol.altura ? `<p><strong>Altura:</strong> ${arbol.altura} m</p>` : ''}
-                                ${arbol.diametro ? `<p><strong>Diámetro:</strong> ${arbol.diametro} cm</p>` : ''}
+                                <h3>${arbol.especie || 'Árbol'}</h3>
                                 ${arbol.direccion ? `<p><strong>Dirección:</strong> ${arbol.direccion}</p>` : ''}
-                                ${arbol.comuna ? `<p><strong>Comuna:</strong> ${arbol.comuna}</p>` : ''}
-                                ${arbol.tipo ? `<p><strong>Tipo:</strong> ${arbol.tipo}</p>` : ''}
+                                <p><strong>Coordenadas:</strong> ${arbol.lat.toFixed(6)}, ${arbol.lng.toFixed(6)}</p>
                             </div>
                         `;
                         
