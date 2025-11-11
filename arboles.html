@@ -129,7 +129,7 @@
     <div class="container">
         <header>
             <h1>Mapa de Árboles</h1>
-            <div class="version">Versión 7.0 - Azul y Verde</div>
+            <div class="version">Versión 8.0 - Limpia</div>
             <p class="subtitle" id="subtitle">Obteniendo tu ubicación...</p>
         </header>
         
@@ -150,7 +150,6 @@
         let userMarker;
         let circle;
         let modoActual = 'gps';
-        let tapMarker;
         let datosArboles = [];
 
         // Crear ícono personalizado para árboles (punto verde)
@@ -158,14 +157,6 @@
             className: 'green-dot',
             iconSize: [12, 12],
             iconAnchor: [6, 6]
-        });
-
-        // Crear ícono para ubicación del usuario (azul celeste)
-        const blueIcon = L.divIcon({
-            className: 'blue-dot',
-            html: '<div style="background-color: #4fc3f7; border: 2px solid white; border-radius: 50%; width: 16px; height: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>',
-            iconSize: [16, 16],
-            iconAnchor: [8, 8]
         });
 
         // Función para calcular distancia entre dos coordenadas
@@ -195,10 +186,6 @@
                 } else {
                     obtenerUbicacionGPS();
                 }
-                if (tapMarker) {
-                    map.removeLayer(tapMarker);
-                    tapMarker = null;
-                }
             } else {
                 document.getElementById('subtitle').textContent = 'Toca en el mapa para seleccionar ubicación';
                 if (userMarker) map.removeLayer(userMarker);
@@ -221,7 +208,7 @@
                         // Usar zoom alto para mejor visualización
                         map.setView([userLat, userLng], 18);
                         
-                        userMarker = L.marker([userLat, userLng], { icon: blueIcon })
+                        userMarker = L.marker([userLat, userLng])
                             .addTo(map)
                             .bindPopup('<div class="info-window"><h3>Tu ubicación</h3><p>Estás aquí</p></div>')
                             .openPopup();
@@ -292,7 +279,7 @@
 
                     // Limpiar y crear marcadores
                     map.eachLayer(layer => {
-                        if (layer instanceof L.Marker && layer !== userMarker && layer !== tapMarker) {
+                        if (layer instanceof L.Marker && layer !== userMarker) {
                             map.removeLayer(layer);
                         }
                     });
@@ -362,12 +349,8 @@
                 const lat = e.latlng.lat;
                 const lng = e.latlng.lng;
                 
-                if (tapMarker) map.removeLayer(tapMarker);
-                tapMarker = L.marker([lat, lng], { icon: blueIcon })
-                    .addTo(map)
-                    .bindPopup('<div class="info-window"><h3>Ubicación seleccionada</h3><p>Área de búsqueda</p></div>')
-                    .openPopup();
-                
+                // Solo centrar el mapa y buscar árboles, sin crear marcador
+                map.setView([lat, lng], 18);
                 cargarArbolesCercanos(lat, lng);
             }
         });
