@@ -145,7 +145,7 @@
             max-width: 300px;
             max-height: 150px;
             overflow-y: auto;
-            display: none;
+            display: block;
         }
 
         .debug-toggle {
@@ -154,6 +154,20 @@
             right: 15px;
             background: #333;
             color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            z-index: 1000;
+            font-size: 12px;
+        }
+
+        .test-location {
+            position: absolute;
+            top: 170px;
+            right: 15px;
+            background: #bb86fc;
+            color: #121212;
             border: none;
             padding: 5px 10px;
             border-radius: 5px;
@@ -171,7 +185,7 @@
     <div class="container">
         <header>
             <h1>Mapa de Árboles</h1>
-            <div class="version">Versión 2.2 - Nov 2024</div>
+            <div class="version">Versión 2.3 - Nov 2024</div>
             <p class="subtitle" id="subtitle">Obteniendo tu ubicación...</p>
         </header>
         
@@ -184,6 +198,7 @@
     </div>
 
     <button class="debug-toggle" onclick="toggleDebug()">Depuración</button>
+    <button class="test-location" onclick="irAZonaArboles()">Ir a zona con árboles</button>
     <div id="debug-panel" class="debug-panel"></div>
 
     <div id="loading" class="loading">Obteniendo tu ubicación...</div>
@@ -210,6 +225,31 @@
         function toggleDebug() {
             const debugPanel = document.getElementById('debug-panel');
             debugPanel.style.display = debugPanel.style.display === 'none' ? 'block' : 'none';
+        }
+
+        // Función para ir a una zona conocida con árboles
+        function irAZonaArboles() {
+            // Coordenadas del centro de Buenos Aires donde sabemos que hay árboles
+            const latArboles = -34.5923;
+            const lngArboles = -58.3815;
+            
+            debugLog(`📍 Yendo a zona con árboles: ${latArboles}, ${lngArboles}`);
+            
+            map.setView([latArboles, lngArboles], 16);
+            
+            // Crear marcador en esa ubicación
+            if (tapMarker) {
+                map.removeLayer(tapMarker);
+            }
+            
+            tapMarker = L.marker([latArboles, lngArboles])
+                .addTo(map)
+                .bindPopup('<div class="info-window"><h3>Zona con árboles</h3><p>Ubicación de prueba</p></div>')
+                .openPopup();
+            
+            // Cambiar a modo tap y buscar árboles
+            cambiarModo('tap');
+            cargarArbolesCercanos(latArboles, lngArboles);
         }
 
         // Función para calcular distancia entre dos coordenadas (fórmula Haversine)
@@ -279,7 +319,8 @@
                         userLat = position.coords.latitude;
                         userLng = position.coords.longitude;
                         
-                        debugLog(`Ubicación obtenida: ${userLat.toFixed(6)}, ${userLng.toFixed(6)}`);
+                        debugLog(`📍 Tu ubicación: ${userLat.toFixed(6)}, ${userLng.toFixed(6)}`);
+                        debugLog(`📏 Calculando distancias a árboles...`);
                         
                         // Centrar mapa en la ubicación del usuario
                         map.setView([userLat, userLng], 16);
@@ -298,28 +339,16 @@
                     },
                     function(error) {
                         loading.style.display = 'none';
-                        debugLog(`Error GPS: ${error.message}`);
+                        debugLog(`❌ Error GPS: ${error.message}`);
                         document.getElementById('subtitle').textContent = 
-                            'No se pudo obtener tu ubicación. Cambia a modo "Tocar en el mapa".';
-                        
-                        // Usar ubicación por defecto en Buenos Aires
-                        userLat = -34.6037;
-                        userLng = -58.3816;
-                        map.setView([userLat, userLng], 15);
-                        cargarArbolesCercanos(userLat, userLng);
+                            'No se pudo obtener tu ubicación. Usa "Ir a zona con árboles".';
                     }
                 );
             } else {
                 loading.style.display = 'none';
-                debugLog("Geolocalización no soportada");
+                debugLog("❌ Geolocalización no soportada");
                 document.getElementById('subtitle').textContent = 
-                    'Geolocalización no soportada. Cambia a modo "Tocar en el mapa".';
-                
-                // Usar ubicación por defecto en Buenos Aires
-                userLat = -34.6037;
-                userLng = -58.3816;
-                map.setView([userLat, userLng], 15);
-                cargarArbolesCercanos(userLat, userLng);
+                    'Geolocalización no soportada. Usa "Ir a zona con árboles".';
             }
         }
 
@@ -328,7 +357,7 @@
             const loading = document.getElementById('loading');
             loading.style.display = 'block';
             loading.textContent = 'Buscando árboles cercanos...';
-            debugLog(`Buscando árboles cerca de: ${lat.toFixed(6)}, ${lng.toFixed(6)}`);
+            debugLog(`🔍 Buscando árboles cerca de: ${lat.toFixed(6)}, ${lng.toFixed(6)}`);
 
             // Actualizar círculo de radio
             if (circle) {
@@ -348,31 +377,32 @@
                     return response.json();
                 })
                 .then(todosArboles => {
-                    debugLog(`JSON cargado: ${todosArboles.length} árboles en total`);
+                    debugLog(`📊 JSON cargado: ${todosArboles.length} árboles en total`);
                     
-                    // Mostrar primeros 3 árboles para verificar estructura
-                    if (todosArboles.length > 0) {
-                        debugLog("Primeros 3 árboles:");
-                        todosArboles.slice(0, 3).forEach((arbol, i) => {
-                            debugLog(`#${i+1}: ${arbol.especie} - ${arbol.lat}, ${arbol.lng}`);
-                        });
-                    }
+                    // Mostrar las coordenadas de búsqueda vs árboles
+                    debugLog(`📍 Buscando en: ${lat.toFixed(6)}, ${lng.toFixed(6)}`);
+                    
+                    // Calcular distancias a los primeros 5 árboles
+                    debugLog("📏 Distancias a los primeros 5 árboles:");
+                    todosArboles.slice(0, 5).forEach((arbol, i) => {
+                        const distancia = calcularDistancia(lat, lng, arbol.lat, arbol.lng);
+                        debugLog(`   #${i+1}: ${distancia.toFixed(0)}m - ${arbol.especie}`);
+                    });
 
                     // Filtrar árboles dentro del radio
                     const arbolesCercanos = todosArboles.filter(arbol => {
                         if (!arbol.lat || !arbol.lng) {
-                            debugLog('Árbol sin coordenadas válidas');
                             return false;
                         }
                         const distancia = calcularDistancia(lat, lng, arbol.lat, arbol.lng);
                         const estaCerca = distancia <= radioFijo;
                         if (estaCerca) {
-                            debugLog(`✓ Árbol cerca: ${arbol.especie} - ${distancia.toFixed(0)}m`);
+                            debugLog(`✅ Árbol cerca: ${arbol.especie} - ${distancia.toFixed(0)}m`);
                         }
                         return estaCerca;
                     });
 
-                    debugLog(`Árboles encontrados: ${arbolesCercanos.length}`);
+                    debugLog(`🎯 Árboles encontrados: ${arbolesCercanos.length}`);
 
                     // Limpiar marcadores anteriores (excepto el del usuario o toque)
                     map.eachLayer(layer => {
@@ -401,17 +431,17 @@
                     // Actualizar subtítulo
                     if (arbolesCercanos.length === 0) {
                         document.getElementById('subtitle').textContent = 
-                            'No se encontraron árboles cercanos. Prueba otra ubicación.';
-                        debugLog("⚠️ No hay árboles cerca. ¿Estás en una zona con árboles?");
+                            'No se encontraron árboles cercanos. Prueba "Ir a zona con árboles".';
+                        debugLog("❌ No hay árboles en 200m. Prueba otra ubicación.");
                     } else {
                         document.getElementById('subtitle').textContent = 
                             `${arbolesCercanos.length} árboles encontrados cerca`;
-                        debugLog("✅ Árboles mostrados en el mapa");
+                        debugLog("🎉 ¡Árboles encontrados y mostrados!");
                     }
                 })
                 .catch(error => {
                     loading.style.display = 'none';
-                    debugLog(`❌ Error: ${error.message}`);
+                    debugLog(`💥 Error: ${error.message}`);
                     document.getElementById('subtitle').textContent = 
                         `Error cargando datos: ${error.message}`;
                 });
@@ -448,11 +478,6 @@
                 cargarArbolesCercanos(lat, lng);
             }
         });
-
-        // Mostrar panel de depuración inicialmente
-        setTimeout(() => {
-            document.getElementById('debug-panel').style.display = 'block';
-        }, 1000);
 
         // Obtener ubicación inicial
         obtenerUbicacionGPS();
