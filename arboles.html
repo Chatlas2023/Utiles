@@ -72,26 +72,6 @@
             font-size: 14px;
         }
         
-        .back-button {
-            position: absolute;
-            top: 80px;
-            left: 15px;
-            background-color: #bb86fc;
-            color: #121212;
-            border: none;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            font-size: 18px;
-            cursor: pointer;
-            z-index: 1000;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-decoration: none;
-        }
-
         .loading {
             position: absolute;
             top: 50%;
@@ -131,38 +111,15 @@
             background: #bb86fc;
             color: #121212;
         }
-
-        .action-buttons {
-            position: absolute;
-            top: 80px;
-            right: 15px;
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-            z-index: 1000;
-        }
-
-        .action-buttons button {
-            background: #bb86fc;
-            color: #121212;
-            border: none;
-            padding: 8px 12px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 12px;
-            white-space: nowrap;
-        }
     </style>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
 <body>
-    <a href="index.html" class="back-button">←</a>
-    
     <div class="container">
         <header>
             <h1>Mapa de Árboles</h1>
-            <div class="version">Versión 5.0 - Zoom Mejorado</div>
+            <div class="version">Versión 6.0 - Minimalista</div>
             <p class="subtitle" id="subtitle">Obteniendo tu ubicación...</p>
         </header>
         
@@ -172,12 +129,6 @@
     <div class="mode-toggle">
         <button id="mode-gps" onclick="cambiarModo('gps')" class="active">Usar mi ubicación</button>
         <button id="mode-tap" onclick="cambiarModo('tap')">Tocar en el mapa</button>
-    </div>
-
-    <div class="action-buttons">
-        <button onclick="irAZonaArboles()">Ir a zona con árboles</button>
-        <button onclick="aumentarRadio()">Aumentar Radio</button>
-        <button onclick="mostrarTodosArboles()">Mostrar Todos</button>
     </div>
 
     <div id="loading" class="loading">Obteniendo tu ubicación...</div>
@@ -191,126 +142,6 @@
         let modoActual = 'gps'; // 'gps' o 'tap'
         let tapMarker;
         let datosArboles = []; // Almacenar datos de árboles cargados
-
-        // Función para aumentar el radio de búsqueda
-        function aumentarRadio() {
-            if (radioActual === 200) {
-                radioActual = 1000; // 1km
-            } else if (radioActual === 1000) {
-                radioActual = 5000; // 5km
-            } else if (radioActual === 5000) {
-                radioActual = 20000; // 20km
-            } else {
-                radioActual = 200; // Volver a 200m
-            }
-            
-            // Recargar árboles con nuevo radio
-            if (modoActual === 'gps' && userLat && userLng) {
-                cargarArbolesCercanos(userLat, userLng);
-            } else if (modoActual === 'tap' && tapMarker) {
-                const latlng = tapMarker.getLatLng();
-                cargarArbolesCercanos(latlng.lat, latlng.lng);
-            }
-        }
-
-        // Función para mostrar todos los árboles sin filtrar
-        function mostrarTodosArboles() {
-            const loading = document.getElementById('loading');
-            loading.style.display = 'block';
-            loading.textContent = 'Cargando todos los árboles...';
-
-            fetch('arbolado2.geojson')
-                .then(response => response.json())
-                .then(geojsonData => {
-                    // Extraer features del GeoJSON
-                    const features = geojsonData.features || [];
-
-                    // Limpiar marcadores anteriores
-                    map.eachLayer(layer => {
-                        if (layer instanceof L.Marker && layer !== userMarker && layer !== tapMarker) {
-                            map.removeLayer(layer);
-                        }
-                    });
-
-                    // Crear marcadores para todos los árboles
-                    features.forEach((feature, index) => {
-                        const propiedades = feature.properties || {};
-                        const coordenadas = feature.geometry?.coordinates || [];
-                        
-                        if (coordenadas.length >= 2) {
-                            // GeoJSON usa [longitud, latitud]
-                            const lng = coordenadas[0];
-                            const lat = coordenadas[1];
-                            
-                            const marker = L.marker([lat, lng]).addTo(map);
-                            
-                            const popupContent = `
-                                <div class="info-window">
-                                    <h3>${propiedades.Nombre || 'Árbol'}</h3>
-                                    ${propiedades.Dir ? `<p><strong>Dirección:</strong> ${propiedades.Dir}</p>` : ''}
-                                </div>
-                            `;
-                            
-                            marker.bindPopup(popupContent);
-                        }
-                    });
-
-                    loading.style.display = 'none';
-                    document.getElementById('subtitle').textContent = 
-                        `${features.length} árboles cargados`;
-                })
-                .catch(error => {
-                    loading.style.display = 'none';
-                    document.getElementById('subtitle').textContent = 
-                        `Error cargando datos: ${error.message}`;
-                });
-        }
-
-        // Función para ir a una zona conocida con árboles
-        function irAZonaArboles() {
-            const loading = document.getElementById('loading');
-            loading.style.display = 'block';
-            loading.textContent = 'Buscando zona con árboles...';
-
-            fetch('arbolado2.geojson')
-                .then(response => response.json())
-                .then(geojsonData => {
-                    const features = geojsonData.features || [];
-                    
-                    if (features.length > 0) {
-                        // Tomar el primer árbol como referencia
-                        const primerArbol = features[0];
-                        const coordenadas = primerArbol.geometry?.coordinates || [];
-                        
-                        if (coordenadas.length >= 2) {
-                            const lng = coordenadas[0];
-                            const lat = coordenadas[1];
-                            
-                            // Usar zoom máximo para ver árboles individuales
-                            map.setView([lat, lng], 19); // Zoom 19 para máximo acercamiento
-                            
-                            // Crear marcador en esa ubicación
-                            if (tapMarker) {
-                                map.removeLayer(tapMarker);
-                            }
-                            
-                            tapMarker = L.marker([lat, lng])
-                                .addTo(map)
-                                .bindPopup('<div class="info-window"><h3>Zona con árboles</h3><p>Ubicación de prueba</p></div>')
-                                .openPopup();
-                            
-                            // Cambiar a modo tap y buscar árboles
-                            cambiarModo('tap');
-                            cargarArbolesCercanos(lat, lng);
-                        }
-                    }
-                    
-                    loading.style.display = 'none';
-                })
-                .catch(error => {
-                    loading.style.display = 'none';
-                });
-        }
 
         // Función para calcular distancia entre dos coordenadas
         function calcularDistancia(lat1, lon1, lat2, lon2) {
@@ -378,13 +209,25 @@
                     function(error) {
                         loading.style.display = 'none';
                         document.getElementById('subtitle').textContent = 
-                            'No se pudo obtener tu ubicación. Usa "Ir a zona con árboles".';
+                            'No se pudo obtener tu ubicación. Cambia a modo "Tocar en el mapa".';
+                        
+                        // Usar ubicación por defecto
+                        userLat = -34.6037;
+                        userLng = -58.3816;
+                        map.setView([userLat, userLng], 15);
+                        cargarArbolesCercanos(userLat, userLng);
                     }
                 );
             } else {
                 loading.style.display = 'none';
                 document.getElementById('subtitle').textContent = 
-                    'Geolocalización no soportada. Usa "Ir a zona con árboles".';
+                    'Geolocalización no soportada. Cambia a modo "Tocar en el mapa".';
+                
+                // Usar ubicación por defecto
+                userLat = -34.6037;
+                userLng = -58.3816;
+                map.setView([userLat, userLng], 15);
+                cargarArbolesCercanos(userLat, userLng);
             }
         }
 
@@ -452,7 +295,7 @@
                     
                     if (arbolesCercanos.length === 0) {
                         document.getElementById('subtitle').textContent = 
-                            'No se encontraron árboles cercanos. Prueba aumentar el radio.';
+                            'No se encontraron árboles cercanos. Prueba otra ubicación.';
                     } else {
                         document.getElementById('subtitle').textContent = 
                             `${arbolesCercanos.length} árboles encontrados`;
@@ -468,17 +311,17 @@
         // Inicializar el mapa con configuración de zoom mejorada
         const map = L.map('map', {
             zoomControl: true,
-            minZoom: 10,     // Zoom mínimo permitido
-            maxZoom: 22,     // Zoom máximo permitido (muy cercano)
-            zoomSnap: 0.5,   // Permite zooms intermedios
-            zoomDelta: 0.5,  // Incremento de zoom más fino
-            wheelPxPerZoomLevel: 60 // Más sensible al zoom con rueda del mouse
+            minZoom: 10,
+            maxZoom: 22,
+            zoomSnap: 0.5,
+            zoomDelta: 0.5,
+            wheelPxPerZoomLevel: 60
         }).setView([-34.6037, -58.3816], 15);
 
-        // Configurar los límites de zoom para evitar que se aleje demasiado
+        // Configurar los límites de zoom
         map.setMaxBounds([
-            [-90, -180],   // Esquina suroeste
-            [90, 180]      // Esquina noreste
+            [-90, -180],
+            [90, 180]
         ]);
 
         // Capa de mapa base (OpenStreetMap)
@@ -502,15 +345,6 @@
                 
                 cargarArbolesCercanos(lat, lng);
             }
-        });
-
-        // Prevenir el comportamiento de zoom no deseado
-        map.on('zoomstart', function(e) {
-            // No hacer nada especial, dejar que Leaflet maneje el zoom
-        });
-
-        map.on('zoomend', function(e) {
-            // No forzar ningún zoom específico después del zoom
         });
 
         // Obtener ubicación inicial
