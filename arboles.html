@@ -75,50 +75,60 @@
         
         .stats-window {
             color: #121212;
-            padding: 8px;
+            padding: 6px 4px;
             max-width: 220px;
             background: white;
-            border-radius: 8px;
+            border-radius: 6px;
         }
         
         .stats-header {
             text-align: center;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             font-size: 12px;
             color: #666;
             font-weight: bold;
+            padding: 0 2px;
         }
         
         .stats-item {
             display: flex;
             align-items: center;
-            margin-bottom: 6px;
-            padding: 4px;
-            border-radius: 4px;
+            margin-bottom: 4px;
+            padding: 3px 2px;
+            border-radius: 3px;
             background-color: #f8f9fa;
         }
         
         .stats-icon {
-            width: 16px;
-            height: 16px;
+            width: 14px;
+            height: 14px;
             border-radius: 50%;
-            margin-right: 8px;
-            border: 2px solid white;
+            margin-right: 6px;
+            border: 1px solid white;
             flex-shrink: 0;
         }
         
         .stats-text {
             flex: 1;
-            font-size: 12px;
+            font-size: 11px;
             line-height: 1.2;
         }
         
         .stats-count {
             font-weight: bold;
             color: #2d5016;
-            font-size: 11px;
-            margin-left: 4px;
+            font-size: 10px;
+            margin-left: 3px;
             white-space: nowrap;
+        }
+        
+        .other-species {
+            margin-top: 4px;
+            padding-top: 4px;
+            border-top: 1px solid #ddd;
+            font-size: 10px;
+            color: #666;
+            text-align: center;
         }
         
         .loading {
@@ -205,7 +215,7 @@
     <div class="container">
         <header>
             <h1>Mapa de Árboles</h1>
-            <div class="version">Versión 12.0 - Selector Simple</div>
+            <div class="version">Versión 13.0 - Popup Mejorado</div>
             <p class="subtitle" id="subtitle">Obteniendo tu ubicación...</p>
         </header>
         
@@ -297,10 +307,19 @@
 
         // Función para crear contenido del popup de estadísticas
         function crearPopupEstadisticas(estadisticas, totalArboles) {
+            // Calcular porcentaje total de las especies mostradas
+            let porcentajeTotal = 0;
+            estadisticas.forEach(([especie, cantidad]) => {
+                porcentajeTotal += (cantidad / totalArboles) * 100;
+            });
+            
+            // Calcular porcentaje de "Otras especies"
+            const porcentajeOtras = 100 - porcentajeTotal;
+            
             let contenido = `
                 <div class="stats-window">
                     <div class="stats-header">
-                        🌳 ${totalArboles} árboles encontrados
+                        ${totalArboles} árboles encontrados
                     </div>
             `;
             
@@ -310,8 +329,8 @@
                 
                 // Acortar nombres largos de especies
                 let nombreEspecie = especie;
-                if (especie.length > 20) {
-                    nombreEspecie = especie.substring(0, 20) + '...';
+                if (especie.length > 18) {
+                    nombreEspecie = especie.substring(0, 18) + '...';
                 }
                 
                 contenido += `
@@ -326,6 +345,15 @@
                     </div>
                 `;
             });
+            
+            // Agregar "Otras especies" si hay más del 0%
+            if (porcentajeOtras > 0) {
+                contenido += `
+                    <div class="other-species">
+                        Otras especies: ${porcentajeOtras.toFixed(0)}%
+                    </div>
+                `;
+            }
             
             contenido += `</div>`;
             return contenido;
