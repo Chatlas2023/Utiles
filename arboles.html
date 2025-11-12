@@ -43,6 +43,8 @@
             color: #888;
             font-size: 12px;
             font-style: italic;
+            display: inline-block;
+            margin-left: 10px;
         }
         
         .subtitle {
@@ -58,25 +60,25 @@
         
         .info-window {
             color: #121212;
-            padding: 10px;
-            max-width: 250px;
+            padding: 8px;
+            max-width: 220px;
         }
         
         .info-window h3 {
             color: #2d5016;
-            margin-bottom: 8px;
-            font-size: 20px; 
+            margin-bottom: 6px;
+            font-size: 18px; 
         }
         
         .info-window p {
-            margin-bottom: 5px;
-            font-size: 14px;
+            margin-bottom: 4px;
+            font-size: 13px;
         }
         
         .stats-window {
             color: #121212;
-            padding: 6px 4px;
-            max-width: 220px;
+            padding: 5px 3px;
+            max-width: 200px;
             background: white;
             border-radius: 6px;
         }
@@ -84,40 +86,51 @@
         .stats-item {
             display: flex;
             align-items: center;
-            margin-bottom: 4px;
-            padding: 3px 2px;
+            margin-bottom: 3px;
+            padding: 2px 1px;
             border-radius: 3px;
             background-color: #f8f9fa;
         }
         
         .stats-icon {
-            width: 14px;
-            height: 14px;
+            width: 12px;
+            height: 12px;
             border-radius: 50%;
-            margin-right: 6px;
+            margin-right: 5px;
             border: 1px solid white;
             flex-shrink: 0;
         }
         
         .stats-text {
             flex: 1;
-            font-size: 11px;
+            font-size: 10px;
             line-height: 1.2;
         }
         
         .stats-count {
             font-weight: bold;
             color: #2d5016;
-            font-size: 10px;
-            margin-left: 3px;
+            font-size: 9px;
+            margin-left: 2px;
             white-space: nowrap;
         }
         
         .other-species {
             margin-top: 3px;
-            font-size: 11px;
+            font-size: 10px;
             color: #666;
-            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .other-species-icon {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #cccccc;
+            margin-right: 4px;
+            border: 1px solid white;
         }
         
         .loading {
@@ -176,7 +189,7 @@
         .map-layer-control {
             position: absolute;
             top: 80px;
-            left: 15px;
+            right: 15px;
             z-index: 1000;
             background: rgba(30, 30, 30, 0.9);
             border-radius: 5px;
@@ -199,6 +212,11 @@
         .map-layer-control a:hover {
             background: rgba(79, 195, 247, 0.3);
         }
+        
+        /* Estilo para el popup desplazado a la derecha */
+        .leaflet-popup {
+            margin-left: 40px;
+        }
     </style>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -206,9 +224,7 @@
 <body>
     <div class="container">
         <header>
-            <h1>Mapa de Árboles</h1>
-            <div class="version">Versión 14.0 - Compacta</div>
-            <p class="subtitle" id="subtitle">Obteniendo tu ubicación...</p>
+            <h1>Mapa de Árboles <span class="version">Ver: 14.0 - Compacta</span></h1>
         </header>
         
         <div id="map"></div>
@@ -216,7 +232,7 @@
 
     <!-- Selector de mapas simplificado - solo ícono -->
     <div class="map-layer-control">
-        <a href="#" title="Cambiar tipo de mapa" id="layerToggleButton">🗺️</a>
+        <a href="#" title="Cambiar tipo de mapa" id="layerToggleButton">🌍</a>
     </div>
     
     <div class="mode-toggle">
@@ -248,7 +264,7 @@
         ];
 
         // Íconos para los tipos de mapa
-        const layerIcons = ['🗺️', '🛰️'];
+        const layerIcons = ['🌍', '🛰️'];
         let currentLayerIndex = 0;
 
         // Función para cambiar entre mapas
@@ -310,6 +326,15 @@
             
             let contenido = `<div class="stats-window">`;
             
+            // Mostrar el total de árboles en la primera línea
+            contenido += `
+                <div class="stats-item" style="background-color: #e8f5e9; margin-bottom: 6px;">
+                    <div class="stats-text" style="font-weight: bold; color: #2d5016; text-align: center; width: 100%;">
+                        ${totalArboles} árboles encontrados
+                    </div>
+                </div>
+            `;
+            
             estadisticas.forEach(([especie, cantidad], index) => {
                 const color = coloresEspecies[index] || '#4CAF50';
                 const porcentaje = ((cantidad / totalArboles) * 100).toFixed(0);
@@ -337,6 +362,7 @@
             if (porcentajeOtras > 0) {
                 contenido += `
                     <div class="other-species">
+                        <div class="other-species-icon"></div>
                         Otras especies: ${porcentajeOtras.toFixed(0)}%
                     </div>
                 `;
@@ -367,14 +393,12 @@
             document.getElementById('mode-tap').classList.toggle('active', modo === 'tap');
             
             if (modo === 'gps') {
-                document.getElementById('subtitle').textContent = 'Usando tu ubicación GPS';
                 if (userLat && userLng) {
                     cargarArbolesCercanos(userLat, userLng);
                 } else {
                     obtenerUbicacionGPS();
                 }
             } else {
-                document.getElementById('subtitle').textContent = 'Toca en el mapa para seleccionar ubicación';
                 if (userMarker) map.removeLayer(userMarker);
                 if (circle) map.removeLayer(circle);
             }
@@ -407,8 +431,6 @@
                     },
                     function(error) {
                         loading.style.display = 'none';
-                        document.getElementById('subtitle').textContent = 
-                            'No se pudo obtener tu ubicación. Cambia a modo "Tocar en el mapa".';
                         
                         // Usar ubicación por defecto
                         userLat = -34.6037;
@@ -419,8 +441,6 @@
                 );
             } else {
                 loading.style.display = 'none';
-                document.getElementById('subtitle').textContent = 
-                    'Geolocalización no soportada. Cambia a modo "Tocar en el mapa".';
                 
                 // Usar ubicación por defecto
                 userLat = -34.6037;
@@ -510,22 +530,12 @@
                     statsMarker.bindPopup(statsPopupContent).openPopup();
 
                     loading.style.display = 'none';
-                    
-                    if (arbolesCercanos.length === 0) {
-                        document.getElementById('subtitle').textContent = 
-                            'No se encontraron árboles cercanos. Prueba otra ubicación.';
-                    } else {
-                        document.getElementById('subtitle').textContent = 
-                            `${arbolesCercanos.length} árboles encontrados`;
-                    }
 
                     // Habilitar el botón "Usar mi ubicación" después de seleccionar un punto
                     document.getElementById('mode-gps').disabled = false;
                 })
                 .catch(error => {
                     loading.style.display = 'none';
-                    document.getElementById('subtitle').textContent = 
-                        `Error cargando datos: ${error.message}`;
                 });
         }
 
