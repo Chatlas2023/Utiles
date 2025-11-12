@@ -75,42 +75,49 @@
         
         .stats-window {
             color: #121212;
-            padding: 15px;
-            max-width: 280px;
-        }
-        
-        .stats-window h3 {
-            color: #2d5016;
-            margin-bottom: 12px;
-            font-size: 18px;
-            text-align: center;
+            padding: 6px 4px;
+            max-width: 220px;
+            background: white;
+            border-radius: 6px;
         }
         
         .stats-item {
             display: flex;
             align-items: center;
-            margin-bottom: 8px;
-            padding: 5px;
-            border-radius: 5px;
+            margin-bottom: 4px;
+            padding: 3px 2px;
+            border-radius: 3px;
             background-color: #f8f9fa;
         }
         
         .stats-icon {
-            width: 20px;
-            height: 20px;
+            width: 14px;
+            height: 14px;
             border-radius: 50%;
-            margin-right: 10px;
-            border: 2px solid white;
+            margin-right: 6px;
+            border: 1px solid white;
+            flex-shrink: 0;
         }
         
         .stats-text {
             flex: 1;
-            font-size: 14px;
+            font-size: 11px;
+            line-height: 1.2;
         }
         
         .stats-count {
             font-weight: bold;
             color: #2d5016;
+            font-size: 10px;
+            margin-left: 3px;
+            white-space: nowrap;
+        }
+        
+        .other-species {
+            margin-top: 3px;
+            font-size: 11px;
+            color: #666;
+            text-align: center;
         }
         
         .loading {
@@ -127,25 +134,28 @@
         
         .mode-toggle {
             position: absolute;
-            bottom: 20px;
+            bottom: 15px;
             left: 50%;
             transform: translateX(-50%);
             background: rgba(30, 30, 30, 0.9);
-            padding: 10px 15px;
-            border-radius: 20px;
+            padding: 8px 20px;
+            border-radius: 25px;
             z-index: 1000;
             display: flex;
-            gap: 10px;
+            gap: 15px;
         }
         
         .mode-toggle button {
             background: #333;
             color: white;
             border: 1px solid #555;
-            padding: 8px 15px;
-            border-radius: 15px;
+            padding: 6px 25px;
+            border-radius: 20px;
             cursor: pointer;
-            font-size: 14px;
+            font-size: 13px;
+            height: 32px;
+            min-width: 140px;
+            white-space: nowrap;
         }
         
         .mode-toggle button.active {
@@ -161,6 +171,34 @@
             height: 14px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
+
+        /* Selector de mapas simplificado - solo ícono */
+        .map-layer-control {
+            position: absolute;
+            top: 80px;
+            left: 15px;
+            z-index: 1000;
+            background: rgba(30, 30, 30, 0.9);
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+
+        .map-layer-control a {
+            display: block;
+            width: 35px;
+            height: 35px;
+            line-height: 35px;
+            text-align: center;
+            text-decoration: none;
+            color: white;
+            font-size: 18px;
+            border-radius: 5px;
+            transition: background-color 0.2s;
+        }
+
+        .map-layer-control a:hover {
+            background: rgba(79, 195, 247, 0.3);
+        }
     </style>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -169,11 +207,16 @@
     <div class="container">
         <header>
             <h1>Mapa de Árboles</h1>
-            <div class="version">Versión 9.0 - Con Estadísticas</div>
+            <div class="version">Versión 14.0 - Compacta</div>
             <p class="subtitle" id="subtitle">Obteniendo tu ubicación...</p>
         </header>
         
         <div id="map"></div>
+    </div>
+
+    <!-- Selector de mapas simplificado - solo ícono -->
+    <div class="map-layer-control">
+        <a href="#" title="Cambiar tipo de mapa" id="layerToggleButton">🗺️</a>
     </div>
     
     <div class="mode-toggle">
@@ -192,6 +235,8 @@
         let modoActual = 'gps';
         let datosArboles = [];
         let estadisticasActuales = [];
+        let mapaActual = 'calles';
+        let capaCalles, capaSatelite;
 
         // Colores para las 5 especies más frecuentes
         const coloresEspecies = [
@@ -201,6 +246,28 @@
             '#9C27B0', // Púrpura
             '#F44336'  // Rojo
         ];
+
+        // Íconos para los tipos de mapa
+        const layerIcons = ['🗺️', '🛰️'];
+        let currentLayerIndex = 0;
+
+        // Función para cambiar entre mapas
+        function cambiarMapa() {
+            currentLayerIndex = (currentLayerIndex + 1) % layerIcons.length;
+            const selectedLayer = currentLayerIndex === 0 ? 'calles' : 'satelite';
+            document.getElementById('layerToggleButton').textContent = layerIcons[currentLayerIndex];
+            
+            // Cambiar capa del mapa
+            if (selectedLayer === 'calles') {
+                map.removeLayer(capaSatelite);
+                map.addLayer(capaCalles);
+                mapaActual = 'calles';
+            } else if (selectedLayer === 'satelite') {
+                map.removeLayer(capaCalles);
+                map.addLayer(capaSatelite);
+                mapaActual = 'satelite';
+            }
+        }
 
         // Función para crear íconos personalizados por especie
         function crearIconoEspecie(indiceColor) {
@@ -232,23 +299,32 @@
 
         // Función para crear contenido del popup de estadísticas
         function crearPopupEstadisticas(estadisticas, totalArboles) {
-            let contenido = `
-                <div class="stats-window">
-                    <h3>🌳 Especies Más Frecuentes</h3>
-                    <p style="text-align: center; margin-bottom: 15px; color: #666;">
-                        Total de árboles: <strong>${totalArboles}</strong>
-                    </p>
-            `;
+            // Calcular porcentaje total de las especies mostradas
+            let porcentajeTotal = 0;
+            estadisticas.forEach(([especie, cantidad]) => {
+                porcentajeTotal += (cantidad / totalArboles) * 100;
+            });
+            
+            // Calcular porcentaje de "Otras especies"
+            const porcentajeOtras = 100 - porcentajeTotal;
+            
+            let contenido = `<div class="stats-window">`;
             
             estadisticas.forEach(([especie, cantidad], index) => {
                 const color = coloresEspecies[index] || '#4CAF50';
-                const porcentaje = ((cantidad / totalArboles) * 100).toFixed(1);
+                const porcentaje = ((cantidad / totalArboles) * 100).toFixed(0);
+                
+                // Acortar nombres largos de especies
+                let nombreEspecie = especie;
+                if (especie.length > 18) {
+                    nombreEspecie = especie.substring(0, 18) + '...';
+                }
                 
                 contenido += `
                     <div class="stats-item">
                         <div class="stats-icon" style="background-color: ${color};"></div>
                         <div class="stats-text">
-                            ${especie}
+                            ${nombreEspecie}
                         </div>
                         <div class="stats-count">
                             ${cantidad} (${porcentaje}%)
@@ -256,6 +332,15 @@
                     </div>
                 `;
             });
+            
+            // Agregar "Otras especies" si hay más del 0%
+            if (porcentajeOtras > 0) {
+                contenido += `
+                    <div class="other-species">
+                        Otras especies: ${porcentajeOtras.toFixed(0)}%
+                    </div>
+                `;
+            }
             
             contenido += `</div>`;
             return contenido;
@@ -431,7 +516,7 @@
                             'No se encontraron árboles cercanos. Prueba otra ubicación.';
                     } else {
                         document.getElementById('subtitle').textContent = 
-                            `${arbolesCercanos.length} árboles encontrados - Ver estadísticas`;
+                            `${arbolesCercanos.length} árboles encontrados`;
                     }
 
                     // Habilitar el botón "Usar mi ubicación" después de seleccionar un punto
@@ -446,7 +531,7 @@
 
         // Inicializar el mapa sin controles de zoom
         const map = L.map('map', {
-            zoomControl: false, // Deshabilitar controles de zoom
+            zoomControl: false,
             minZoom: 10,
             maxZoom: 22,
             zoomSnap: 0.5,
@@ -460,12 +545,21 @@
             [90, 180]
         ]);
 
-        // Capa de mapa base (OpenStreetMap)
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        // Crear capas de mapas
+        capaCalles = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap contributors',
             minZoom: 10,
             maxZoom: 22
-        }).addTo(map);
+        });
+
+        capaSatelite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+            attribution: '© Esri, Maxar, Earthstar Geographics',
+            minZoom: 10,
+            maxZoom: 22
+        });
+
+        // Agregar capa inicial (calles)
+        capaCalles.addTo(map);
 
         // Evento para tocar en el mapa
         map.on('click', function(e) {
@@ -477,6 +571,12 @@
                 map.setView([lat, lng], 18);
                 cargarArbolesCercanos(lat, lng);
             }
+        });
+
+        // Configurar el evento del botón de cambio de capas
+        document.getElementById('layerToggleButton').addEventListener('click', function(e) {
+            e.preventDefault();
+            cambiarMapa();
         });
 
         // Obtener ubicación inicial
