@@ -268,7 +268,7 @@
 <body>
     <div class="container">
         <header>
-            <h1>Mapa de Árboles <span class="version">Ver: 19.0 - Centro pantalla desplazado</span></h1>
+            <h1>Mapa de Árboles <span class="version">Ver: 20.0 - Centrado corregido</span></h1>
         </header>
         
         <div id="map"></div>
@@ -430,13 +430,27 @@
         }
 
         // Función para centrar el mapa con desplazamiento en pantalla
-function centrarMapaConDesplazamiento(lat, lng) {
-    // Centrar el mapa directamente en el punto
-    map.setView([lat, lng], map.getZoom(), {
-        animate: true,
-        duration: 0.3
-    });
-}
+        function centrarMapaConDesplazamiento(lat, lng) {
+            // Forzar el centrado sin restricciones
+            const currentZoom = map.getZoom();
+            
+            // Primero establecer el view sin animación para evitar límites
+            map.setView([lat, lng], currentZoom, {
+                animate: false
+            });
+            
+            // Luego, si es necesario, un pequeño ajuste para asegurar el centrado
+            setTimeout(() => {
+                const currentCenter = map.getCenter();
+                if (Math.abs(currentCenter.lat - lat) > 0.0001 || Math.abs(currentCenter.lng - lng) > 0.0001) {
+                    // Si no está perfectamente centrado, forzarlo de nuevo
+                    map.setView([lat, lng], currentZoom, {
+                        animate: true,
+                        duration: 0.3
+                    });
+                }
+            }, 10);
+        }
 
         function cambiarModo(modo) {
             modoActual = modo;
@@ -672,7 +686,8 @@ function centrarMapaConDesplazamiento(lat, lng) {
             zoomSnap: 0.5,
             zoomDelta: 0.5,
             wheelPxPerZoomLevel: 60,
-            maxBoundsViscosity: 0.0 // Esto desactiva la restricción de límites
+            maxBoundsViscosity: 0.0, // Esto desactiva la restricción de límites
+            worldCopyJump: true // Permite desplazamiento infinito
         }).setView([-34.6037, -58.3816], 15);
 
         // Crear capas de mapas
