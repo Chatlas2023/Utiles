@@ -227,7 +227,7 @@
         
         /* Estilo para el popup desplazado a la derecha */
         .leaflet-popup {
-            margin-left: 80px;
+            margin-left: 100px; /* Más desplazamiento a la derecha */
         }
         
         .leaflet-popup-content-wrapper {
@@ -242,7 +242,7 @@
         
         /* Triángulo inferior izquierdo */
         .leaflet-popup-tip-container {
-            left: 10px !important;
+            left: 15px !important; /* Más a la izquierda */
         }
         
         .total-trees {
@@ -268,7 +268,7 @@
 <body>
     <div class="container">
         <header>
-            <h1>Mapa de Árboles <span class="version">Ver: 15.0 - Con íconos grises</span></h1>
+            <h1>Mapa de Árboles <span class="version">Ver: 16.0 - Popups centrados</span></h1>
         </header>
         
         <div id="map"></div>
@@ -365,42 +365,52 @@
         }
 
         function crearPopupEstadisticas(estadisticas, totalArboles) {
-            let porcentajeTotal = 0;
-            estadisticas.forEach(([especie, cantidad]) => {
-                porcentajeTotal += (cantidad / totalArboles) * 100;
-            });
-            
-            const porcentajeOtras = 100 - porcentajeTotal;
-            
             let contenido = `<div class="stats-window">`;
-            contenido += `<div class="total-trees">${totalArboles} árboles encontrados</div>`;
             
-            estadisticas.forEach(([especie, cantidad], index) => {
-                const color = coloresEspecies[index] || '#4CAF50';
-                const porcentaje = ((cantidad / totalArboles) * 100).toFixed(0);
+            if (totalArboles === 0) {
+                // Caso especial: cero árboles encontrados
+                contenido += `<div class="total-trees">Cero árboles encontrados</div>`;
+            } else {
+                // Mostrar el total de árboles en la primera línea
+                contenido += `<div class="total-trees">${totalArboles} árboles encontrados</div>`;
                 
-                let nombreEspecie = especie;
-                if (especie.length > 18) {
-                    nombreEspecie = especie.substring(0, 18) + '...';
+                // Calcular porcentaje total de las especies mostradas
+                let porcentajeTotal = 0;
+                estadisticas.forEach(([especie, cantidad]) => {
+                    porcentajeTotal += (cantidad / totalArboles) * 100;
+                });
+                
+                // Calcular porcentaje de "Otras especies"
+                const porcentajeOtras = 100 - porcentajeTotal;
+                
+                estadisticas.forEach(([especie, cantidad], index) => {
+                    const color = coloresEspecies[index] || '#4CAF50';
+                    const porcentaje = ((cantidad / totalArboles) * 100).toFixed(0);
+                    
+                    let nombreEspecie = especie;
+                    if (especie.length > 18) {
+                        nombreEspecie = especie.substring(0, 18) + '...';
+                    }
+                    
+                    contenido += `
+                        <div class="stats-item">
+                            <div class="stats-icon" style="background-color: ${color};"></div>
+                            <div class="stats-text">${nombreEspecie}</div>
+                            <div class="stats-count">${cantidad} (${porcentaje}%)</div>
+                        </div>
+                    `;
+                });
+                
+                // Agregar "Otras especies" solo si hay más del 0% y hay árboles
+                if (porcentajeOtras > 0 && totalArboles > 0) {
+                    contenido += `
+                        <div class="stats-item">
+                            <div class="other-species-icon"></div>
+                            <div class="stats-text">Otras especies</div>
+                            <div class="stats-count">${porcentajeOtras.toFixed(0)}%</div>
+                        </div>
+                    `;
                 }
-                
-                contenido += `
-                    <div class="stats-item">
-                        <div class="stats-icon" style="background-color: ${color};"></div>
-                        <div class="stats-text">${nombreEspecie}</div>
-                        <div class="stats-count">${cantidad} (${porcentaje}%)</div>
-                    </div>
-                `;
-            });
-            
-            if (porcentajeOtras > 0) {
-                contenido += `
-                    <div class="stats-item">
-                        <div class="other-species-icon"></div>
-                        <div class="stats-text">Otras especies</div>
-                        <div class="stats-count">${porcentajeOtras.toFixed(0)}%</div>
-                    </div>
-                `;
             }
             
             contenido += `</div>`;
@@ -628,8 +638,17 @@
                 
                 // Agregar evento para centrar el mapa cuando se hace clic en el marcador
                 marker.on('click', function(e) {
-                    // Centrar el mapa en la ubicación del árbol
-                    map.setView([lat, lng], map.getZoom(), {
+                    // Centrar el mapa en la ubicación del árbol con panBy para asegurar que el popup esté visible
+                    const point = map.latLngToContainerPoint([lat, lng]);
+                    const halfWidth = window.innerWidth / 2;
+                    const halfHeight = window.innerHeight / 2;
+                    
+                    // Calcular el desplazamiento necesario para centrar
+                    const offsetX = halfWidth - point.x;
+                    const offsetY = halfHeight - point.y;
+                    
+                    // Aplicar el desplazamiento
+                    map.panBy([offsetX, offsetY], {
                         animate: true,
                         duration: 0.5
                     });
@@ -645,7 +664,14 @@
             
             // Agregar evento para centrar el mapa cuando se hace clic en el popup de estadísticas
             statsMarker.on('click', function(e) {
-                map.setView([lat, lng], map.getZoom(), {
+                const point = map.latLngToContainerPoint([lat, lng]);
+                const halfWidth = window.innerWidth / 2;
+                const halfHeight = window.innerHeight / 2;
+                
+                const offsetX = halfWidth - point.x;
+                const offsetY = halfHeight - point.y;
+                
+                map.panBy([offsetX, offsetY], {
                     animate: true,
                     duration: 0.5
                 });
