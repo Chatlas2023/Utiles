@@ -672,10 +672,8 @@ function centrarMapaConDesplazamiento(lat, lng) {
             zoomSnap: 0.5,
             zoomDelta: 0.5,
             wheelPxPerZoomLevel: 60
+            maxBoundsViscosity: 0.0 // Esto desactiva la restricción de límites
         }).setView([-34.6037, -58.3816], 15);
-
-        // Configurar los límites de zoom
-        map.setMaxBounds([[-90, -180], [90, 180]]);
 
         // Crear capas de mapas
         capaCalles = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
