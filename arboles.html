@@ -34,7 +34,7 @@
         }
         
         h1 {
-            color: #4fc3f7; /* Azul celeste */
+            color: #4fc3f7;
             font-size: 20px;
             margin-bottom: 5px;
         }
@@ -73,6 +73,46 @@
             font-size: 14px;
         }
         
+        .stats-window {
+            color: #121212;
+            padding: 15px;
+            max-width: 280px;
+        }
+        
+        .stats-window h3 {
+            color: #2d5016;
+            margin-bottom: 12px;
+            font-size: 18px;
+            text-align: center;
+        }
+        
+        .stats-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            padding: 5px;
+            border-radius: 5px;
+            background-color: #f8f9fa;
+        }
+        
+        .stats-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 10px;
+            border: 2px solid white;
+        }
+        
+        .stats-text {
+            flex: 1;
+            font-size: 14px;
+        }
+        
+        .stats-count {
+            font-weight: bold;
+            color: #2d5016;
+        }
+        
         .loading {
             position: absolute;
             top: 50%;
@@ -109,17 +149,16 @@
         }
         
         .mode-toggle button.active {
-            background: #4fc3f7; /* Azul celeste */
+            background: #4fc3f7;
             color: #121212;
         }
 
-        /* Estilos para los puntos verdes personalizados */
-        .green-dot {
-            background-color: #4CAF50;
+        /* Estilos para los íconos personalizados */
+        .tree-icon {
             border: 2px solid white;
             border-radius: 50%;
-            width: 12px;
-            height: 12px;
+            width: 14px;
+            height: 14px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
     </style>
@@ -130,7 +169,7 @@
     <div class="container">
         <header>
             <h1>Mapa de Árboles</h1>
-            <div class="version">Versión 8.0 - Limpia</div>
+            <div class="version">Versión 9.0 - Con Estadísticas</div>
             <p class="subtitle" id="subtitle">Obteniendo tu ubicación...</p>
         </header>
         
@@ -152,13 +191,75 @@
         let circle;
         let modoActual = 'gps';
         let datosArboles = [];
+        let estadisticasActuales = [];
 
-        // Crear ícono personalizado para árboles (punto verde)
-        const greenIcon = L.divIcon({
-            className: 'green-dot',
-            iconSize: [12, 12],
-            iconAnchor: [6, 6]
-        });
+        // Colores para las 5 especies más frecuentes
+        const coloresEspecies = [
+            '#4CAF50', // Verde
+            '#2196F3', // Azul
+            '#FF9800', // Naranja
+            '#9C27B0', // Púrpura
+            '#F44336'  // Rojo
+        ];
+
+        // Función para crear íconos personalizados por especie
+        function crearIconoEspecie(indiceColor) {
+            const color = coloresEspecies[indiceColor] || '#4CAF50';
+            return L.divIcon({
+                className: 'tree-icon',
+                html: `<div style="background-color: ${color}; width: 100%; height: 100%; border-radius: 50%;"></div>`,
+                iconSize: [14, 14],
+                iconAnchor: [7, 7]
+            });
+        }
+
+        // Función para calcular estadísticas de especies
+        function calcularEstadisticas(arboles) {
+            const conteoEspecies = {};
+            
+            arboles.forEach(arbol => {
+                const especie = arbol.properties?.Nombre || 'Desconocida';
+                conteoEspecies[especie] = (conteoEspecies[especie] || 0) + 1;
+            });
+            
+            // Ordenar especies por frecuencia
+            const especiesOrdenadas = Object.entries(conteoEspecies)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 5); // Top 5 especies
+            
+            return especiesOrdenadas;
+        }
+
+        // Función para crear contenido del popup de estadísticas
+        function crearPopupEstadisticas(estadisticas, totalArboles) {
+            let contenido = `
+                <div class="stats-window">
+                    <h3>🌳 Especies Más Frecuentes</h3>
+                    <p style="text-align: center; margin-bottom: 15px; color: #666;">
+                        Total de árboles: <strong>${totalArboles}</strong>
+                    </p>
+            `;
+            
+            estadisticas.forEach(([especie, cantidad], index) => {
+                const color = coloresEspecies[index] || '#4CAF50';
+                const porcentaje = ((cantidad / totalArboles) * 100).toFixed(1);
+                
+                contenido += `
+                    <div class="stats-item">
+                        <div class="stats-icon" style="background-color: ${color};"></div>
+                        <div class="stats-text">
+                            ${especie}
+                        </div>
+                        <div class="stats-count">
+                            ${cantidad} (${porcentaje}%)
+                        </div>
+                    </div>
+                `;
+            });
+            
+            contenido += `</div>`;
+            return contenido;
+        }
 
         // Función para calcular distancia entre dos coordenadas
         function calcularDistancia(lat1, lon1, lat2, lon2) {
@@ -252,8 +353,8 @@
 
             if (circle) map.removeLayer(circle);
             circle = L.circle([lat, lng], {
-                color: '#4fc3f7', // Azul celeste
-                fillColor: '#4fc3f7', // Azul celeste
+                color: '#4fc3f7',
+                fillColor: '#4fc3f7',
                 fillOpacity: 0.1,
                 radius: radioActual
             }).addTo(map);
@@ -270,7 +371,6 @@
                         const coordenadas = feature.geometry?.coordinates || [];
                         if (coordenadas.length < 2) return false;
                         
-                        // GeoJSON usa [longitud, latitud]
                         const arbolLng = coordenadas[0];
                         const arbolLat = coordenadas[1];
                         
@@ -278,31 +378,51 @@
                         return distancia <= radioActual;
                     });
 
-                    // Limpiar y crear marcadores
+                    // Calcular estadísticas
+                    estadisticasActuales = calcularEstadisticas(arbolesCercanos);
+
+                    // Limpiar marcadores anteriores
                     map.eachLayer(layer => {
                         if (layer instanceof L.Marker && layer !== userMarker) {
                             map.removeLayer(layer);
                         }
                     });
 
+                    // Crear mapa de especies a índices de color
+                    const mapaEspeciesColor = {};
+                    estadisticasActuales.forEach(([especie], index) => {
+                        mapaEspeciesColor[especie] = index;
+                    });
+
+                    // Crear marcadores con íconos por especie
                     arbolesCercanos.forEach(feature => {
                         const coordenadas = feature.geometry.coordinates;
                         const propiedades = feature.properties || {};
+                        const especie = propiedades.Nombre || 'Desconocida';
                         
                         const lng = coordenadas[0];
                         const lat = coordenadas[1];
                         
-                        const marker = L.marker([lat, lng], { icon: greenIcon }).addTo(map);
+                        // Determinar color según la especie
+                        const indiceColor = mapaEspeciesColor[especie];
+                        const icono = crearIconoEspecie(indiceColor);
+                        
+                        const marker = L.marker([lat, lng], { icon: icono }).addTo(map);
                         
                         const popupContent = `
                             <div class="info-window">
-                                <h3>${propiedades.Nombre || 'Árbol'}</h3>
+                                <h3>${especie}</h3>
                                 ${propiedades.Dir ? `<p><strong>Dirección:</strong> ${propiedades.Dir}</p>` : ''}
                             </div>
                         `;
                         
                         marker.bindPopup(popupContent);
                     });
+
+                    // Crear marcador de estadísticas en el centro
+                    const statsMarker = L.marker([lat, lng]).addTo(map);
+                    const statsPopupContent = crearPopupEstadisticas(estadisticasActuales, arbolesCercanos.length);
+                    statsMarker.bindPopup(statsPopupContent).openPopup();
 
                     loading.style.display = 'none';
                     
@@ -311,8 +431,11 @@
                             'No se encontraron árboles cercanos. Prueba otra ubicación.';
                     } else {
                         document.getElementById('subtitle').textContent = 
-                            `${arbolesCercanos.length} árboles encontrados`;
+                            `${arbolesCercanos.length} árboles encontrados - Ver estadísticas`;
                     }
+
+                    // Habilitar el botón "Usar mi ubicación" después de seleccionar un punto
+                    document.getElementById('mode-gps').disabled = false;
                 })
                 .catch(error => {
                     loading.style.display = 'none';
@@ -321,9 +444,9 @@
                 });
         }
 
-        // Inicializar el mapa con configuración de zoom mejorada
+        // Inicializar el mapa sin controles de zoom
         const map = L.map('map', {
-            zoomControl: true,
+            zoomControl: false, // Deshabilitar controles de zoom
             minZoom: 10,
             maxZoom: 22,
             zoomSnap: 0.5,
