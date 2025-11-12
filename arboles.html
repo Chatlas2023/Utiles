@@ -60,24 +60,24 @@
         
         .info-window {
             color: #121212;
-            padding: 8px 6px;
+            padding: 6px 4px;
             max-width: 220px;
         }
         
         .info-window h3 {
             color: #2d5016;
-            margin-bottom: 6px;
-            font-size: 18px; 
+            margin-bottom: 4px;
+            font-size: 16px; 
         }
         
         .info-window p {
-            margin-bottom: 4px;
-            font-size: 13px;
+            margin-bottom: 3px;
+            font-size: 12px;
         }
         
         .stats-window {
             color: #121212;
-            padding: 4px 2px;
+            padding: 3px 2px;
             max-width: 200px;
             background: white;
             border-radius: 6px;
@@ -86,8 +86,8 @@
         .stats-item {
             display: flex;
             align-items: center;
-            margin-bottom: 2px;
-            padding: 2px 0;
+            margin-bottom: 1px;
+            padding: 1px 0;
             border-radius: 3px;
             background-color: #f8f9fa;
         }
@@ -104,7 +104,7 @@
         .stats-text {
             flex: 1;
             font-size: 11px;
-            line-height: 1.2;
+            line-height: 1.1;
         }
         
         .stats-count {
@@ -116,7 +116,7 @@
         }
         
         .other-species {
-            margin-top: 2px;
+            margin-top: 1px;
             font-size: 10px;
             color: #666;
             display: flex;
@@ -220,17 +220,35 @@
         
         .leaflet-popup-content-wrapper {
             border-radius: 6px;
+            padding: 0;
+        }
+        
+        .leaflet-popup-tip {
+            margin-left: -30px !important; /* Mueve el indicador a la izquierda */
         }
         
         .total-trees {
             background-color: #e8f5e9;
-            margin-bottom: 4px;
-            padding: 3px 0;
+            margin-bottom: 3px;
+            padding: 2px 0;
             border-radius: 3px;
             text-align: center;
             font-weight: bold;
             color: #2d5016;
             font-size: 12px;
+        }
+        
+        /* Aumentar tamaño de fuente sin aumentar el popup */
+        .stats-window {
+            font-size: 12px;
+        }
+        
+        .stats-text {
+            font-size: 11px;
+        }
+        
+        .stats-count {
+            font-size: 10px;
         }
     </style>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -247,7 +265,7 @@
 
     <!-- Selector de mapas simplificado - solo ícono -->
     <div class="map-layer-control">
-        <a href="#" title="Cambiar tipo de mapa" id="layerToggleButton">🛰️</a>
+        <a href="#" title="Cambiar tipo de mapa" id="layerToggleButton">🌍</a>
     </div>
     
     <div class="mode-toggle">
@@ -266,7 +284,7 @@
         let modoActual = 'gps';
         let datosArboles = [];
         let estadisticasActuales = [];
-        let mapaActual = 'satelite';
+        let mapaActual = 'calles';
         let capaCalles, capaSatelite;
 
         // Colores para las 5 especies más frecuentes
@@ -279,13 +297,13 @@
         ];
 
         // Íconos para los tipos de mapa
-        const layerIcons = ['🛰️', '🌍'];
+        const layerIcons = ['🌍', '🛰️'];
         let currentLayerIndex = 0;
 
         // Función para cambiar entre mapas
         function cambiarMapa() {
             currentLayerIndex = (currentLayerIndex + 1) % layerIcons.length;
-            const selectedLayer = currentLayerIndex === 0 ? 'satelite' : 'calles';
+            const selectedLayer = currentLayerIndex === 0 ? 'calles' : 'satelite';
             document.getElementById('layerToggleButton').textContent = layerIcons[currentLayerIndex];
             
             // Cambiar capa del mapa
@@ -586,8 +604,8 @@
             maxZoom: 22
         });
 
-        // Agregar capa inicial (satélite)
-        capaSatelite.addTo(map);
+        // Agregar capa inicial (calles)
+        capaCalles.addTo(map);
 
         // Evento para tocar en el mapa
         map.on('click', function(e) {
