@@ -268,7 +268,7 @@
 <body>
     <div class="container">
         <header>
-            <h1>Mapa de Árboles <span class="version">Ver: 18.0 - Centro desplazado</span></h1>
+            <h1>Mapa de Árboles <span class="version">Ver: 19.0 - Centro pantalla desplazado</span></h1>
         </header>
         
         <div id="map"></div>
@@ -429,15 +429,22 @@
             return R * c;
         }
 
-        // Función para calcular desplazamiento de aproximadamente 3cm a la izquierda
-        function calcularDesplazamientoIzquierda(lat, lng) {
-            // Aproximadamente 3cm a la izquierda en grados
-            // 1 grado de longitud ≈ 111km en el ecuador, menos en otras latitudes
-            const metrosPorGrado = 111000 * Math.cos(lat * Math.PI / 180);
-            const desplazamientoMetros = 0.03; // 3cm
-            const desplazamientoGrados = desplazamientoMetros / metrosPorGrado;
+        // Función para centrar el mapa con desplazamiento en pantalla
+        function centrarMapaConDesplazamiento(lat, lng) {
+            // Primero centrar el mapa en el punto
+            map.setView([lat, lng], map.getZoom(), {
+                animate: true,
+                duration: 0.3
+            });
             
-            return [lat, lng - desplazamientoGrados];
+            // Luego desplazar la vista 3cm (aproximadamente 40px) hacia la izquierda
+            // 3cm en pantalla ≈ 40px (asumiendo ~133 DPI típico en móviles)
+            setTimeout(() => {
+                map.panBy([-40, 0], {
+                    animate: true,
+                    duration: 0.2
+                });
+            }, 50);
         }
 
         function cambiarModo(modo) {
@@ -649,14 +656,7 @@
                 
                 // Agregar evento para centrar el mapa cuando se hace clic en el marcador
                 marker.on('click', function(e) {
-                    // Calcular nuevo centro desplazado aproximadamente 3cm a la izquierda
-                    const nuevoCentro = calcularDesplazamientoIzquierda(lat, lng);
-                    
-                    // Centrar el mapa en la nueva posición desplazada
-                    map.setView(nuevoCentro, map.getZoom(), {
-                        animate: true,
-                        duration: 0.3
-                    });
+                    centrarMapaConDesplazamiento(lat, lng);
                 });
                 
                 marker.bindPopup(popupContent);
@@ -669,14 +669,7 @@
             
             // Agregar evento para centrar el mapa cuando se hace clic en el popup de estadísticas
             statsMarker.on('click', function(e) {
-                // Calcular nuevo centro desplazado aproximadamente 3cm a la izquierda
-                const nuevoCentro = calcularDesplazamientoIzquierda(lat, lng);
-                
-                // Centrar el mapa en la nueva posición desplazada
-                map.setView(nuevoCentro, map.getZoom(), {
-                    animate: true,
-                    duration: 0.3
-                });
+                centrarMapaConDesplazamiento(lat, lng);
             });
         }
 
