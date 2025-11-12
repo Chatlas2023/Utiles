@@ -227,7 +227,7 @@
         
         /* Estilo para el popup desplazado a la derecha */
         .leaflet-popup {
-            margin-left: 100px; /* Más desplazamiento a la derecha */
+            margin-left: 100px;
         }
         
         .leaflet-popup-content-wrapper {
@@ -242,7 +242,7 @@
         
         /* Triángulo inferior izquierdo */
         .leaflet-popup-tip-container {
-            left: 15px !important; /* Más a la izquierda */
+            left: 15px !important;
         }
         
         .total-trees {
@@ -268,7 +268,7 @@
 <body>
     <div class="container">
         <header>
-            <h1>Mapa de Árboles <span class="version">Ver: 16.0 - Popups centrados</span></h1>
+            <h1>Mapa de Árboles <span class="version">Ver: 17.0 - Centrado corregido</span></h1>
         </header>
         
         <div id="map"></div>
@@ -638,19 +638,10 @@
                 
                 // Agregar evento para centrar el mapa cuando se hace clic en el marcador
                 marker.on('click', function(e) {
-                    // Centrar el mapa en la ubicación del árbol con panBy para asegurar que el popup esté visible
-                    const point = map.latLngToContainerPoint([lat, lng]);
-                    const halfWidth = window.innerWidth / 2;
-                    const halfHeight = window.innerHeight / 2;
-                    
-                    // Calcular el desplazamiento necesario para centrar
-                    const offsetX = halfWidth - point.x;
-                    const offsetY = halfHeight - point.y;
-                    
-                    // Aplicar el desplazamiento
-                    map.panBy([offsetX, offsetY], {
+                    // Centrar el mapa directamente en las coordenadas del árbol
+                    map.setView([lat, lng], map.getZoom(), {
                         animate: true,
-                        duration: 0.5
+                        duration: 0.3
                     });
                 });
                 
@@ -664,16 +655,10 @@
             
             // Agregar evento para centrar el mapa cuando se hace clic en el popup de estadísticas
             statsMarker.on('click', function(e) {
-                const point = map.latLngToContainerPoint([lat, lng]);
-                const halfWidth = window.innerWidth / 2;
-                const halfHeight = window.innerHeight / 2;
-                
-                const offsetX = halfWidth - point.x;
-                const offsetY = halfHeight - point.y;
-                
-                map.panBy([offsetX, offsetY], {
+                // Centrar el mapa directamente en las coordenadas del centro
+                map.setView([lat, lng], map.getZoom(), {
                     animate: true,
-                    duration: 0.5
+                    duration: 0.3
                 });
             });
         }
