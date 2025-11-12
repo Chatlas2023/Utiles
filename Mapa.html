@@ -1040,32 +1040,43 @@ if (selectedLayer === "weather") {
       isCapturing = !isCapturing;
     }
 
+    // FUNCIONES CORREGIDAS DEL MODO OSCURO
     function toggleDarkMode() {
       const body = document.body;
-      const darkMode = document.getElementById('darkMode');
+      const darkModeButton = document.getElementById('darkModeButton');
       const speedPanel = document.getElementById('speedPanel');
       
       body.classList.toggle('dark-mode');
       const isDarkMode = body.classList.contains('dark-mode');
       
-      speedPanel.style.display = 'none';
-      void speedPanel.offsetWidth;
-      speedPanel.style.display = '';
+      // Forzar reflow para reiniciar animaciones
+      if (speedPanel) {
+        speedPanel.style.display = 'none';
+        void speedPanel.offsetWidth;
+        speedPanel.style.display = '';
+      }
       
       localStorage.setItem('darkMode', isDarkMode);
-      darkMode.textContent = isDarkMode ? 'Modo claro' : 'Modo oscuro';
+      if (darkModeButton) {
+        darkModeButton.textContent = isDarkMode ? 'Modo claro' : 'Modo oscuro';
+      }
     }
 
     function applyDarkModePreference() {
       const isDarkMode = localStorage.getItem('darkMode') === 'true';
       const body = document.body;
-      const darkMode = document.getElementById('darkMode');
+      const darkModeButton = document.getElementById('darkModeButton');
+      
       if (isDarkMode) {
         body.classList.add('dark-mode');
-        darkMode.textContent = 'Modo claro';
+        if (darkModeButton) {
+          darkModeButton.textContent = 'Modo claro';
+        }
       } else {
         body.classList.remove('dark-mode');
-        darkModeButton.textContent = 'Modo oscuro';
+        if (darkModeButton) {
+          darkModeButton.textContent = 'Modo oscuro';
+        }
       }
     }
 
@@ -1512,18 +1523,42 @@ window.compartirCoordenadas = function(lat, lon, nombrePunto = "") {
         updateNeighborhoodName(savedNeighborhood);
       }
 
-      // Event listeners
-document.getElementById('clearButton').addEventListener('click', startNewRoute);
-document.getElementById('stopButton').addEventListener('click', toggleCapture);
-document.getElementById('shareButton').addEventListener('click', shareViaWhatsApp);
-document.getElementById('darkModeButton').addEventListener('click', toggleDarkMode);
-document.getElementById('saveRouteButton').addEventListener('click', saveRoute);
-document.getElementById('saveLocation').addEventListener('click', guardarUbicacion);
+      // Event listeners corregidos
+document.getElementById('clearButton').addEventListener('click', function() {
+  console.log('Clear button clicked');
+  startNewRoute();
+});
+
+document.getElementById('stopButton').addEventListener('click', function() {
+  console.log('Stop button clicked');
+  toggleCapture();
+});
+
+document.getElementById('darkModeButton').addEventListener('click', function() {
+  console.log('Dark mode button clicked');
+  toggleDarkMode();
+});
+
+document.getElementById('shareButton').addEventListener('click', function() {
+  console.log('Share button clicked');
+  shareViaWhatsApp();
+});
+
+document.getElementById('saveRouteButton').addEventListener('click', function() {
+  console.log('Save route button clicked');
+  saveRoute();
+});
+
+document.getElementById('saveLocation').addEventListener('click', function() {
+  console.log('Save location button clicked');
+  guardarUbicacion();
+});
+
 document.getElementById('layerToggleButton').addEventListener('click', function(e) {
     e.preventDefault();
+    console.log('Layer toggle button clicked');
     toggleMapLayer();
       });
-      document.getElementById("saveLocation").addEventListener("click", guardarUbicacion);
 
 document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'hidden') {
