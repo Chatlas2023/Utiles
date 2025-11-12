@@ -161,6 +161,51 @@
             height: 14px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
+
+        /* Selector de mapas */
+        .map-selector {
+            position: absolute;
+            top: 80px;
+            left: 15px;
+            background: rgba(30, 30, 30, 0.9);
+            border-radius: 10px;
+            z-index: 1000;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+
+        .map-option {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            color: white;
+            cursor: pointer;
+            border-bottom: 1px solid #444;
+            transition: background-color 0.2s;
+        }
+
+        .map-option:last-child {
+            border-bottom: none;
+        }
+
+        .map-option:hover {
+            background: rgba(79, 195, 247, 0.2);
+        }
+
+        .map-option.active {
+            background: #4fc3f7;
+            color: #121212;
+        }
+
+        .map-icon {
+            margin-right: 10px;
+            font-size: 16px;
+        }
+
+        .map-text {
+            font-size: 14px;
+            white-space: nowrap;
+        }
     </style>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -169,11 +214,23 @@
     <div class="container">
         <header>
             <h1>Mapa de Árboles</h1>
-            <div class="version">Versión 9.0 - Con Estadísticas</div>
+            <div class="version">Versión 10.0 - Con Selector de Mapas</div>
             <p class="subtitle" id="subtitle">Obteniendo tu ubicación...</p>
         </header>
         
         <div id="map"></div>
+    </div>
+
+    <!-- Selector de mapas -->
+    <div class="map-selector">
+        <div class="map-option active" onclick="cambiarMapa('calles')">
+            <span class="map-icon">🗺️</span>
+            <span class="map-text">Mapa de Calles</span>
+        </div>
+        <div class="map-option" onclick="cambiarMapa('satelite')">
+            <span class="map-icon">🛰️</span>
+            <span class="map-text">Satélite</span>
+        </div>
     </div>
     
     <div class="mode-toggle">
@@ -192,6 +249,8 @@
         let modoActual = 'gps';
         let datosArboles = [];
         let estadisticasActuales = [];
+        let mapaActual = 'calles';
+        let capaCalles, capaSatelite;
 
         // Colores para las 5 especies más frecuentes
         const coloresEspecies = [
@@ -201,6 +260,28 @@
             '#9C27B0', // Púrpura
             '#F44336'  // Rojo
         ];
+
+        // Función para cambiar entre mapas
+        function cambiarMapa(tipo) {
+            if (tipo === mapaActual) return;
+            
+            // Actualizar estado activo
+            document.querySelectorAll('.map-option').forEach(option => {
+                option.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Cambiar capa del mapa
+            if (tipo === 'calles') {
+                map.removeLayer(capaSatelite);
+                map.addLayer(capaCalles);
+                mapaActual = 'calles';
+            } else if (tipo === 'satelite') {
+                map.removeLayer(capaCalles);
+                map.addLayer(capaSatelite);
+                mapaActual = 'satelite';
+            }
+        }
 
         // Función para crear íconos personalizados por especie
         function crearIconoEspecie(indiceColor) {
@@ -446,7 +527,7 @@
 
         // Inicializar el mapa sin controles de zoom
         const map = L.map('map', {
-            zoomControl: false, // Deshabilitar controles de zoom
+            zoomControl: false,
             minZoom: 10,
             maxZoom: 22,
             zoomSnap: 0.5,
@@ -460,12 +541,21 @@
             [90, 180]
         ]);
 
-        // Capa de mapa base (OpenStreetMap)
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        // Crear capas de mapas
+        capaCalles = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap contributors',
             minZoom: 10,
             maxZoom: 22
-        }).addTo(map);
+        });
+
+        capaSatelite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+            attribution: '© Esri, Maxar, Earthstar Geographics',
+            minZoom: 10,
+            maxZoom: 22
+        });
+
+        // Agregar capa inicial (calles)
+        capaCalles.addTo(map);
 
         // Evento para tocar en el mapa
         map.on('click', function(e) {
