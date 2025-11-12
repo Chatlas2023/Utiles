@@ -81,15 +81,6 @@
             border-radius: 6px;
         }
         
-        .stats-header {
-            text-align: center;
-            margin-bottom: 6px;
-            font-size: 12px;
-            color: #666;
-            font-weight: bold;
-            padding: 0 2px;
-        }
-        
         .stats-item {
             display: flex;
             align-items: center;
@@ -123,10 +114,8 @@
         }
         
         .other-species {
-            margin-top: 4px;
-            padding-top: 4px;
-            border-top: 1px solid #ddd;
-            font-size: 10px;
+            margin-top: 3px;
+            font-size: 11px;
             color: #666;
             text-align: center;
         }
@@ -145,25 +134,28 @@
         
         .mode-toggle {
             position: absolute;
-            bottom: 20px;
+            bottom: 15px;
             left: 50%;
             transform: translateX(-50%);
             background: rgba(30, 30, 30, 0.9);
-            padding: 10px 15px;
-            border-radius: 20px;
+            padding: 8px 20px;
+            border-radius: 25px;
             z-index: 1000;
             display: flex;
-            gap: 10px;
+            gap: 15px;
         }
         
         .mode-toggle button {
             background: #333;
             color: white;
             border: 1px solid #555;
-            padding: 8px 15px;
-            border-radius: 15px;
+            padding: 6px 25px;
+            border-radius: 20px;
             cursor: pointer;
-            font-size: 14px;
+            font-size: 13px;
+            height: 32px;
+            min-width: 140px;
+            white-space: nowrap;
         }
         
         .mode-toggle button.active {
@@ -215,7 +207,7 @@
     <div class="container">
         <header>
             <h1>Mapa de Árboles</h1>
-            <div class="version">Versión 13.0 - Popup Mejorado</div>
+            <div class="version">Versión 14.0 - Compacta</div>
             <p class="subtitle" id="subtitle">Obteniendo tu ubicación...</p>
         </header>
         
@@ -316,12 +308,7 @@
             // Calcular porcentaje de "Otras especies"
             const porcentajeOtras = 100 - porcentajeTotal;
             
-            let contenido = `
-                <div class="stats-window">
-                    <div class="stats-header">
-                        ${totalArboles} árboles encontrados
-                    </div>
-            `;
+            let contenido = `<div class="stats-window">`;
             
             estadisticas.forEach(([especie, cantidad], index) => {
                 const color = coloresEspecies[index] || '#4CAF50';
@@ -529,7 +516,7 @@
                             'No se encontraron árboles cercanos. Prueba otra ubicación.';
                     } else {
                         document.getElementById('subtitle').textContent = 
-                            `${arbolesCercanos.length} árboles encontrados - Ver estadísticas`;
+                            `${arbolesCercanos.length} árboles encontrados`;
                     }
 
                     // Habilitar el botón "Usar mi ubicación" después de seleccionar un punto
