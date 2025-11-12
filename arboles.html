@@ -60,76 +60,83 @@
         
         .info-window {
             color: #121212;
-            padding: 8px 6px;
+            padding: 4px 3px;
             max-width: 240px;
+            margin: -2px;
         }
         
         .info-window h3 {
             color: #2d5016;
-            margin-bottom: 6px;
-            font-size: 18px; 
+            margin-bottom: 3px;
+            font-size: 16px; 
+            line-height: 1.1;
         }
         
         .info-window p {
-            margin-bottom: 5px;
-            font-size: 14px;
+            margin-bottom: 2px;
+            font-size: 13px;
+            line-height: 1.1;
         }
         
         .stats-window {
             color: #121212;
-            padding: 6px 4px;
+            padding: 3px 2px;
             max-width: 220px;
             background: white;
-            border-radius: 6px;
-            font-size: 14px;
+            border-radius: 4px;
+            font-size: 13px;
+            margin: -2px;
         }
         
         .stats-item {
             display: flex;
             align-items: center;
-            margin-bottom: 3px;
-            padding: 3px 2px;
-            border-radius: 3px;
+            margin-bottom: 1px;
+            padding: 2px 1px;
+            border-radius: 2px;
             background-color: #f8f9fa;
+            min-height: 16px;
         }
         
         .stats-icon {
-            width: 14px;
-            height: 14px;
+            width: 12px;
+            height: 12px;
             border-radius: 50%;
-            margin-right: 6px;
+            margin-right: 4px;
             border: 1px solid white;
             flex-shrink: 0;
         }
         
         .stats-text {
             flex: 1;
-            font-size: 13px;
-            line-height: 1.2;
+            font-size: 12px;
+            line-height: 1.1;
+            padding: 0;
         }
         
         .stats-count {
             font-weight: bold;
             color: #2d5016;
-            font-size: 12px;
-            margin-left: 3px;
+            font-size: 11px;
+            margin-left: 2px;
             white-space: nowrap;
+            padding: 0;
         }
         
         .other-species {
-            margin-top: 3px;
-            font-size: 12px;
+            margin-top: 1px;
+            font-size: 11px;
             color: #666;
             display: flex;
             align-items: center;
         }
         
         .other-species-icon {
-            width: 12px;
-            height: 12px;
+            width: 10px;
+            height: 10px;
             border-radius: 50%;
             background-color: #cccccc;
-            margin-right: 5px;
+            margin-right: 4px;
             border: 1px solid white;
             flex-shrink: 0;
         }
@@ -220,8 +227,13 @@
         }
         
         .leaflet-popup-content-wrapper {
-            border-radius: 6px;
-            padding: 0;
+            border-radius: 4px;
+            padding: 1px !important;
+        }
+        
+        .leaflet-popup-content {
+            margin: 2px 4px !important;
+            line-height: 1.1 !important;
         }
         
         /* Triángulo inferior izquierdo */
@@ -231,13 +243,19 @@
         
         .total-trees {
             background-color: #e8f5e9;
-            margin-bottom: 5px;
-            padding: 4px 0;
-            border-radius: 3px;
+            margin-bottom: 2px;
+            padding: 3px 0;
+            border-radius: 2px;
             text-align: center;
             font-weight: bold;
             color: #2d5016;
-            font-size: 14px;
+            font-size: 13px;
+            line-height: 1.1;
+        }
+        
+        /* Override máximo de Leaflet */
+        .leaflet-container .leaflet-popup-content {
+            margin: 3px 5px !important;
         }
     </style>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -265,6 +283,7 @@
     <div id="loading" class="loading">Obteniendo tu ubicación...</div>
 
     <script>
+        // ... (el JavaScript se mantiene igual que en la versión anterior)
         let mapaInicializado = false;
         let radioActual = 200;
         let userLat, userLng;
@@ -275,22 +294,15 @@
         let estadisticasActuales = [];
         let mapaActual = 'calles';
         let capaCalles, capaSatelite;
-        let watchId = null; // Para controlar el watchPosition
+        let watchId = null;
 
-        // Colores para las 5 especies más frecuentes
         const coloresEspecies = [
-            '#4CAF50', // Verde
-            '#2196F3', // Azul
-            '#FF9800', // Naranja
-            '#9C27B0', // Púrpura
-            '#F44336'  // Rojo
+            '#4CAF50', '#2196F3', '#FF9800', '#9C27B0', '#F44336'
         ];
 
-        // Íconos para los tipos de mapa
         const layerIcons = ['🌍', '🛰️'];
         let currentLayerIndex = 0;
 
-        // Función para detener la geolocalización
         function detenerGeolocalizacion() {
             if (watchId !== null) {
                 navigator.geolocation.clearWatch(watchId);
@@ -298,13 +310,11 @@
             }
         }
 
-        // Función para cambiar entre mapas
         function cambiarMapa() {
             currentLayerIndex = (currentLayerIndex + 1) % layerIcons.length;
             const selectedLayer = currentLayerIndex === 0 ? 'calles' : 'satelite';
             document.getElementById('layerToggleButton').textContent = layerIcons[currentLayerIndex];
             
-            // Cambiar capa del mapa
             if (selectedLayer === 'calles') {
                 map.removeLayer(capaSatelite);
                 map.addLayer(capaCalles);
@@ -316,7 +326,6 @@
             }
         }
 
-        // Función para crear íconos personalizados por especie
         function crearIconoEspecie(indiceColor) {
             const color = coloresEspecies[indiceColor] || '#4CAF50';
             return L.divIcon({
@@ -327,7 +336,6 @@
             });
         }
 
-        // Función para calcular estadísticas de especies
         function calcularEstadisticas(arboles) {
             const conteoEspecies = {};
             
@@ -336,39 +344,28 @@
                 conteoEspecies[especie] = (conteoEspecies[especie] || 0) + 1;
             });
             
-            // Ordenar especies por frecuencia
             const especiesOrdenadas = Object.entries(conteoEspecies)
                 .sort((a, b) => b[1] - a[1])
-                .slice(0, 5); // Top 5 especies
+                .slice(0, 5);
             
             return especiesOrdenadas;
         }
 
-        // Función para crear contenido del popup de estadísticas
         function crearPopupEstadisticas(estadisticas, totalArboles) {
-            // Calcular porcentaje total de las especies mostradas
             let porcentajeTotal = 0;
             estadisticas.forEach(([especie, cantidad]) => {
                 porcentajeTotal += (cantidad / totalArboles) * 100;
             });
             
-            // Calcular porcentaje de "Otras especies"
             const porcentajeOtras = 100 - porcentajeTotal;
             
             let contenido = `<div class="stats-window">`;
-            
-            // Mostrar el total de árboles en la primera línea
-            contenido += `
-                <div class="total-trees">
-                    ${totalArboles} árboles encontrados
-                </div>
-            `;
+            contenido += `<div class="total-trees">${totalArboles} árboles encontrados</div>`;
             
             estadisticas.forEach(([especie, cantidad], index) => {
                 const color = coloresEspecies[index] || '#4CAF50';
                 const porcentaje = ((cantidad / totalArboles) * 100).toFixed(0);
                 
-                // Acortar nombres largos de especies
                 let nombreEspecie = especie;
                 if (especie.length > 18) {
                     nombreEspecie = especie.substring(0, 18) + '...';
@@ -377,27 +374,18 @@
                 contenido += `
                     <div class="stats-item">
                         <div class="stats-icon" style="background-color: ${color};"></div>
-                        <div class="stats-text">
-                            ${nombreEspecie}
-                        </div>
-                        <div class="stats-count">
-                            ${cantidad} (${porcentaje}%)
-                        </div>
+                        <div class="stats-text">${nombreEspecie}</div>
+                        <div class="stats-count">${cantidad} (${porcentaje}%)</div>
                     </div>
                 `;
             });
             
-            // Agregar "Otras especies" si hay más del 0%
             if (porcentajeOtras > 0) {
                 contenido += `
                     <div class="stats-item">
                         <div class="other-species-icon"></div>
-                        <div class="stats-text">
-                            Otras especies
-                        </div>
-                        <div class="stats-count">
-                            ${porcentajeOtras.toFixed(0)}%
-                        </div>
+                        <div class="stats-text">Otras especies</div>
+                        <div class="stats-count">${porcentajeOtras.toFixed(0)}%</div>
                     </div>
                 `;
             }
@@ -406,7 +394,6 @@
             return contenido;
         }
 
-        // Función para calcular distancia entre dos coordenadas
         function calcularDistancia(lat1, lon1, lat2, lon2) {
             const R = 6371000;
             const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -419,7 +406,6 @@
             return R * c;
         }
 
-        // Función para cambiar el modo de selección
         function cambiarModo(modo) {
             modoActual = modo;
             
@@ -436,21 +422,18 @@
             }
         }
 
-        // Función para obtener ubicación GPS
         function obtenerUbicacionGPS() {
             const loading = document.getElementById('loading');
             loading.style.display = 'block';
             loading.textContent = 'Obteniendo tu ubicación...';
             
             if (navigator.geolocation) {
-                // Usar watchPosition para seguimiento continuo en modo GPS
                 if (modoActual === 'gps') {
                     watchId = navigator.geolocation.watchPosition(
                         function(position) {
                             userLat = position.coords.latitude;
                             userLng = position.coords.longitude;
                             
-                            // Usar zoom alto para mejor visualización
                             map.setView([userLat, userLng], 18);
                             
                             if (userMarker) map.removeLayer(userMarker);
@@ -466,8 +449,6 @@
                         },
                         function(error) {
                             loading.style.display = 'none';
-                            
-                            // Usar ubicación por defecto
                             userLat = -34.6037;
                             userLng = -58.3816;
                             map.setView([userLat, userLng], 15);
@@ -475,7 +456,6 @@
                         }
                     );
                 } else {
-                    // Para el modo tap, usar getCurrentPosition una sola vez
                     navigator.geolocation.getCurrentPosition(
                         function(position) {
                             userLat = position.coords.latitude;
@@ -496,7 +476,6 @@
             }
         }
 
-        // Función para cargar árboles dentro del radio
         function cargarArbolesCercanos(lat, lng) {
             const loading = document.getElementById('loading');
             loading.style.display = 'block';
@@ -529,23 +508,19 @@
                         return distancia <= radioActual;
                     });
 
-                    // Calcular estadísticas
                     estadisticasActuales = calcularEstadisticas(arbolesCercanos);
 
-                    // Limpiar marcadores anteriores
                     map.eachLayer(layer => {
                         if (layer instanceof L.Marker && layer !== userMarker) {
                             map.removeLayer(layer);
                         }
                     });
 
-                    // Crear mapa de especies a índices de color
                     const mapaEspeciesColor = {};
                     estadisticasActuales.forEach(([especie], index) => {
                         mapaEspeciesColor[especie] = index;
                     });
 
-                    // Crear marcadores con íconos por especie
                     arbolesCercanos.forEach(feature => {
                         const coordenadas = feature.geometry.coordinates;
                         const propiedades = feature.properties || {};
@@ -554,7 +529,6 @@
                         const lng = coordenadas[0];
                         const lat = coordenadas[1];
                         
-                        // Determinar color según la especie
                         const indiceColor = mapaEspeciesColor[especie];
                         const icono = crearIconoEspecie(indiceColor);
                         
@@ -570,7 +544,6 @@
                         marker.bindPopup(popupContent);
                     });
 
-                    // Crear marcador de estadísticas en el centro
                     const statsMarker = L.marker([lat, lng]).addTo(map);
                     const statsPopupContent = crearPopupEstadisticas(estadisticasActuales, arbolesCercanos.length);
                     statsMarker.bindPopup(statsPopupContent).openPopup();
@@ -582,7 +555,6 @@
                 });
         }
 
-        // Inicializar el mapa sin controles de zoom
         const map = L.map('map', {
             zoomControl: false,
             minZoom: 10,
@@ -592,13 +564,8 @@
             wheelPxPerZoomLevel: 60
         }).setView([-34.6037, -58.3816], 15);
 
-        // Configurar los límites de zoom
-        map.setMaxBounds([
-            [-90, -180],
-            [90, 180]
-        ]);
+        map.setMaxBounds([[-90, -180], [90, 180]]);
 
-        // Crear capas de mapas
         capaCalles = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap contributors',
             minZoom: 10,
@@ -611,34 +578,27 @@
             maxZoom: 22
         });
 
-        // Agregar capa inicial (calles)
         capaCalles.addTo(map);
 
-        // Evento para tocar en el mapa
         map.on('click', function(e) {
             if (modoActual === 'gps') {
-                // Cambiar automáticamente al modo "Tocar en el mapa"
                 cambiarModo('tap');
             }
             
             const lat = e.latlng.lat;
             const lng = e.latlng.lng;
             
-            // Centrar el mapa y buscar árboles
             map.setView([lat, lng], 18);
             cargarArbolesCercanos(lat, lng);
         });
 
-        // Configurar el evento del botón de cambio de capas
         document.getElementById('layerToggleButton').addEventListener('click', function(e) {
             e.preventDefault();
             cambiarMapa();
         });
 
-        // Obtener ubicación inicial
         obtenerUbicacionGPS();
         
-        // Ajustar el tamaño del mapa
         setTimeout(() => {
             map.invalidateSize();
         }, 100);
