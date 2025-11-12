@@ -283,7 +283,6 @@
     <div id="loading" class="loading">Obteniendo tu ubicación...</div>
 
     <script>
-        // ... (el JavaScript se mantiene igual que en la versión anterior)
         let mapaInicializado = false;
         let radioActual = 200;
         let userLat, userLng;
@@ -336,6 +335,16 @@
             });
         }
 
+        // Función para crear ícono gris para otras especies
+        function crearIconoOtrasEspecies() {
+            return L.divIcon({
+                className: 'tree-icon',
+                html: `<div style="background-color: #cccccc; width: 100%; height: 100%; border-radius: 50%;"></div>`,
+                iconSize: [14, 14],
+                iconAnchor: [7, 7]
+            });
+        }
+
         function calcularEstadisticas(arboles) {
             const conteoEspecies = {};
             
@@ -362,7 +371,7 @@
             let contenido = `<div class="stats-window">`;
             contenido += `<div class="total-trees">${totalArboles} árboles encontrados</div>`;
             
-            estadisticas.forEach(([especie, cantidad], index) => {
+            estadisticas.forEach(([especie, cantidad], index) {
                 const color = coloresEspecies[index] || '#4CAF50';
                 const porcentaje = ((cantidad / totalArboles) * 100).toFixed(0);
                 
@@ -516,11 +525,13 @@
                         }
                     });
 
+                    // Crear mapa de especies a índices de color (solo para top 5)
                     const mapaEspeciesColor = {};
                     estadisticasActuales.forEach(([especie], index) => {
                         mapaEspeciesColor[especie] = index;
                     });
 
+                    // Crear marcadores con íconos por especie
                     arbolesCercanos.forEach(feature => {
                         const coordenadas = feature.geometry.coordinates;
                         const propiedades = feature.properties || {};
@@ -529,8 +540,17 @@
                         const lng = coordenadas[0];
                         const lat = coordenadas[1];
                         
+                        // Determinar color según la especie - usar gris para especies no top 5
                         const indiceColor = mapaEspeciesColor[especie];
-                        const icono = crearIconoEspecie(indiceColor);
+                        let icono;
+                        
+                        if (indiceColor !== undefined) {
+                            // Especie está en el top 5 - usar color asignado
+                            icono = crearIconoEspecie(indiceColor);
+                        } else {
+                            // Especie no está en el top 5 - usar ícono gris
+                            icono = crearIconoOtrasEspecies();
+                        }
                         
                         const marker = L.marker([lat, lng], { icon: icono }).addTo(map);
                         
