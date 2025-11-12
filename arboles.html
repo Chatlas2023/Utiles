@@ -516,6 +516,28 @@
                             "Nombre": "Árbol Ejemplo 1",
                             "Dir": "Calle Ejemplo 123"
                         }
+                    },
+                    {
+                        "type": "Feature",
+                        "geometry": {
+                            "type": "Point",
+                            "coordinates": [-58.3820, -34.6040]
+                        },
+                        "properties": {
+                            "Nombre": "Árbol Ejemplo 2",
+                            "Dir": "Calle Ejemplo 456"
+                        }
+                    },
+                    {
+                        "type": "Feature",
+                        "geometry": {
+                            "type": "Point",
+                            "coordinates": [-58.3800, -34.6020]
+                        },
+                        "properties": {
+                            "Nombre": "Árbol Ejemplo 3",
+                            "Dir": "Calle Ejemplo 789"
+                        }
                     }
                 ]
             };
@@ -604,6 +626,15 @@
                     </div>
                 `;
                 
+                // Agregar evento para centrar el mapa cuando se hace clic en el marcador
+                marker.on('click', function(e) {
+                    // Centrar el mapa en la ubicación del árbol
+                    map.setView([lat, lng], map.getZoom(), {
+                        animate: true,
+                        duration: 0.5
+                    });
+                });
+                
                 marker.bindPopup(popupContent);
             });
 
@@ -611,6 +642,14 @@
             const statsMarker = L.marker([lat, lng]).addTo(map);
             const statsPopupContent = crearPopupEstadisticas(estadisticasActuales, arbolesCercanos.length);
             statsMarker.bindPopup(statsPopupContent).openPopup();
+            
+            // Agregar evento para centrar el mapa cuando se hace clic en el popup de estadísticas
+            statsMarker.on('click', function(e) {
+                map.setView([lat, lng], map.getZoom(), {
+                    animate: true,
+                    duration: 0.5
+                });
+            });
         }
 
         // Inicializar el mapa
