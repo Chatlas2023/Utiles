@@ -75,42 +75,50 @@
         
         .stats-window {
             color: #121212;
-            padding: 15px;
-            max-width: 280px;
+            padding: 8px;
+            max-width: 220px;
+            background: white;
+            border-radius: 8px;
         }
         
-        .stats-window h3 {
-            color: #2d5016;
-            margin-bottom: 12px;
-            font-size: 18px;
+        .stats-header {
             text-align: center;
+            margin-bottom: 8px;
+            font-size: 12px;
+            color: #666;
+            font-weight: bold;
         }
         
         .stats-item {
             display: flex;
             align-items: center;
-            margin-bottom: 8px;
-            padding: 5px;
-            border-radius: 5px;
+            margin-bottom: 6px;
+            padding: 4px;
+            border-radius: 4px;
             background-color: #f8f9fa;
         }
         
         .stats-icon {
-            width: 20px;
-            height: 20px;
+            width: 16px;
+            height: 16px;
             border-radius: 50%;
-            margin-right: 10px;
+            margin-right: 8px;
             border: 2px solid white;
+            flex-shrink: 0;
         }
         
         .stats-text {
             flex: 1;
-            font-size: 14px;
+            font-size: 12px;
+            line-height: 1.2;
         }
         
         .stats-count {
             font-weight: bold;
             color: #2d5016;
+            font-size: 11px;
+            margin-left: 4px;
+            white-space: nowrap;
         }
         
         .loading {
@@ -214,7 +222,7 @@
     <div class="container">
         <header>
             <h1>Mapa de Árboles</h1>
-            <div class="version">Versión 10.0 - Con Selector de Mapas</div>
+            <div class="version">Versión 11.0 - Popup Compacto</div>
             <p class="subtitle" id="subtitle">Obteniendo tu ubicación...</p>
         </header>
         
@@ -315,21 +323,26 @@
         function crearPopupEstadisticas(estadisticas, totalArboles) {
             let contenido = `
                 <div class="stats-window">
-                    <h3>🌳 Especies Más Frecuentes</h3>
-                    <p style="text-align: center; margin-bottom: 15px; color: #666;">
-                        Total de árboles: <strong>${totalArboles}</strong>
-                    </p>
+                    <div class="stats-header">
+                        🌳 ${totalArboles} árboles encontrados
+                    </div>
             `;
             
             estadisticas.forEach(([especie, cantidad], index) => {
                 const color = coloresEspecies[index] || '#4CAF50';
-                const porcentaje = ((cantidad / totalArboles) * 100).toFixed(1);
+                const porcentaje = ((cantidad / totalArboles) * 100).toFixed(0);
+                
+                // Acortar nombres largos de especies
+                let nombreEspecie = especie;
+                if (especie.length > 20) {
+                    nombreEspecie = especie.substring(0, 20) + '...';
+                }
                 
                 contenido += `
                     <div class="stats-item">
                         <div class="stats-icon" style="background-color: ${color};"></div>
                         <div class="stats-text">
-                            ${especie}
+                            ${nombreEspecie}
                         </div>
                         <div class="stats-count">
                             ${cantidad} (${porcentaje}%)
