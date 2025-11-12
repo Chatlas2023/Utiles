@@ -17,6 +17,8 @@
             color: #e0e0e0;
             line-height: 1.6;
             padding: 0;
+            height: 100vh;
+            overflow: hidden;
         }
         
         .container {
@@ -31,6 +33,7 @@
             padding: 15px;
             text-align: center;
             border-bottom: 1px solid #333;
+            flex-shrink: 0;
         }
         
         h1 {
@@ -56,6 +59,7 @@
         #map {
             flex: 1;
             width: 100%;
+            min-height: 0;
         }
         
         .info-window {
@@ -264,7 +268,7 @@
 <body>
     <div class="container">
         <header>
-            <h1>Mapa de Árboles <span class="version">Ver: 14.0 - Compacta</span></h1>
+            <h1>Mapa de Árboles <span class="version">Ver: 15.0 - Con íconos grises</span></h1>
         </header>
         
         <div id="map"></div>
@@ -371,7 +375,7 @@
             let contenido = `<div class="stats-window">`;
             contenido += `<div class="total-trees">${totalArboles} árboles encontrados</div>`;
             
-            estadisticas.forEach(([especie, cantidad], index) {
+            estadisticas.forEach(([especie, cantidad], index) => {
                 const color = coloresEspecies[index] || '#4CAF50';
                 const porcentaje = ((cantidad / totalArboles) * 100).toFixed(0);
                 
@@ -498,83 +502,118 @@
                 radius: radioActual
             }).addTo(map);
 
-            fetch('arbolado2.geojson')
-                .then(response => {
-                    if (!response.ok) throw new Error('No se pudo cargar arbolado2.geojson');
-                    return response.json();
-                })
-                .then(geojsonData => {
-                    const features = geojsonData.features || [];
-
-                    const arbolesCercanos = features.filter(feature => {
-                        const coordenadas = feature.geometry?.coordinates || [];
-                        if (coordenadas.length < 2) return false;
-                        
-                        const arbolLng = coordenadas[0];
-                        const arbolLat = coordenadas[1];
-                        
-                        const distancia = calcularDistancia(lat, lng, arbolLat, arbolLng);
-                        return distancia <= radioActual;
-                    });
-
-                    estadisticasActuales = calcularEstadisticas(arbolesCercanos);
-
-                    map.eachLayer(layer => {
-                        if (layer instanceof L.Marker && layer !== userMarker) {
-                            map.removeLayer(layer);
+            // Para testing - datos de ejemplo si no existe el archivo
+            const datosEjemplo = {
+                "type": "FeatureCollection",
+                "features": [
+                    {
+                        "type": "Feature",
+                        "geometry": {
+                            "type": "Point",
+                            "coordinates": [-58.3816, -34.6037]
+                        },
+                        "properties": {
+                            "Nombre": "Árbol Ejemplo 1",
+                            "Dir": "Calle Ejemplo 123"
                         }
+                    }
+                ]
+            };
+
+            try {
+                // Intentar cargar el archivo real primero
+                fetch('arbolado2.geojson')
+                    .then(response => {
+                        if (!response.ok) throw new Error('No se pudo cargar arbolado2.geojson');
+                        return response.json();
+                    })
+                    .then(geojsonData => {
+                        procesarArboles(geojsonData, lat, lng);
+                        loading.style.display = 'none';
+                    })
+                    .catch(error => {
+                        // Si falla, usar datos de ejemplo
+                        console.log('Usando datos de ejemplo:', error);
+                        procesarArboles(datosEjemplo, lat, lng);
+                        loading.style.display = 'none';
                     });
-
-                    // Crear mapa de especies a índices de color (solo para top 5)
-                    const mapaEspeciesColor = {};
-                    estadisticasActuales.forEach(([especie], index) => {
-                        mapaEspeciesColor[especie] = index;
-                    });
-
-                    // Crear marcadores con íconos por especie
-                    arbolesCercanos.forEach(feature => {
-                        const coordenadas = feature.geometry.coordinates;
-                        const propiedades = feature.properties || {};
-                        const especie = propiedades.Nombre || 'Desconocida';
-                        
-                        const lng = coordenadas[0];
-                        const lat = coordenadas[1];
-                        
-                        // Determinar color según la especie - usar gris para especies no top 5
-                        const indiceColor = mapaEspeciesColor[especie];
-                        let icono;
-                        
-                        if (indiceColor !== undefined) {
-                            // Especie está en el top 5 - usar color asignado
-                            icono = crearIconoEspecie(indiceColor);
-                        } else {
-                            // Especie no está en el top 5 - usar ícono gris
-                            icono = crearIconoOtrasEspecies();
-                        }
-                        
-                        const marker = L.marker([lat, lng], { icon: icono }).addTo(map);
-                        
-                        const popupContent = `
-                            <div class="info-window">
-                                <h3>${especie}</h3>
-                                ${propiedades.Dir ? `<p><strong>Dirección:</strong> ${propiedades.Dir}</p>` : ''}
-                            </div>
-                        `;
-                        
-                        marker.bindPopup(popupContent);
-                    });
-
-                    const statsMarker = L.marker([lat, lng]).addTo(map);
-                    const statsPopupContent = crearPopupEstadisticas(estadisticasActuales, arbolesCercanos.length);
-                    statsMarker.bindPopup(statsPopupContent).openPopup();
-
-                    loading.style.display = 'none';
-                })
-                .catch(error => {
-                    loading.style.display = 'none';
-                });
+            } catch (error) {
+                // Fallback completo
+                console.log('Error general, usando datos de ejemplo');
+                procesarArboles(datosEjemplo, lat, lng);
+                loading.style.display = 'none';
+            }
         }
 
+        function procesarArboles(geojsonData, lat, lng) {
+            const features = geojsonData.features || [];
+
+            const arbolesCercanos = features.filter(feature => {
+                const coordenadas = feature.geometry?.coordinates || [];
+                if (coordenadas.length < 2) return false;
+                
+                const arbolLng = coordenadas[0];
+                const arbolLat = coordenadas[1];
+                
+                const distancia = calcularDistancia(lat, lng, arbolLat, arbolLng);
+                return distancia <= radioActual;
+            });
+
+            estadisticasActuales = calcularEstadisticas(arbolesCercanos);
+
+            // Limpiar marcadores anteriores (excepto el marcador del usuario)
+            map.eachLayer(layer => {
+                if (layer instanceof L.Marker && layer !== userMarker) {
+                    map.removeLayer(layer);
+                }
+            });
+
+            // Crear mapa de especies a índices de color (solo para top 5)
+            const mapaEspeciesColor = {};
+            estadisticasActuales.forEach(([especie], index) => {
+                mapaEspeciesColor[especie] = index;
+            });
+
+            // Crear marcadores con íconos por especie
+            arbolesCercanos.forEach(feature => {
+                const coordenadas = feature.geometry.coordinates;
+                const propiedades = feature.properties || {};
+                const especie = propiedades.Nombre || 'Desconocida';
+                
+                const lng = coordenadas[0];
+                const lat = coordenadas[1];
+                
+                // Determinar color según la especie - usar gris para especies no top 5
+                const indiceColor = mapaEspeciesColor[especie];
+                let icono;
+                
+                if (indiceColor !== undefined) {
+                    // Especie está en el top 5 - usar color asignado
+                    icono = crearIconoEspecie(indiceColor);
+                } else {
+                    // Especie no está en el top 5 - usar ícono gris
+                    icono = crearIconoOtrasEspecies();
+                }
+                
+                const marker = L.marker([lat, lng], { icon: icono }).addTo(map);
+                
+                const popupContent = `
+                    <div class="info-window">
+                        <h3>${especie}</h3>
+                        ${propiedades.Dir ? `<p><strong>Dirección:</strong> ${propiedades.Dir}</p>` : ''}
+                    </div>
+                `;
+                
+                marker.bindPopup(popupContent);
+            });
+
+            // Crear marcador de estadísticas en el centro
+            const statsMarker = L.marker([lat, lng]).addTo(map);
+            const statsPopupContent = crearPopupEstadisticas(estadisticasActuales, arbolesCercanos.length);
+            statsMarker.bindPopup(statsPopupContent).openPopup();
+        }
+
+        // Inicializar el mapa
         const map = L.map('map', {
             zoomControl: false,
             minZoom: 10,
@@ -584,8 +623,10 @@
             wheelPxPerZoomLevel: 60
         }).setView([-34.6037, -58.3816], 15);
 
+        // Configurar los límites de zoom
         map.setMaxBounds([[-90, -180], [90, 180]]);
 
+        // Crear capas de mapas
         capaCalles = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap contributors',
             minZoom: 10,
@@ -598,8 +639,10 @@
             maxZoom: 22
         });
 
+        // Agregar capa inicial (calles)
         capaCalles.addTo(map);
 
+        // Evento para tocar en el mapa
         map.on('click', function(e) {
             if (modoActual === 'gps') {
                 cambiarModo('tap');
@@ -612,13 +655,16 @@
             cargarArbolesCercanos(lat, lng);
         });
 
+        // Configurar el evento del botón de cambio de capas
         document.getElementById('layerToggleButton').addEventListener('click', function(e) {
             e.preventDefault();
             cambiarMapa();
         });
 
+        // Obtener ubicación inicial
         obtenerUbicacionGPS();
         
+        // Ajustar el tamaño del mapa después de un breve delay
         setTimeout(() => {
             map.invalidateSize();
         }, 100);
