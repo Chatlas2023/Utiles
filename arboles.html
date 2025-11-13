@@ -1073,9 +1073,11 @@
             
             speciesList.innerHTML = '';
             
-            const especiesFiltradas = especiesDisponibles.filter(especie => 
-                especie.toLowerCase().includes(searchTerm)
-            );
+const especiesFiltradas = especiesDisponibles.filter(especie => 
+    especie.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").includes(
+        searchTerm.normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    )
+);
             
             especiesFiltradas.forEach(especie => {
                 const li = document.createElement('li');
