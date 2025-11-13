@@ -808,16 +808,16 @@ function obtenerUbicacionGPS() {
             },
             function(error) {
                 loading.style.display = 'none';
-                userLat = -34.6037;
-                userLng = -58.3816;
+                userLat = -34.5633;
+                userLng = -58.4637;
                 map.setView([userLat, userLng], 15);
                 cargarArbolesCercanos(userLat, userLng);
             }
         );
     } else {
         loading.style.display = 'none';
-        userLat = -34.6037;
-        userLng = -58.3816;
+        userLat = -34.5633;
+        userLng = -58.4637;
     }
 }
 
