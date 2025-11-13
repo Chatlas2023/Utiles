@@ -920,9 +920,9 @@ function obtenerUbicacionGPS() {
 
             try {
                 // Intentar cargar el archivo real primero
-                fetch('arbolado2.geojson')
+                fetch('arbolado3.geojson')
                     .then(response => {
-                        if (!response.ok) throw new Error('No se pudo cargar arbolado2.geojson');
+                        if (!response.ok) throw new Error('No se pudo cargar arbolado3.geojson');
                         return response.json();
                     })
                     .then(geojsonData => {
