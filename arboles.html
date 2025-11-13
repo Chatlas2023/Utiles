@@ -261,6 +261,118 @@
         .leaflet-container .leaflet-popup-content {
             margin: 3px 5px !important;
         }
+        
+        /* Estilos para el filtro de especies */
+        .species-filter-control {
+            position: absolute;
+            top: 80px;
+            left: 60px;
+            z-index: 1000;
+            background: rgba(30, 30, 30, 0.9);
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+        
+        .species-filter-button {
+            display: block;
+            width: auto;
+            height: 35px;
+            line-height: 35px;
+            text-align: center;
+            text-decoration: none;
+            color: white;
+            font-size: 14px;
+            border-radius: 5px;
+            transition: background-color 0.2s;
+            padding: 0 15px;
+            white-space: nowrap;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+        }
+        
+        .species-filter-button:hover {
+            background: rgba(79, 195, 247, 0.3);
+        }
+        
+        .species-filter-button.active {
+            background: rgba(79, 195, 247, 0.5);
+        }
+        
+        .species-filter-panel {
+            position: absolute;
+            top: 40px;
+            left: 0;
+            background: rgba(30, 30, 30, 0.95);
+            border-radius: 5px;
+            padding: 10px;
+            width: 250px;
+            max-height: 300px;
+            overflow-y: auto;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+            display: none;
+        }
+        
+        .species-filter-panel.show {
+            display: block;
+        }
+        
+        .species-list {
+            list-style: none;
+            margin-bottom: 10px;
+        }
+        
+        .species-item {
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .species-checkbox {
+            margin-right: 8px;
+        }
+        
+        .species-name {
+            font-size: 14px;
+            color: #e0e0e0;
+        }
+        
+        .filter-actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+        
+        .filter-action-button {
+            background: #4fc3f7;
+            color: #121212;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .filter-action-button:hover {
+            background: #29b6f6;
+        }
+        
+        .filter-action-button.clear {
+            background: #f44336;
+            color: white;
+        }
+        
+        .filter-action-button.clear:hover {
+            background: #e53935;
+        }
+        
+        .selected-count {
+            font-size: 12px;
+            color: #4fc3f7;
+            margin-top: 5px;
+            text-align: center;
+        }
     </style>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -277,6 +389,21 @@
     <!-- Selector de mapas simplificado - solo ícono -->
     <div class="map-layer-control">
         <a href="#" title="Cambiar tipo de mapa" id="layerToggleButton">🌍</a>
+    </div>
+    
+    <!-- Filtro de especies -->
+    <div class="species-filter-control">
+        <button id="speciesFilterButton" class="species-filter-button">Filtro por Especie</button>
+        <div id="speciesFilterPanel" class="species-filter-panel">
+            <ul id="speciesList" class="species-list">
+                <!-- Las especies se cargarán dinámicamente -->
+            </ul>
+            <div class="selected-count" id="selectedCount">0 especies seleccionadas</div>
+            <div class="filter-actions">
+                <button id="applyFilter" class="filter-action-button">Aplicar Filtro</button>
+                <button id="clearFilter" class="filter-action-button clear">Limpiar</button>
+            </div>
+        </div>
     </div>
     
     <div class="mode-toggle">
@@ -298,6 +425,9 @@
         let mapaActual = 'calles';
         let capaCalles, capaSatelite;
         let watchId = null;
+        let especiesDisponibles = [];
+        let especiesSeleccionadas = [];
+        let filtroActivo = false;
 
         const coloresEspecies = [
             '#4CAF50', '#2196F3', '#FF9800', '#9C27B0', '#F44336'
@@ -571,6 +701,28 @@
                             "Nombre": "Árbol Ejemplo 3",
                             "Dir": "Calle Ejemplo 789"
                         }
+                    },
+                    {
+                        "type": "Feature",
+                        "geometry": {
+                            "type": "Point",
+                            "coordinates": [-58.3830, -34.6050]
+                        },
+                        "properties": {
+                            "Nombre": "Pino",
+                            "Dir": "Calle Ejemplo 101"
+                        }
+                    },
+                    {
+                        "type": "Feature",
+                        "geometry": {
+                            "type": "Point",
+                            "coordinates": [-58.3790, -34.6010]
+                        },
+                        "properties": {
+                            "Nombre": "Roble",
+                            "Dir": "Calle Ejemplo 202"
+                        }
                     }
                 ]
             };
@@ -602,8 +754,23 @@
 
         function procesarArboles(geojsonData, lat, lng) {
             const features = geojsonData.features || [];
+            datosArboles = features;
 
-            const arbolesCercanos = features.filter(feature => {
+            // Extraer todas las especies disponibles
+            const especiesSet = new Set();
+            features.forEach(feature => {
+                const especie = feature.properties?.Nombre || 'Desconocida';
+                if (especie) {
+                    especiesSet.add(especie);
+                }
+            });
+            especiesDisponibles = Array.from(especiesSet).sort();
+            
+            // Actualizar la lista de especies en el panel de filtro
+            actualizarListaEspecies();
+
+            // Filtrar árboles cercanos
+            let arbolesCercanos = features.filter(feature => {
                 const coordenadas = feature.geometry?.coordinates || [];
                 if (coordenadas.length < 2) return false;
                 
@@ -613,6 +780,14 @@
                 const distancia = calcularDistancia(lat, lng, arbolLat, arbolLng);
                 return distancia <= radioActual;
             });
+
+            // Aplicar filtro de especies si está activo
+            if (filtroActivo && especiesSeleccionadas.length > 0) {
+                arbolesCercanos = arbolesCercanos.filter(feature => {
+                    const especie = feature.properties?.Nombre || 'Desconocida';
+                    return especiesSeleccionadas.includes(especie);
+                });
+            }
 
             estadisticasActuales = calcularEstadisticas(arbolesCercanos);
 
@@ -678,6 +853,85 @@
             });
         }
 
+        // Funciones para el filtro de especies
+        function actualizarListaEspecies() {
+            const speciesList = document.getElementById('speciesList');
+            speciesList.innerHTML = '';
+            
+            especiesDisponibles.forEach(especie => {
+                const li = document.createElement('li');
+                li.className = 'species-item';
+                
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.className = 'species-checkbox';
+                checkbox.value = especie;
+                checkbox.checked = especiesSeleccionadas.includes(especie);
+                checkbox.addEventListener('change', actualizarContadorSeleccionados);
+                
+                const label = document.createElement('span');
+                label.className = 'species-name';
+                label.textContent = especie;
+                
+                li.appendChild(checkbox);
+                li.appendChild(label);
+                speciesList.appendChild(li);
+            });
+            
+            actualizarContadorSeleccionados();
+        }
+
+        function actualizarContadorSeleccionados() {
+            const checkboxes = document.querySelectorAll('.species-checkbox');
+            especiesSeleccionadas = Array.from(checkboxes)
+                .filter(cb => cb.checked)
+                .map(cb => cb.value);
+            
+            document.getElementById('selectedCount').textContent = 
+                `${especiesSeleccionadas.length} especies seleccionadas`;
+        }
+
+        function aplicarFiltro() {
+            const panel = document.getElementById('speciesFilterPanel');
+            panel.classList.remove('show');
+            
+            if (especiesSeleccionadas.length > 0) {
+                filtroActivo = true;
+                document.getElementById('speciesFilterButton').textContent = 'Eliminar Filtros';
+                document.getElementById('speciesFilterButton').classList.add('active');
+                
+                // Recargar árboles con el filtro aplicado
+                if (userLat && userLng) {
+                    cargarArbolesCercanos(userLat, userLng);
+                }
+            } else {
+                eliminarFiltros();
+            }
+        }
+
+        function eliminarFiltros() {
+            filtroActivo = false;
+            especiesSeleccionadas = [];
+            
+            // Desmarcar todas las casillas
+            const checkboxes = document.querySelectorAll('.species-checkbox');
+            checkboxes.forEach(cb => cb.checked = false);
+            
+            document.getElementById('speciesFilterButton').textContent = 'Filtro por Especie';
+            document.getElementById('speciesFilterButton').classList.remove('active');
+            document.getElementById('selectedCount').textContent = '0 especies seleccionadas';
+            
+            // Recargar árboles sin filtro
+            if (userLat && userLng) {
+                cargarArbolesCercanos(userLat, userLng);
+            }
+        }
+
+        function toggleFiltroPanel() {
+            const panel = document.getElementById('speciesFilterPanel');
+            panel.classList.toggle('show');
+        }
+
         // Inicializar el mapa
         const map = L.map('map', {
             zoomControl: false,
@@ -723,6 +977,21 @@
         document.getElementById('layerToggleButton').addEventListener('click', function(e) {
             e.preventDefault();
             cambiarMapa();
+        });
+
+        // Configurar eventos del filtro de especies
+        document.getElementById('speciesFilterButton').addEventListener('click', toggleFiltroPanel);
+        document.getElementById('applyFilter').addEventListener('click', aplicarFiltro);
+        document.getElementById('clearFilter').addEventListener('click', eliminarFiltros);
+
+        // Cerrar el panel de filtro al hacer clic fuera de él
+        document.addEventListener('click', function(e) {
+            const panel = document.getElementById('speciesFilterPanel');
+            const button = document.getElementById('speciesFilterButton');
+            
+            if (!panel.contains(e.target) && !button.contains(e.target)) {
+                panel.classList.remove('show');
+            }
         });
 
         // Obtener ubicación inicial
