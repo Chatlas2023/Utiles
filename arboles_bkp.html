@@ -307,7 +307,7 @@
             border-radius: 5px;
             padding: 15px;
             width: 320px;
-            height: 400px;
+            height: 480px; /* 20% más largo (400px * 1.2 = 480px) */
             box-shadow: 0 2px 10px rgba(0,0,0,0.5);
             display: none;
             flex-direction: column;
@@ -328,12 +328,13 @@
         }
         
         .species-item {
-            margin-bottom: 8px;
+            margin-bottom: 4px; /* Reducido de 8px a 4px para juntar más las filas */
             display: flex;
             align-items: center;
-            padding: 5px;
+            padding: 4px 5px; /* Reducido el padding vertical */
             border-radius: 3px;
             transition: background-color 0.2s;
+            min-height: 28px; /* Altura mínima reducida */
         }
         
         .species-item:hover {
@@ -409,6 +410,121 @@
             outline: none;
             border-color: #4fc3f7;
         }
+        
+        /* Estilos para el control de radio */
+        .radius-control {
+            position: absolute;
+            top: 80px;
+            left: 205px; /* A la derecha del filtro de especies (60px + 145px de ancho aproximado del botón) */
+            z-index: 1000;
+            background: rgba(30, 30, 30, 0.9);
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+        
+        .radius-button {
+            display: block;
+            width: auto;
+            height: 35px;
+            line-height: 35px;
+            text-align: center;
+            text-decoration: none;
+            color: white;
+            font-size: 14px;
+            border-radius: 5px;
+            transition: background-color 0.2s;
+            padding: 0 15px;
+            white-space: nowrap;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+        }
+        
+           .radius-button:hover {
+            background: rgba(79, 195, 247, 0.3);
+        }
+        
+        .radius-button.active {
+            background: rgba(79, 195, 247, 0.5);
+        }
+        
+.radius-panel {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(30, 30, 30, 0.95);
+    border-radius: 5px;
+    padding: 15px;
+    width: 220px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+    display: none;
+    z-index: 1001;
+}
+        
+        .radius-panel.show {
+            display: block;
+        }
+        
+        .radius-options {
+            list-style: none;
+            margin-bottom: 15px;
+        }
+        
+        .radius-item {
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            padding: 8px;
+            border-radius: 3px;
+            transition: background-color 0.2s;
+            cursor: pointer;
+        }
+        
+        .radius-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .radius-item.selected {
+            background: rgba(79, 195, 247, 0.2);
+        }
+        
+        .radius-radio {
+            margin-right: 10px;
+            transform: scale(1.2);
+        }
+        
+        .radius-label {
+            font-size: 14px;
+            color: #e0e0e0;
+            flex: 1;
+        }
+        
+        .radius-value {
+            font-size: 14px;
+            color: #4fc3f7;
+            font-weight: bold;
+        }
+        
+        .radius-actions {
+            display: flex;
+            justify-content: center;
+        }
+        
+        .radius-action-button {
+            background: #4fc3f7;
+            color: #121212;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        
+        .radius-action-button:hover {
+            background: #29b6f6;
+        }
     </style>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -445,6 +561,33 @@
         </div>
     </div>
     
+    <!-- Control de radio -->
+    <div class="radius-control">
+        <button id="radiusButton" class="radius-button">Radio de Búsqueda</button>
+        <div id="radiusPanel" class="radius-panel">
+            <ul class="radius-options">
+                <li class="radius-item" data-value="100">
+                    <input type="radio" name="radius" class="radius-radio" id="radius100" value="100">
+                    <label class="radius-label" for="radius100">Radio pequeño</label>
+                    <span class="radius-value">100m</span>
+                </li>
+                <li class="radius-item" data-value="200">
+                    <input type="radio" name="radius" class="radius-radio" id="radius200" value="200" checked>
+                    <label class="radius-label" for="radius200">Radio mediano</label>
+                    <span class="radius-value">200m</span>
+                </li>
+                <li class="radius-item" data-value="500">
+                    <input type="radio" name="radius" class="radius-radio" id="radius500" value="500">
+                    <label class="radius-label" for="radius500">Radio grande</label>
+                    <span class="radius-value">500m</span>
+                </li>
+            </ul>
+            <div class="radius-actions">
+                <button id="applyRadius" class="radius-action-button">Aplicar Radio</button>
+            </div>
+        </div>
+    </div>
+    
     <div class="mode-toggle">
         <button id="mode-gps" onclick="cambiarModo('gps')" class="active">Usar mi ubicación</button>
         <button id="mode-tap" onclick="cambiarModo('tap')">Tocar en el mapa</button>
@@ -475,6 +618,13 @@
 
         const layerIcons = ['🌍', '🛰️'];
         let currentLayerIndex = 0;
+
+        // Opciones de radio disponibles
+        const opcionesRadio = [
+        { valor: 100, etiqueta: "Radio pequeño", texto: "100m" },
+        { valor: 200, etiqueta: "Radio mediano", texto: "200m" },
+        { valor: 500, etiqueta: "Radio grande", texto: "500m" }
+        ];
 
         function detenerGeolocalizacion() {
             if (watchId !== null) {
@@ -923,9 +1073,11 @@
             
             speciesList.innerHTML = '';
             
-            const especiesFiltradas = especiesDisponibles.filter(especie => 
-                especie.toLowerCase().includes(searchTerm)
-            );
+const especiesFiltradas = especiesDisponibles.filter(especie => 
+    especie.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").includes(
+        searchTerm.normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    )
+);
             
             especiesFiltradas.forEach(especie => {
                 const li = document.createElement('li');
@@ -960,48 +1112,57 @@
                 `${especiesSeleccionadas.length} especies seleccionadas`;
         }
 
-        function aplicarFiltro() {
-            const panel = document.getElementById('speciesFilterPanel');
-            panel.classList.remove('show');
-            
-            if (especiesSeleccionadas.length > 0) {
-                filtroActivo = true;
-                document.getElementById('speciesFilterButton').textContent = 'Filtros';
-                document.getElementById('speciesFilterButton').classList.add('active');
-                
-                // Guardar la ubicación actual antes de aplicar el filtro
-                currentCenter = map.getCenter();
-                
-                // Recargar árboles con el filtro aplicado en la ubicación actual
-                if (currentCenter) {
-                    cargarArbolesCercanos(currentCenter.lat, currentCenter.lng);
-                } else if (userLat && userLng) {
-                    cargarArbolesCercanos(userLat, userLng);
-                }
-            } else {
-                eliminarFiltros();
-            }
+function aplicarFiltro() {
+    const panel = document.getElementById('speciesFilterPanel');
+    panel.classList.remove('show');
+    
+    if (especiesSeleccionadas.length > 0) {
+        filtroActivo = true;
+        document.getElementById('speciesFilterButton').textContent = 'Eliminar Filtros';
+        document.getElementById('speciesFilterButton').classList.add('active');
+        
+        // Guardar la ubicación y zoom actual antes de aplicar el filtro
+        currentCenter = map.getCenter();
+        const currentZoom = map.getZoom(); // Guardar el zoom actual
+        
+        // Recargar árboles con el filtro aplicado en la ubicación y zoom actual
+        if (currentCenter) {
+            cargarArbolesCercanos(currentCenter.lat, currentCenter.lng);
+            // Mantener el zoom actual después de cargar
+            map.setZoom(currentZoom);
+        } else if (userLat && userLng) {
+            cargarArbolesCercanos(userLat, userLng);
+            map.setZoom(currentZoom);
         }
+    } else {
+        eliminarFiltros();
+    }
+}
 
-        function eliminarFiltros() {
-            filtroActivo = false;
-            especiesSeleccionadas = [];
-            
-            // Desmarcar todas las casillas
-            const checkboxes = document.querySelectorAll('.species-checkbox');
-            checkboxes.forEach(cb => cb.checked = false);
-            
-            document.getElementById('speciesFilterButton').textContent = 'Filtro por Especie';
-            document.getElementById('speciesFilterButton').classList.remove('active');
-            document.getElementById('selectedCount').textContent = '0 especies seleccionadas';
-            
-            // Recargar árboles sin filtro en la ubicación actual
-            if (currentCenter) {
-                cargarArbolesCercanos(currentCenter.lat, currentCenter.lng);
-            } else if (userLat && userLng) {
-                cargarArbolesCercanos(userLat, userLng);
-            }
-        }
+function eliminarFiltros() {
+    filtroActivo = false;
+    especiesSeleccionadas = [];
+    
+    // Desmarcar todas las casillas
+    const checkboxes = document.querySelectorAll('.species-checkbox');
+    checkboxes.forEach(cb => cb.checked = false);
+    
+    document.getElementById('speciesFilterButton').textContent = 'Filtro por Especie';
+    document.getElementById('speciesFilterButton').classList.remove('active');
+    document.getElementById('selectedCount').textContent = '0 especies seleccionadas';
+    
+    // Guardar el zoom actual
+    const currentZoom = map.getZoom();
+    
+    // Recargar árboles sin filtro en la ubicación actual manteniendo el zoom
+    if (currentCenter) {
+        cargarArbolesCercanos(currentCenter.lat, currentCenter.lng);
+        map.setZoom(currentZoom);
+    } else if (userLat && userLng) {
+        cargarArbolesCercanos(userLat, userLng);
+        map.setZoom(currentZoom);
+    }
+}
 
         function toggleFiltroPanel() {
             const panel = document.getElementById('speciesFilterPanel');
@@ -1011,6 +1172,65 @@
             if (panel.classList.contains('show')) {
                 currentCenter = map.getCenter();
             }
+        }
+
+        // Funciones para el control de radio
+        function toggleRadiusPanel() {
+            const panel = document.getElementById('radiusPanel');
+            panel.classList.toggle('show');
+            
+            // Si se está abriendo el panel, guardar la ubicación actual
+            if (panel.classList.contains('show')) {
+                currentCenter = map.getCenter();
+                // Seleccionar la opción actual
+                const radioButtons = document.querySelectorAll('.radius-radio');
+                radioButtons.forEach(radio => {
+                    radio.checked = parseInt(radio.value) === radioActual;
+                    const item = radio.closest('.radius-item');
+                    if (radio.checked) {
+                        item.classList.add('selected');
+                    } else {
+                        item.classList.remove('selected');
+                    }
+                });
+            }
+        }
+
+function aplicarRadio() {
+    const panel = document.getElementById('radiusPanel');
+    panel.classList.remove('show');
+    
+    const selectedRadio = document.querySelector('input[name="radius"]:checked');
+    if (selectedRadio) {
+        radioActual = parseInt(selectedRadio.value);
+        
+        // Guardar el zoom actual
+        const currentZoom = map.getZoom();
+        
+        // Recargar árboles con el nuevo radio en la ubicación actual manteniendo el zoom
+        if (currentCenter) {
+            cargarArbolesCercanos(currentCenter.lat, currentCenter.lng);
+            map.setZoom(currentZoom);
+        } else if (userLat && userLng) {
+            cargarArbolesCercanos(userLat, userLng);
+            map.setZoom(currentZoom);
+        }
+    }
+}
+
+        // Configurar eventos de los items de radio
+        function configurarEventosRadio() {
+            const radioItems = document.querySelectorAll('.radius-item');
+            radioItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    const radio = this.querySelector('.radius-radio');
+                    radio.checked = true;
+                    
+                    // Actualizar clases selected
+                    radioItems.forEach(i => i.classList.remove('selected'));
+                    this.classList.add('selected');
+                });
+            });
         }
 
         // Inicializar el mapa
@@ -1069,13 +1289,24 @@
         document.getElementById('clearFilter').addEventListener('click', eliminarFiltros);
         document.getElementById('searchSpecies').addEventListener('input', actualizarListaEspecies);
 
-        // Cerrar el panel de filtro al hacer clic fuera de él
+        // Configurar eventos del control de radio
+        document.getElementById('radiusButton').addEventListener('click', toggleRadiusPanel);
+        document.getElementById('applyRadius').addEventListener('click', aplicarRadio);
+        configurarEventosRadio();
+
+        // Cerrar los paneles al hacer clic fuera de ellos
         document.addEventListener('click', function(e) {
-            const panel = document.getElementById('speciesFilterPanel');
-            const button = document.getElementById('speciesFilterButton');
+            const speciesPanel = document.getElementById('speciesFilterPanel');
+            const speciesButton = document.getElementById('speciesFilterButton');
+            const radiusPanel = document.getElementById('radiusPanel');
+            const radiusButton = document.getElementById('radiusButton');
             
-            if (!panel.contains(e.target) && !button.contains(e.target)) {
-                panel.classList.remove('show');
+            if (!speciesPanel.contains(e.target) && !speciesButton.contains(e.target)) {
+                speciesPanel.classList.remove('show');
+            }
+            
+            if (!radiusPanel.contains(e.target) && !radiusButton.contains(e.target)) {
+                radiusPanel.classList.remove('show');
             }
         });
 
