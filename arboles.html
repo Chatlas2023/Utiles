@@ -139,7 +139,7 @@
             width: 10px;
             height: 10px;
             border-radius: 50%;
-            background-color: #cccccc;
+            background-color: #666666;
             margin-right: 4px;
             border: 1px solid white;
             flex-shrink: 0;
@@ -305,31 +305,44 @@
             left: 0;
             background: rgba(30, 30, 30, 0.95);
             border-radius: 5px;
-            padding: 10px;
-            width: 250px;
-            max-height: 300px;
-            overflow-y: auto;
+            padding: 15px;
+            width: 320px;
+            height: 400px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.5);
             display: none;
+            flex-direction: column;
         }
         
         .species-filter-panel.show {
-            display: block;
+            display: flex;
+        }
+        
+        .species-list-container {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 15px;
         }
         
         .species-list {
             list-style: none;
-            margin-bottom: 10px;
         }
         
         .species-item {
-            margin-bottom: 5px;
+            margin-bottom: 8px;
             display: flex;
             align-items: center;
+            padding: 5px;
+            border-radius: 3px;
+            transition: background-color 0.2s;
+        }
+        
+        .species-item:hover {
+            background: rgba(255, 255, 255, 0.1);
         }
         
         .species-checkbox {
-            margin-right: 8px;
+            margin-right: 10px;
+            transform: scale(1.2);
         }
         
         .species-name {
@@ -340,18 +353,22 @@
         .filter-actions {
             display: flex;
             justify-content: space-between;
-            margin-top: 10px;
+            margin-top: auto;
+            padding-top: 15px;
+            border-top: 1px solid #444;
         }
         
         .filter-action-button {
             background: #4fc3f7;
             color: #121212;
             border: none;
-            padding: 5px 10px;
-            border-radius: 3px;
+            padding: 8px 15px;
+            border-radius: 4px;
             cursor: pointer;
-            font-size: 12px;
+            font-size: 14px;
             font-weight: bold;
+            flex: 1;
+            margin: 0 5px;
         }
         
         .filter-action-button:hover {
@@ -368,10 +385,29 @@
         }
         
         .selected-count {
-            font-size: 12px;
+            font-size: 13px;
             color: #4fc3f7;
-            margin-top: 5px;
+            margin-bottom: 10px;
             text-align: center;
+            padding: 5px;
+            background: rgba(79, 195, 247, 0.1);
+            border-radius: 3px;
+        }
+        
+        .search-species {
+            width: 100%;
+            padding: 8px 10px;
+            margin-bottom: 10px;
+            border: 1px solid #444;
+            border-radius: 4px;
+            background: #1e1e1e;
+            color: #e0e0e0;
+            font-size: 14px;
+        }
+        
+        .search-species:focus {
+            outline: none;
+            border-color: #4fc3f7;
         }
     </style>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -395,10 +431,13 @@
     <div class="species-filter-control">
         <button id="speciesFilterButton" class="species-filter-button">Filtro por Especie</button>
         <div id="speciesFilterPanel" class="species-filter-panel">
-            <ul id="speciesList" class="species-list">
-                <!-- Las especies se cargarán dinámicamente -->
-            </ul>
+            <input type="text" id="searchSpecies" class="search-species" placeholder="Buscar especie...">
             <div class="selected-count" id="selectedCount">0 especies seleccionadas</div>
+            <div class="species-list-container">
+                <ul id="speciesList" class="species-list">
+                    <!-- Las especies se cargarán dinámicamente -->
+                </ul>
+            </div>
             <div class="filter-actions">
                 <button id="applyFilter" class="filter-action-button">Aplicar Filtro</button>
                 <button id="clearFilter" class="filter-action-button clear">Limpiar</button>
@@ -428,6 +467,7 @@
         let especiesDisponibles = [];
         let especiesSeleccionadas = [];
         let filtroActivo = false;
+        let currentCenter = null;
 
         const coloresEspecies = [
             '#4CAF50', '#2196F3', '#FF9800', '#9C27B0', '#F44336'
@@ -512,6 +552,7 @@
                 
                 // Calcular porcentaje de "Otras especies"
                 const porcentajeOtras = 100 - porcentajeTotal;
+                const cantidadOtras = totalArboles - estadisticas.reduce((sum, [_, count]) => sum + count, 0);
                 
                 estadisticas.forEach(([especie, cantidad], index) => {
                     const color = coloresEspecies[index] || '#4CAF50';
@@ -537,7 +578,7 @@
                         <div class="stats-item">
                             <div class="other-species-icon"></div>
                             <div class="stats-text">Otras especies</div>
-                            <div class="stats-count">${porcentajeOtras.toFixed(0)}%</div>
+                            <div class="stats-count">${cantidadOtras} (${porcentajeOtras.toFixed(0)}%)</div>
                         </div>
                     `;
                 }
@@ -723,6 +764,28 @@
                             "Nombre": "Roble",
                             "Dir": "Calle Ejemplo 202"
                         }
+                    },
+                    {
+                        "type": "Feature",
+                        "geometry": {
+                            "type": "Point",
+                            "coordinates": [-58.3840, -34.6060]
+                        },
+                        "properties": {
+                            "Nombre": "Eucalipto",
+                            "Dir": "Calle Ejemplo 303"
+                        }
+                    },
+                    {
+                        "type": "Feature",
+                        "geometry": {
+                            "type": "Point",
+                            "coordinates": [-58.3780, -34.6000]
+                        },
+                        "properties": {
+                            "Nombre": "Ciprés",
+                            "Dir": "Calle Ejemplo 404"
+                        }
                     }
                 ]
             };
@@ -856,9 +919,15 @@
         // Funciones para el filtro de especies
         function actualizarListaEspecies() {
             const speciesList = document.getElementById('speciesList');
+            const searchTerm = document.getElementById('searchSpecies').value.toLowerCase();
+            
             speciesList.innerHTML = '';
             
-            especiesDisponibles.forEach(especie => {
+            const especiesFiltradas = especiesDisponibles.filter(especie => 
+                especie.toLowerCase().includes(searchTerm)
+            );
+            
+            especiesFiltradas.forEach(especie => {
                 const li = document.createElement('li');
                 li.className = 'species-item';
                 
@@ -900,8 +969,13 @@
                 document.getElementById('speciesFilterButton').textContent = 'Eliminar Filtros';
                 document.getElementById('speciesFilterButton').classList.add('active');
                 
-                // Recargar árboles con el filtro aplicado
-                if (userLat && userLng) {
+                // Guardar la ubicación actual antes de aplicar el filtro
+                currentCenter = map.getCenter();
+                
+                // Recargar árboles con el filtro aplicado en la ubicación actual
+                if (currentCenter) {
+                    cargarArbolesCercanos(currentCenter.lat, currentCenter.lng);
+                } else if (userLat && userLng) {
                     cargarArbolesCercanos(userLat, userLng);
                 }
             } else {
@@ -921,8 +995,10 @@
             document.getElementById('speciesFilterButton').classList.remove('active');
             document.getElementById('selectedCount').textContent = '0 especies seleccionadas';
             
-            // Recargar árboles sin filtro
-            if (userLat && userLng) {
+            // Recargar árboles sin filtro en la ubicación actual
+            if (currentCenter) {
+                cargarArbolesCercanos(currentCenter.lat, currentCenter.lng);
+            } else if (userLat && userLng) {
                 cargarArbolesCercanos(userLat, userLng);
             }
         }
@@ -930,6 +1006,11 @@
         function toggleFiltroPanel() {
             const panel = document.getElementById('speciesFilterPanel');
             panel.classList.toggle('show');
+            
+            // Si se está abriendo el panel, guardar la ubicación actual
+            if (panel.classList.contains('show')) {
+                currentCenter = map.getCenter();
+            }
         }
 
         // Inicializar el mapa
@@ -969,6 +1050,9 @@
             const lat = e.latlng.lat;
             const lng = e.latlng.lng;
             
+            // Guardar la ubicación actual
+            currentCenter = { lat, lng };
+            
             map.setView([lat, lng], 18);
             cargarArbolesCercanos(lat, lng);
         });
@@ -983,6 +1067,7 @@
         document.getElementById('speciesFilterButton').addEventListener('click', toggleFiltroPanel);
         document.getElementById('applyFilter').addEventListener('click', aplicarFiltro);
         document.getElementById('clearFilter').addEventListener('click', eliminarFiltros);
+        document.getElementById('searchSpecies').addEventListener('input', actualizarListaEspecies);
 
         // Cerrar el panel de filtro al hacer clic fuera de él
         document.addEventListener('click', function(e) {
