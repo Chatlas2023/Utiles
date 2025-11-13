@@ -1262,20 +1262,23 @@ function aplicarRadio() {
         capaCalles.addTo(map);
 
         // Evento para tocar en el mapa
-        map.on('click', function(e) {
-            if (modoActual === 'gps') {
-                cambiarModo('tap');
-            }
-            
-            const lat = e.latlng.lat;
-            const lng = e.latlng.lng;
-            
-            // Guardar la ubicación actual
-            currentCenter = { lat, lng };
-            
-            map.setView([lat, lng], 18);
-            cargarArbolesCercanos(lat, lng);
-        });
+// Evento para tocar en el mapa
+map.on('click', function(e) {
+    if (modoActual === 'gps') {
+        cambiarModo('tap');
+    }
+    
+    const lat = e.latlng.lat;
+    const lng = e.latlng.lng;
+    
+    // Guardar la ubicación actual
+    currentCenter = { lat, lng };
+    
+    // Mantener el zoom actual en lugar de establecerlo a 18
+    const currentZoom = map.getZoom();
+    map.setView([lat, lng], currentZoom);
+    cargarArbolesCercanos(lat, lng);
+});
 
         // Configurar el evento del botón de cambio de capas
         document.getElementById('layerToggleButton').addEventListener('click', function(e) {
