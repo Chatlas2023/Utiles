@@ -1112,48 +1112,57 @@ const especiesFiltradas = especiesDisponibles.filter(especie =>
                 `${especiesSeleccionadas.length} especies seleccionadas`;
         }
 
-        function aplicarFiltro() {
-            const panel = document.getElementById('speciesFilterPanel');
-            panel.classList.remove('show');
-            
-            if (especiesSeleccionadas.length > 0) {
-                filtroActivo = true;
-                document.getElementById('speciesFilterButton').textContent = 'Eliminar Filtros';
-                document.getElementById('speciesFilterButton').classList.add('active');
-                
-                // Guardar la ubicación actual antes de aplicar el filtro
-                currentCenter = map.getCenter();
-                
-                // Recargar árboles con el filtro aplicado en la ubicación actual
-                if (currentCenter) {
-                    cargarArbolesCercanos(currentCenter.lat, currentCenter.lng);
-                } else if (userLat && userLng) {
-                    cargarArbolesCercanos(userLat, userLng);
-                }
-            } else {
-                eliminarFiltros();
-            }
+function aplicarFiltro() {
+    const panel = document.getElementById('speciesFilterPanel');
+    panel.classList.remove('show');
+    
+    if (especiesSeleccionadas.length > 0) {
+        filtroActivo = true;
+        document.getElementById('speciesFilterButton').textContent = 'Eliminar Filtros';
+        document.getElementById('speciesFilterButton').classList.add('active');
+        
+        // Guardar la ubicación y zoom actual antes de aplicar el filtro
+        currentCenter = map.getCenter();
+        const currentZoom = map.getZoom(); // Guardar el zoom actual
+        
+        // Recargar árboles con el filtro aplicado en la ubicación y zoom actual
+        if (currentCenter) {
+            cargarArbolesCercanos(currentCenter.lat, currentCenter.lng);
+            // Mantener el zoom actual después de cargar
+            map.setZoom(currentZoom);
+        } else if (userLat && userLng) {
+            cargarArbolesCercanos(userLat, userLng);
+            map.setZoom(currentZoom);
         }
+    } else {
+        eliminarFiltros();
+    }
+}
 
-        function eliminarFiltros() {
-            filtroActivo = false;
-            especiesSeleccionadas = [];
-            
-            // Desmarcar todas las casillas
-            const checkboxes = document.querySelectorAll('.species-checkbox');
-            checkboxes.forEach(cb => cb.checked = false);
-            
-            document.getElementById('speciesFilterButton').textContent = 'Filtro por Especie';
-            document.getElementById('speciesFilterButton').classList.remove('active');
-            document.getElementById('selectedCount').textContent = '0 especies seleccionadas';
-            
-            // Recargar árboles sin filtro en la ubicación actual
-            if (currentCenter) {
-                cargarArbolesCercanos(currentCenter.lat, currentCenter.lng);
-            } else if (userLat && userLng) {
-                cargarArbolesCercanos(userLat, userLng);
-            }
-        }
+function eliminarFiltros() {
+    filtroActivo = false;
+    especiesSeleccionadas = [];
+    
+    // Desmarcar todas las casillas
+    const checkboxes = document.querySelectorAll('.species-checkbox');
+    checkboxes.forEach(cb => cb.checked = false);
+    
+    document.getElementById('speciesFilterButton').textContent = 'Filtro por Especie';
+    document.getElementById('speciesFilterButton').classList.remove('active');
+    document.getElementById('selectedCount').textContent = '0 especies seleccionadas';
+    
+    // Guardar el zoom actual
+    const currentZoom = map.getZoom();
+    
+    // Recargar árboles sin filtro en la ubicación actual manteniendo el zoom
+    if (currentCenter) {
+        cargarArbolesCercanos(currentCenter.lat, currentCenter.lng);
+        map.setZoom(currentZoom);
+    } else if (userLat && userLng) {
+        cargarArbolesCercanos(userLat, userLng);
+        map.setZoom(currentZoom);
+    }
+}
 
         function toggleFiltroPanel() {
             const panel = document.getElementById('speciesFilterPanel');
@@ -1187,22 +1196,27 @@ const especiesFiltradas = especiesDisponibles.filter(especie =>
             }
         }
 
-        function aplicarRadio() {
-            const panel = document.getElementById('radiusPanel');
-            panel.classList.remove('show');
-            
-            const selectedRadio = document.querySelector('input[name="radius"]:checked');
-            if (selectedRadio) {
-                radioActual = parseInt(selectedRadio.value);
-                
-                // Recargar árboles con el nuevo radio en la ubicación actual
-                if (currentCenter) {
-                    cargarArbolesCercanos(currentCenter.lat, currentCenter.lng);
-                } else if (userLat && userLng) {
-                    cargarArbolesCercanos(userLat, userLng);
-                }
-            }
+function aplicarRadio() {
+    const panel = document.getElementById('radiusPanel');
+    panel.classList.remove('show');
+    
+    const selectedRadio = document.querySelector('input[name="radius"]:checked');
+    if (selectedRadio) {
+        radioActual = parseInt(selectedRadio.value);
+        
+        // Guardar el zoom actual
+        const currentZoom = map.getZoom();
+        
+        // Recargar árboles con el nuevo radio en la ubicación actual manteniendo el zoom
+        if (currentCenter) {
+            cargarArbolesCercanos(currentCenter.lat, currentCenter.lng);
+            map.setZoom(currentZoom);
+        } else if (userLat && userLng) {
+            cargarArbolesCercanos(userLat, userLng);
+            map.setZoom(currentZoom);
         }
+    }
+}
 
         // Configurar eventos de los items de radio
         function configurarEventosRadio() {
