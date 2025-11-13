@@ -606,7 +606,6 @@
         let estadisticasActuales = [];
         let mapaActual = 'calles';
         let capaCalles, capaSatelite;
-        let watchId = null;
         let especiesDisponibles = [];
         let especiesSeleccionadas = [];
         let filtroActivo = false;
@@ -625,13 +624,6 @@
         { valor: 200, etiqueta: "Radio mediano", texto: "200m" },
         { valor: 500, etiqueta: "Radio grande", texto: "500m" }
         ];
-
-        function detenerGeolocalizacion() {
-            if (watchId !== null) {
-                navigator.geolocation.clearWatch(watchId);
-                watchId = null;
-            }
-        }
 
         function cambiarMapa() {
             currentLayerIndex = (currentLayerIndex + 1) % layerIcons.length;
@@ -773,75 +765,61 @@
             }, 10);
         }
 
-        function cambiarModo(modo) {
-            modoActual = modo;
-            
-            document.getElementById('mode-gps').classList.toggle('active', modo === 'gps');
-            document.getElementById('mode-tap').classList.toggle('active', modo === 'tap');
-            
-            if (modo === 'gps') {
-                detenerGeolocalizacion();
-                obtenerUbicacionGPS();
-            } else {
-                detenerGeolocalizacion();
+function cambiarModo(modo) {
+    modoActual = modo;
+    
+    document.getElementById('mode-gps').classList.toggle('active', modo === 'gps');
+    document.getElementById('mode-tap').classList.toggle('active', modo === 'tap');
+    
+    if (modo === 'gps') {
+        // Solo obtener ubicación una vez al cambiar a modo GPS
+        obtenerUbicacionGPS();
+    } else {
+        // En modo tap, simplemente remover el marcador si existe
+        if (userMarker) map.removeLayer(userMarker);
+        if (circle) map.removeLayer(circle);
+    }
+}
+
+function obtenerUbicacionGPS() {
+    const loading = document.getElementById('loading');
+    loading.style.display = 'block';
+    loading.textContent = 'Obteniendo tu ubicación...';
+    
+    if (navigator.geolocation) {
+        // Usar getCurrentPosition en lugar de watchPosition para obtener solo una vez
+        navigator.geolocation.getCurrentPosition(
+            function(position) {
+                userLat = position.coords.latitude;
+                userLng = position.coords.longitude;
+                
+                map.setView([userLat, userLng], 18);
+                
                 if (userMarker) map.removeLayer(userMarker);
-                if (circle) map.removeLayer(circle);
-            }
-        }
+                userMarker = L.marker([userLat, userLng])
+                    .addTo(map)
+                    .bindPopup('<div class="info-window"><h3>Tu ubicación</h3><p>Estás aquí</p></div>')
+                    .openPopup();
 
-        function obtenerUbicacionGPS() {
-            const loading = document.getElementById('loading');
-            loading.style.display = 'block';
-            loading.textContent = 'Obteniendo tu ubicación...';
-            
-            if (navigator.geolocation) {
-                if (modoActual === 'gps') {
-                    watchId = navigator.geolocation.watchPosition(
-                        function(position) {
-                            userLat = position.coords.latitude;
-                            userLng = position.coords.longitude;
-                            
-                            map.setView([userLat, userLng], 18);
-                            
-                            if (userMarker) map.removeLayer(userMarker);
-                            userMarker = L.marker([userLat, userLng])
-                                .addTo(map)
-                                .bindPopup('<div class="info-window"><h3>Tu ubicación</h3><p>Estás aquí</p></div>')
-                                .openPopup();
-
-                            cargarArbolesCercanos(userLat, userLng);
-                            
-                            mapaInicializado = true;
-                            loading.style.display = 'none';
-                        },
-                        function(error) {
-                            loading.style.display = 'none';
-                            userLat = -34.6037;
-                            userLng = -58.3816;
-                            map.setView([userLat, userLng], 15);
-                            cargarArbolesCercanos(userLat, userLng);
-                        }
-                    );
-                } else {
-                    navigator.geolocation.getCurrentPosition(
-                        function(position) {
-                            userLat = position.coords.latitude;
-                            userLng = position.coords.longitude;
-                            loading.style.display = 'none';
-                        },
-                        function(error) {
-                            loading.style.display = 'none';
-                            userLat = -34.6037;
-                            userLng = -58.3816;
-                        }
-                    );
-                }
-            } else {
+                cargarArbolesCercanos(userLat, userLng);
+                
+                mapaInicializado = true;
+                loading.style.display = 'none';
+            },
+            function(error) {
                 loading.style.display = 'none';
                 userLat = -34.6037;
                 userLng = -58.3816;
+                map.setView([userLat, userLng], 15);
+                cargarArbolesCercanos(userLat, userLng);
             }
-        }
+        );
+    } else {
+        loading.style.display = 'none';
+        userLat = -34.6037;
+        userLng = -58.3816;
+    }
+}
 
         function cargarArbolesCercanos(lat, lng) {
             const loading = document.getElementById('loading');
