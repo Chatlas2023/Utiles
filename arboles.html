@@ -440,7 +440,7 @@
             background: transparent;
         }
         
-        .radius-button:hover {
+           .radius-button:hover {
             background: rgba(79, 195, 247, 0.3);
         }
         
@@ -448,17 +448,19 @@
             background: rgba(79, 195, 247, 0.5);
         }
         
-        .radius-panel {
-            position: absolute;
-            top: 40px;
-            left: 0;
-            background: rgba(30, 30, 30, 0.95);
-            border-radius: 5px;
-            padding: 15px;
-            width: 220px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
-            display: none;
-        }
+.radius-panel {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(30, 30, 30, 0.95);
+    border-radius: 5px;
+    padding: 15px;
+    width: 220px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+    display: none;
+    z-index: 1001;
+}
         
         .radius-panel.show {
             display: block;
@@ -561,7 +563,7 @@
     
     <!-- Control de radio -->
     <div class="radius-control">
-        <button id="radiusButton" class="radius-button">Radio de visión</button>
+        <button id="radiusButton" class="radius-button">Radio de Búsqueda</button>
         <div id="radiusPanel" class="radius-panel">
             <ul class="radius-options">
                 <li class="radius-item" data-value="100">
@@ -578,11 +580,6 @@
                     <input type="radio" name="radius" class="radius-radio" id="radius500" value="500">
                     <label class="radius-label" for="radius500">Radio grande</label>
                     <span class="radius-value">500m</span>
-                </li>
-                <li class="radius-item" data-value="1000">
-                    <input type="radio" name="radius" class="radius-radio" id="radius1000" value="1000">
-                    <label class="radius-label" for="radius1000">Radio muy grande</label>
-                    <span class="radius-value">1000m</span>
                 </li>
             </ul>
             <div class="radius-actions">
@@ -624,10 +621,9 @@
 
         // Opciones de radio disponibles
         const opcionesRadio = [
-            { valor: 100, etiqueta: "Radio pequeño", texto: "100m" },
-            { valor: 200, etiqueta: "Radio mediano", texto: "200m" },
-            { valor: 500, etiqueta: "Radio grande", texto: "500m" },
-            { valor: 1000, etiqueta: "Radio muy grande", texto: "1000m" }
+        { valor: 100, etiqueta: "Radio pequeño", texto: "100m" },
+        { valor: 200, etiqueta: "Radio mediano", texto: "200m" },
+        { valor: 500, etiqueta: "Radio grande", texto: "500m" }
         ];
 
         function detenerGeolocalizacion() {
