@@ -864,7 +864,7 @@
                         
                         mapaInicializado = true;
                         loading.style.display = 'none';
-                        actualizarEstado('Listo', 'ready');
+                        document.getElementById('statusIndicator').style.display = 'none';
                     },
                     function(error) {
                         loading.style.display = 'none';
@@ -926,12 +926,6 @@
             
             debugLog(`Total de árboles cargados: ${datosArboles.length} de ${archivosCargados} archivos`);
             
-            // Si no se cargaron datos, usar datos de ejemplo
-            if (datosArboles.length === 0) {
-                debugLog('Usando datos de ejemplo');
-                datosArboles = crearDatosEjemplo();
-            }
-            
             // Debug: verificar las coordenadas
             if (datosArboles.length > 0) {
                 const primerArbol = datosArboles[0];
@@ -943,64 +937,7 @@
             }
             
             loading.style.display = 'none';
-            actualizarEstado(`Cargados ${datosArboles.length} árboles`, 'ready');
             return datosArboles;
-        }
-
-        // Función para crear datos de ejemplo (solo para desarrollo)
-        function crearDatosEjemplo() {
-            const datosEjemplo = {
-                "type": "FeatureCollection",
-                "features": []
-            };
-            
-            // Crear árboles de ejemplo en áreas reales de Buenos Aires
-            const areasComunas = [
-                { comuna: 1, center: [-34.6037, -58.3816], radius: 0.01 },  // Plaza de Mayo
-                { comuna: 2, center: [-34.5950, -58.3850], radius: 0.01 },  // Recoleta
-                { comuna: 3, center: [-34.6100, -58.3700], radius: 0.01 },  // San Nicolás
-                { comuna: 4, center: [-34.6200, -58.3900], radius: 0.01 },  // La Boca
-                { comuna: 5, center: [-34.6050, -58.4100], radius: 0.01 },  // Almagro
-                { comuna: 6, center: [-34.5900, -58.4200], radius: 0.01 },  // Caballito
-                { comuna: 7, center: [-34.6300, -58.4100], radius: 0.01 },  // Flores
-                { comuna: 8, center: [-34.6700, -58.4900], radius: 0.01 },  // Villa Lugano
-                { comuna: 9, center: [-34.6500, -58.5200], radius: 0.01 },  // Liniers
-                { comuna: 10, center: [-34.6200, -58.4800], radius: 0.01 }, // Villa Real
-                { comuna: 11, center: [-34.5800, -58.4800], radius: 0.01 }, // Villa Devoto
-                { comuna: 12, center: [-34.5400, -58.4600], radius: 0.01 }, // Coghlan
-                { comuna: 13, center: [-34.5600, -58.4400], radius: 0.01 }, // Núñez
-                { comuna: 14, center: [-34.5500, -58.4300], radius: 0.01 }, // Palermo
-                { comuna: 15, center: [-34.5800, -58.4300], radius: 0.01 }  // Chacarita
-            ];
-            
-            areasComunas.forEach(area => {
-                for (let j = 0; j < 20; j++) {
-                    const lat = area.center[0] + (Math.random() - 0.5) * area.radius;
-                    const lng = area.center[1] + (Math.random() - 0.5) * area.radius;
-                    
-                    const especies = ['Ficus', 'Ligustro', 'Jacarandá', 'Fresno', 'Tilo', 'Plátano', 'Palo Borracho', 'Acacia', 'Eucalipto', 'Ciprés'];
-                    const especie = especies[Math.floor(Math.random() * especies.length)];
-                    
-                    datosEjemplo.features.push({
-                        "type": "Feature",
-                        "geometry": {
-                            "type": "Point",
-                            "coordinates": [lng, lat]  // [longitud, latitud]
-                        },
-                        "properties": {
-                            "Nombre": especie,
-                            "especie": especie,
-                            "Dir": `Calle Ejemplo ${Math.floor(Math.random() * 1000)}`,
-                            "comuna": area.comuna,
-                            "Lat": lat,  // Incluir también en properties para consistencia
-                            "Long": lng
-                        }
-                    });
-                }
-            });
-            
-            debugLog(`Datos de ejemplo creados: ${datosEjemplo.features.length} árboles`);
-            return datosEjemplo.features;
         }
 
         // Función para cargar y mostrar árboles cercanos
@@ -1102,7 +1039,7 @@
             });
 
             loading.style.display = 'none';
-            actualizarEstado(`${arbolesCercanos.length} árboles encontrados`, 'ready');
+            document.getElementById('statusIndicator').style.display = 'none';
         }
 
         // Función para limpiar marcadores de árboles
