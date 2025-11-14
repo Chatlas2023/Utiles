@@ -34,6 +34,9 @@
             text-align: center;
             border-bottom: 1px solid #333;
             flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
         
         h1 {
@@ -311,7 +314,7 @@
             border-radius: 5px;
             padding: 15px;
             width: 320px;
-            height: 480px; /* 20% más largo (400px * 1.2 = 480px) */
+            height: 480px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.5);
             display: none;
             flex-direction: column;
@@ -332,13 +335,13 @@
         }
         
         .species-item {
-            margin-bottom: 4px; /* Reducido de 8px a 4px para juntar más las filas */
+            margin-bottom: 4px;
             display: flex;
             align-items: center;
-            padding: 4px 5px; /* Reducido el padding vertical */
+            padding: 4px 5px;
             border-radius: 3px;
             transition: background-color 0.2s;
-            min-height: 28px; /* Altura mínima reducida */
+            min-height: 28px;
         }
         
         .species-item:hover {
@@ -419,7 +422,7 @@
         .radius-control {
             position: absolute;
             top: 80px;
-            left: 205px; /* A la derecha del filtro de especies (60px + 145px de ancho aproximado del botón) */
+            left: 205px;
             z-index: 1000;
             background: rgba(30, 30, 30, 0.9);
             border-radius: 5px;
@@ -530,41 +533,46 @@
             background: #29b6f6;
         }
         
-        /* Estilos para el control de comunas */
-        .comunas-control {
+        /* Estilos para el indicador de estado */
+        .status-indicator {
             position: absolute;
             top: 80px;
-            left: 350px;
+            right: 15px;
             z-index: 1000;
             background: rgba(30, 30, 30, 0.9);
             border-radius: 5px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            padding: 8px 12px;
+            font-size: 12px;
+            color: #e0e0e0;
+            display: flex;
+            align-items: center;
         }
         
-        .comunas-button {
-            display: block;
-            width: auto;
-            height: 35px;
-            line-height: 35px;
-            text-align: center;
-            text-decoration: none;
-            color: white;
-            font-size: 14px;
-            border-radius: 5px;
-            transition: background-color 0.2s;
-            padding: 0 15px;
-            white-space: nowrap;
-            cursor: pointer;
-            border: none;
-            background: transparent;
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 6px;
         }
         
-        .comunas-button:hover {
-            background: rgba(79, 195, 247, 0.3);
+        .status-dot.loading {
+            background-color: #ff9800;
+            animation: pulse 1.5s infinite;
         }
         
-        .comunas-button.active {
-            background: rgba(79, 195, 247, 0.5);
+        .status-dot.ready {
+            background-color: #4caf50;
+        }
+        
+        .status-dot.error {
+            background-color: #f44336;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
         }
     </style>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -573,7 +581,7 @@
 <body>
     <div class="container">
         <header>
-            <h1>Mapa de Árboles <span class="version">Ver: 3.1 </span></h1>
+            <h1>Mapa de Árboles <span class="version">Ver: 3.2</span></h1>
             <div class="subtitle">Fuente: Mapa de Arbolado Urbano https://buenosaires.gob.ar/</div>
         </header>
         
@@ -627,9 +635,10 @@
         </div>
     </div>
     
-    <!-- Control de comunas -->
-    <div class="comunas-control">
-        <button id="comunasButton" class="comunas-button">Mostrar Comunas</button>
+    <!-- Indicador de estado -->
+    <div class="status-indicator" id="statusIndicator">
+        <div class="status-dot loading"></div>
+        <span id="statusText">Cargando datos...</span>
     </div>
     
     <div class="mode-toggle">
@@ -640,6 +649,7 @@
     <div id="loading" class="loading">Cargando datos de árboles...</div>
 
     <script>
+        // Variables globales
         let mapaInicializado = false;
         let radioActual = 200;
         let userLat, userLng;
@@ -654,9 +664,8 @@
         let especiesSeleccionadas = [];
         let filtroActivo = false;
         let currentCenter = null;
-        let comunasLayer = null;
-        let mostrarComunas = false;
-        let comunaStats = {};
+        let treeMarkers = [];
+        let statsMarker = null;
 
         const coloresEspecies = [
             '#4CAF50', '#2196F3', '#FF9800', '#9C27B0', '#F44336'
@@ -670,6 +679,17 @@
             console.log(`[DEBUG] ${message}`);
         }
 
+        // Función para actualizar el indicador de estado
+        function actualizarEstado(mensaje, tipo = 'loading') {
+            const indicator = document.getElementById('statusIndicator');
+            const dot = indicator.querySelector('.status-dot');
+            const text = document.getElementById('statusText');
+            
+            text.textContent = mensaje;
+            dot.className = 'status-dot ' + tipo;
+        }
+
+        // Función para cambiar entre capas de mapa
         function cambiarMapa() {
             currentLayerIndex = (currentLayerIndex + 1) % layerIcons.length;
             const selectedLayer = currentLayerIndex === 0 ? 'calles' : 'satelite';
@@ -686,6 +706,7 @@
             }
         }
 
+        // Función para crear íconos de árboles
         function crearIconoEspecie(indiceColor) {
             const color = coloresEspecies[indiceColor] || '#4CAF50';
             return L.divIcon({
@@ -705,6 +726,7 @@
             });
         }
 
+        // Función para calcular estadísticas de especies
         function calcularEstadisticas(arboles) {
             const conteoEspecies = {};
             
@@ -721,6 +743,7 @@
             return especiesOrdenadas;
         }
 
+        // Función para crear popup de estadísticas
         function crearPopupEstadisticas(estadisticas, totalArboles) {
             let contenido = `<div class="stats-window">`;
             
@@ -770,6 +793,7 @@
             return contenido;
         }
 
+        // Función para calcular distancia entre dos puntos
         function calcularDistancia(lat1, lon1, lat2, lon2) {
             const R = 6371000;
             const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -782,6 +806,7 @@
             return R * c;
         }
 
+        // Función para centrar el mapa con desplazamiento
         function centrarMapaConDesplazamiento(lat, lng) {
             const currentZoom = map.getZoom();
             map.setView([lat, lng], currentZoom, {
@@ -799,6 +824,7 @@
             }, 10);
         }
 
+        // Función para cambiar entre modos de ubicación
         function cambiarModo(modo) {
             modoActual = modo;
             
@@ -813,10 +839,12 @@
             }
         }
 
+        // Función para obtener ubicación GPS
         function obtenerUbicacionGPS() {
             const loading = document.getElementById('loading');
             loading.style.display = 'block';
             loading.textContent = 'Obteniendo tu ubicación...';
+            actualizarEstado('Obteniendo ubicación...', 'loading');
             
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
@@ -836,6 +864,7 @@
                         
                         mapaInicializado = true;
                         loading.style.display = 'none';
+                        actualizarEstado('Listo', 'ready');
                     },
                     function(error) {
                         loading.style.display = 'none';
@@ -843,297 +872,143 @@
                         userLng = -58.3816;
                         map.setView([userLat, userLng], 15);
                         cargarArbolesCercanos(userLat, userLng);
+                        actualizarEstado('Ubicación no disponible', 'error');
                     }
                 );
             } else {
                 loading.style.display = 'none';
                 userLat = -34.6037;
                 userLng = -58.3816;
+                actualizarEstado('Geolocalización no soportada', 'error');
             }
         }
 
-        // Función mejorada para cargar datos de árboles
-async function cargarDatosArboles() {
-    const loading = document.getElementById('loading');
-    loading.style.display = 'block';
-    loading.textContent = 'Cargando datos de árboles...';
-    
-    datosArboles = [];
-    let archivosCargados = 0;
-    
-    for (let i = 1; i <= 15; i++) {
-        try {
-            const response = await fetch(`arbolado_comuna_${i}.geojson`);
-            if (response.ok) {
-                const data = await response.json();
-                if (data.features && data.features.length > 0) {
-                    // Usar las coordenadas correctas de Lat/Long
-                    data.features.forEach(feature => {
-                        feature.properties.comuna = i;
-                        
-                        // REEMPLAZAR las coordenadas del geometry con las correctas de las propiedades
-                        if (feature.properties.Lat !== undefined && feature.properties.Long !== undefined) {
-                            feature.geometry.coordinates = [
-                                feature.properties.Long,  // longitud
-                                feature.properties.Lat    // latitud
-                            ];
-                        }
-                    });
-                    
-                    datosArboles = datosArboles.concat(data.features);
-                    archivosCargados++;
-                    debugLog(`Comuna ${i} cargada: ${data.features.length} árboles`);
-                }
-            } else {
-                debugLog(`Archivo arbolado_comuna_${i}.geojson no encontrado`);
-            }
-        } catch (error) {
-            debugLog(`Error cargando comuna ${i}: ${error}`);
-        }
-    }
-    
-    debugLog(`Total de árboles cargados: ${datosArboles.length} de ${archivosCargados} archivos`);
-    
-    // Si no se cargaron datos, usar datos de ejemplo
-    if (datosArboles.length === 0) {
-        debugLog('Usando datos de ejemplo');
-        datosArboles = crearDatosEjemplo();
-    }
-    
-    // Debug: verificar las coordenadas
-    if (datosArboles.length > 0) {
-        const primerArbol = datosArboles[0];
-        console.log('Coordenadas del primer árbol:', {
-            coordinates: primerArbol.geometry.coordinates,
-            properties_Lat: primerArbol.properties.Lat,
-            properties_Long: primerArbol.properties.Long
-        });
-    }
-    
-    loading.style.display = 'none';
-    return datosArboles;
-}
-
-function crearDatosEjemplo() {
-    const datosEjemplo = {
-        "type": "FeatureCollection",
-        "features": []
-    };
-    
-    // Crear árboles de ejemplo en áreas reales de Buenos Aires
-    const areasComunas = [
-        { comuna: 1, center: [-34.6037, -58.3816], radius: 0.01 },  // Plaza de Mayo
-        { comuna: 2, center: [-34.5950, -58.3850], radius: 0.01 },  // Recoleta
-        { comuna: 3, center: [-34.6100, -58.3700], radius: 0.01 },  // San Nicolás
-        { comuna: 4, center: [-34.6200, -58.3900], radius: 0.01 },  // La Boca
-        { comuna: 5, center: [-34.6050, -58.4100], radius: 0.01 },  // Almagro
-        { comuna: 6, center: [-34.5900, -58.4200], radius: 0.01 },  // Caballito
-        { comuna: 7, center: [-34.6300, -58.4100], radius: 0.01 },  // Flores
-        { comuna: 8, center: [-34.6700, -58.4900], radius: 0.01 },  // Villa Lugano
-        { comuna: 9, center: [-34.6500, -58.5200], radius: 0.01 },  // Liniers
-        { comuna: 10, center: [-34.6200, -58.4800], radius: 0.01 }, // Villa Real
-        { comuna: 11, center: [-34.5800, -58.4800], radius: 0.01 }, // Villa Devoto
-        { comuna: 12, center: [-34.5400, -58.4600], radius: 0.01 }, // Coghlan
-        { comuna: 13, center: [-34.5600, -58.4400], radius: 0.01 }, // Núñez
-        { comuna: 14, center: [-34.5500, -58.4300], radius: 0.01 }, // Palermo
-        { comuna: 15, center: [-34.5800, -58.4300], radius: 0.01 }  // Chacarita
-    ];
-    
-    areasComunas.forEach(area => {
-        for (let j = 0; j < 20; j++) {
-            const lat = area.center[0] + (Math.random() - 0.5) * area.radius;
-            const lng = area.center[1] + (Math.random() - 0.5) * area.radius;
+        // Función para cargar datos de árboles
+        async function cargarDatosArboles() {
+            const loading = document.getElementById('loading');
+            loading.style.display = 'block';
+            loading.textContent = 'Cargando datos de árboles...';
+            actualizarEstado('Cargando datos de árboles...', 'loading');
             
-            const especies = ['Ficus', 'Ligustro', 'Jacarandá', 'Fresno', 'Tilo', 'Plátano', 'Palo Borracho', 'Acacia', 'Eucalipto', 'Ciprés'];
-            const especie = especies[Math.floor(Math.random() * especies.length)];
+            datosArboles = [];
+            let archivosCargados = 0;
             
-            datosEjemplo.features.push({
-                "type": "Feature",
-                "geometry": {
-                    "type": "Point",
-                    "coordinates": [lng, lat]  // [longitud, latitud]
-                },
-                "properties": {
-                    "Nombre": especie,
-                    "especie": especie,
-                    "Dir": `Calle Ejemplo ${Math.floor(Math.random() * 1000)}`,
-                    "comuna": area.comuna,
-                    "Lat": lat,  // Incluir también en properties para consistencia
-                    "Long": lng
-                }
-            });
-        }
-    });
-    
-    debugLog(`Datos de ejemplo creados: ${datosEjemplo.features.length} árboles`);
-    return datosEjemplo.features;
-}
-
-        // Función corregida para cargar y mostrar las comunas
-        function cargarComunas() {
-            fetch('Comunas.geojson')
-                .then(response => {
-                    if (!response.ok) throw new Error('No se pudo cargar Comunas.geojson');
-                    return response.json();
-                })
-                .then(data => {
-                    debugLog('Comunas.geojson cargado correctamente');
-                    
-                    // Calcular estadísticas por comuna
-                    comunaStats = {};
-                    for (let i = 1; i <= 15; i++) {
-                        const arbolesComuna = datosArboles.filter(arbol => arbol.properties.comuna === i);
-                        comunaStats[i] = arbolesComuna.length;
-                        debugLog(`Comuna ${i}: ${arbolesComuna.length} árboles`);
-                    }
-                    
-                    // Función para obtener el color basado en la cantidad de árboles
-                    function getColorForComuna(treeCount) {
-                        if (treeCount > 1000) return '#006400';
-                        if (treeCount > 500) return '#228B22';
-                        if (treeCount > 100) return '#32CD32';
-                        if (treeCount > 50) return '#90EE90';
-                        return '#E0F8E0';
-                    }
-                    
-                    // Crear capa de comunas
-                    comunasLayer = L.geoJSON(data, {
-                        style: function(feature) {
-                            // IMPORTANTE: Verificar la estructura real del GeoJSON
-                            const comunaId = feature.properties.id || 
-                                            feature.properties.COMUNAS || 
-                                            feature.properties.comuna ||
-                                            feature.properties.nombre;
-                            
-                            debugLog(`Procesando comuna: ${comunaId}`, feature.properties);
-                            
-                            const treeCount = comunaStats[comunaId] || 0;
-                            const fillColor = getColorForComuna(treeCount);
-                            
-                            return {
-                                fillColor: fillColor,
-                                weight: 2,
-                                opacity: 1,
-                                color: 'white',
-                                dashArray: '3',
-                                fillOpacity: 0.4
-                            };
-                        },
-                        onEachFeature: function(feature, layer) {
-                            const comunaId = feature.properties.id || 
-                                            feature.properties.COMUNAS || 
-                                            feature.properties.comuna ||
-                                            feature.properties.nombre;
-                            
-                            const treeCount = comunaStats[comunaId] || 0;
-                            
-                            layer.bindPopup(`
-                                <div class="info-window">
-                                    <h3>Comuna ${comunaId}</h3>
-                                    <p>Árboles registrados: ${treeCount}</p>
-                                    <p>Haz clic en el mapa para buscar árboles en esta área</p>
-                                </div>
-                            `);
-                            
-                            // Agregar evento de clic a la comuna
-                            layer.on('click', function(e) {
-                                const center = e.latlng;
-                                currentCenter = center;
-                                cargarArbolesCercanos(center.lat, center.lng);
+            for (let i = 1; i <= 15; i++) {
+                try {
+                    const response = await fetch(`arbolado_comuna_${i}.geojson`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data.features && data.features.length > 0) {
+                            // Usar las coordenadas correctas de Lat/Long
+                            data.features.forEach(feature => {
+                                feature.properties.comuna = i;
+                                
+                                // REEMPLAZAR las coordenadas del geometry con las correctas de las propiedades
+                                if (feature.properties.Lat !== undefined && feature.properties.Long !== undefined) {
+                                    feature.geometry.coordinates = [
+                                        feature.properties.Long,  // longitud
+                                        feature.properties.Lat    // latitud
+                                    ];
+                                }
                             });
+                            
+                            datosArboles = datosArboles.concat(data.features);
+                            archivosCargados++;
+                            debugLog(`Comuna ${i} cargada: ${data.features.length} árboles`);
                         }
-                    });
-                    
-                    if (mostrarComunas) {
-                        comunasLayer.addTo(map);
+                    } else {
+                        debugLog(`Archivo arbolado_comuna_${i}.geojson no encontrado`);
                     }
-                    
-                    debugLog('Capas de comunas creadas correctamente');
-                })
-                .catch(error => {
-                    console.error('Error cargando comunas:', error);
-                    debugLog('No se pudo cargar el archivo de comunas, creando áreas de ejemplo');
-                    // Crear áreas de ejemplo si no hay archivo de comunas
-                    crearAreasComunasEjemplo();
+                } catch (error) {
+                    debugLog(`Error cargando comuna ${i}: ${error}`);
+                }
+            }
+            
+            debugLog(`Total de árboles cargados: ${datosArboles.length} de ${archivosCargados} archivos`);
+            
+            // Si no se cargaron datos, usar datos de ejemplo
+            if (datosArboles.length === 0) {
+                debugLog('Usando datos de ejemplo');
+                datosArboles = crearDatosEjemplo();
+            }
+            
+            // Debug: verificar las coordenadas
+            if (datosArboles.length > 0) {
+                const primerArbol = datosArboles[0];
+                console.log('Coordenadas del primer árbol:', {
+                    coordinates: primerArbol.geometry.coordinates,
+                    properties_Lat: primerArbol.properties.Lat,
+                    properties_Long: primerArbol.properties.Long
                 });
+            }
+            
+            loading.style.display = 'none';
+            actualizarEstado(`Cargados ${datosArboles.length} árboles`, 'ready');
+            return datosArboles;
         }
 
-        function crearAreasComunasEjemplo() {
-            debugLog('Creando áreas de comunas de ejemplo');
+        // Función para crear datos de ejemplo (solo para desarrollo)
+        function crearDatosEjemplo() {
+            const datosEjemplo = {
+                "type": "FeatureCollection",
+                "features": []
+            };
             
-            // Crear áreas circulares de ejemplo para las comunas
+            // Crear árboles de ejemplo en áreas reales de Buenos Aires
             const areasComunas = [
-                { id: 1, center: [-34.6037, -58.3816], radius: 1500, name: "Comuna 1" },
-                { id: 2, center: [-34.5950, -58.3850], radius: 1200, name: "Comuna 2" },
-                { id: 3, center: [-34.6100, -58.3700], radius: 1300, name: "Comuna 3" },
-                // ... agregar más comunas según sea necesario
+                { comuna: 1, center: [-34.6037, -58.3816], radius: 0.01 },  // Plaza de Mayo
+                { comuna: 2, center: [-34.5950, -58.3850], radius: 0.01 },  // Recoleta
+                { comuna: 3, center: [-34.6100, -58.3700], radius: 0.01 },  // San Nicolás
+                { comuna: 4, center: [-34.6200, -58.3900], radius: 0.01 },  // La Boca
+                { comuna: 5, center: [-34.6050, -58.4100], radius: 0.01 },  // Almagro
+                { comuna: 6, center: [-34.5900, -58.4200], radius: 0.01 },  // Caballito
+                { comuna: 7, center: [-34.6300, -58.4100], radius: 0.01 },  // Flores
+                { comuna: 8, center: [-34.6700, -58.4900], radius: 0.01 },  // Villa Lugano
+                { comuna: 9, center: [-34.6500, -58.5200], radius: 0.01 },  // Liniers
+                { comuna: 10, center: [-34.6200, -58.4800], radius: 0.01 }, // Villa Real
+                { comuna: 11, center: [-34.5800, -58.4800], radius: 0.01 }, // Villa Devoto
+                { comuna: 12, center: [-34.5400, -58.4600], radius: 0.01 }, // Coghlan
+                { comuna: 13, center: [-34.5600, -58.4400], radius: 0.01 }, // Núñez
+                { comuna: 14, center: [-34.5500, -58.4300], radius: 0.01 }, // Palermo
+                { comuna: 15, center: [-34.5800, -58.4300], radius: 0.01 }  // Chacarita
             ];
             
-            comunasLayer = L.layerGroup();
-            
             areasComunas.forEach(area => {
-                const circle = L.circle(area.center, {
-                    color: 'white',
-                    fillColor: '#3388ff',
-                    fillOpacity: 0.3,
-                    radius: area.radius
-                });
-                
-                const treeCount = comunaStats[area.id] || 0;
-                
-                circle.bindPopup(`
-                    <div class="info-window">
-                        <h3>${area.name}</h3>
-                        <p>Árboles registrados: ${treeCount}</p>
-                        <p><em>Área de ejemplo - carga Comunas.geojson para ver las áreas reales</em></p>
-                    </div>
-                `);
-                
-                circle.on('click', function(e) {
-                    const center = e.latlng;
-                    currentCenter = center;
-                    cargarArbolesCercanos(center.lat, center.lng);
-                });
-                
-                comunasLayer.addLayer(circle);
-                
-                // Agregar etiqueta
-                const label = L.marker(area.center, {
-                    icon: L.divIcon({
-                        className: 'comuna-label',
-                        html: `<div style="background: rgba(0,0,0,0.7); color: white; padding: 2px 5px; border-radius: 3px; font-size: 12px;">${area.name}</div>`,
-                        iconSize: [60, 20],
-                        iconAnchor: [30, 10]
-                    })
-                });
-                comunasLayer.addLayer(label);
+                for (let j = 0; j < 20; j++) {
+                    const lat = area.center[0] + (Math.random() - 0.5) * area.radius;
+                    const lng = area.center[1] + (Math.random() - 0.5) * area.radius;
+                    
+                    const especies = ['Ficus', 'Ligustro', 'Jacarandá', 'Fresno', 'Tilo', 'Plátano', 'Palo Borracho', 'Acacia', 'Eucalipto', 'Ciprés'];
+                    const especie = especies[Math.floor(Math.random() * especies.length)];
+                    
+                    datosEjemplo.features.push({
+                        "type": "Feature",
+                        "geometry": {
+                            "type": "Point",
+                            "coordinates": [lng, lat]  // [longitud, latitud]
+                        },
+                        "properties": {
+                            "Nombre": especie,
+                            "especie": especie,
+                            "Dir": `Calle Ejemplo ${Math.floor(Math.random() * 1000)}`,
+                            "comuna": area.comuna,
+                            "Lat": lat,  // Incluir también en properties para consistencia
+                            "Long": lng
+                        }
+                    });
+                }
             });
             
-            if (mostrarComunas) {
-                comunasLayer.addTo(map);
-            }
+            debugLog(`Datos de ejemplo creados: ${datosEjemplo.features.length} árboles`);
+            return datosEjemplo.features;
         }
 
-        function toggleComunas() {
-            mostrarComunas = !mostrarComunas;
-            
-            if (comunasLayer) {
-                if (mostrarComunas) {
-                    comunasLayer.addTo(map);
-                    document.getElementById('comunasButton').classList.add('active');
-                    document.getElementById('comunasButton').textContent = 'Ocultar Comunas';
-                } else {
-                    map.removeLayer(comunasLayer);
-                    document.getElementById('comunasButton').classList.remove('active');
-                    document.getElementById('comunasButton').textContent = 'Mostrar Comunas';
-                }
-            }
-        }
-
+        // Función para cargar y mostrar árboles cercanos
         function cargarArbolesCercanos(lat, lng) {
             const loading = document.getElementById('loading');
             loading.style.display = 'block';
             loading.textContent = 'Buscando árboles cercanos...';
+            actualizarEstado('Buscando árboles cercanos...', 'loading');
 
             debugLog(`Buscando árboles cerca de: ${lat}, ${lng} con radio: ${radioActual}m`);
 
@@ -1171,15 +1046,8 @@ function crearDatosEjemplo() {
 
             estadisticasActuales = calcularEstadisticas(arbolesCercanos);
 
-            // Limpiar marcadores anteriores (excepto el marcador del usuario y las comunas)
-            map.eachLayer(layer => {
-                if (layer instanceof L.Marker && layer !== userMarker) {
-                    // Verificar que no sea un marcador de etiqueta de comuna
-                    if (!layer._icon || !layer._icon.classList.contains('comuna-label')) {
-                        map.removeLayer(layer);
-                    }
-                }
-            });
+            // Limpiar marcadores anteriores (excepto el marcador del usuario)
+            limpiarMarcadoresArboles();
 
             // Crear mapa de especies a índices de color
             const mapaEspeciesColor = {};
@@ -1206,6 +1074,7 @@ function crearDatosEjemplo() {
                 }
                 
                 const marker = L.marker([latArbol, lngArbol], { icon: icono }).addTo(map);
+                treeMarkers.push(marker);
                 
                 const popupContent = `
                     <div class="info-window">
@@ -1223,7 +1092,8 @@ function crearDatosEjemplo() {
             });
 
             // Crear marcador de estadísticas en el centro
-            const statsMarker = L.marker([lat, lng]).addTo(map);
+            if (statsMarker) map.removeLayer(statsMarker);
+            statsMarker = L.marker([lat, lng]).addTo(map);
             const statsPopupContent = crearPopupEstadisticas(estadisticasActuales, arbolesCercanos.length);
             statsMarker.bindPopup(statsPopupContent).openPopup();
             
@@ -1232,6 +1102,20 @@ function crearDatosEjemplo() {
             });
 
             loading.style.display = 'none';
+            actualizarEstado(`${arbolesCercanos.length} árboles encontrados`, 'ready');
+        }
+
+        // Función para limpiar marcadores de árboles
+        function limpiarMarcadoresArboles() {
+            treeMarkers.forEach(marker => {
+                map.removeLayer(marker);
+            });
+            treeMarkers = [];
+            
+            if (statsMarker) {
+                map.removeLayer(statsMarker);
+                statsMarker = null;
+            }
         }
 
         // Funciones para el filtro de especies
@@ -1438,8 +1322,6 @@ function crearDatosEjemplo() {
         document.getElementById('radiusButton').addEventListener('click', toggleRadiusPanel);
         configurarEventosRadio();
 
-        document.getElementById('comunasButton').addEventListener('click', toggleComunas);
-
         // Cerrar los paneles al hacer clic fuera de ellos
         document.addEventListener('click', function(e) {
             const speciesPanel = document.getElementById('speciesFilterPanel');
@@ -1476,9 +1358,6 @@ function crearDatosEjemplo() {
             debugLog(`Especies disponibles: ${especiesDisponibles.length}`);
             
             actualizarListaEspecies();
-            
-            // Cargar comunas
-            cargarComunas();
             
             // Obtener ubicación inicial
             obtenerUbicacionGPS();
