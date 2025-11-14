@@ -28,13 +28,13 @@
             flex-direction: column;
         }
         
-        header {
-            background-color: #1e1e1e;
-            padding: 15px;
-            text-align: center;
-            border-bottom: 1px solid #333;
-            flex-shrink: 0;
-        }
+header {
+    background-color: #1e1e1e;
+    padding: 10px 15px;
+    text-align: center;
+    border-bottom: 1px solid #333;
+    flex-shrink: 0;
+}
         
         h1 {
             color: #4fc3f7;
@@ -50,11 +50,15 @@
             margin-left: 10px;
         }
         
-        .subtitle {
-            color: #a0a0a0;
-            font-size: 14px;
-            margin-top: 5px;
-        }
+.subtitle {
+    color: #a0a0a0;
+    font-size: 10px;
+    margin-top: 5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+}
         
         #map {
             flex: 1;
@@ -531,9 +535,10 @@
 </head>
 <body>
     <div class="container">
-        <header>
-            <h1>Mapa de Árboles <span class="version">Ver: 20.0 </span></h1>
-        </header>
+<header>
+    <h1>Mapa de Árboles <span class="version">Ver: 2.11 </span></h1>
+    <div class="subtitle">Fuente: Mapa de Arbolado Urbano https://buenosaires.gob.ar/</div>
+</header>
         
         <div id="map"></div>
     </div>
@@ -606,7 +611,6 @@
         let estadisticasActuales = [];
         let mapaActual = 'calles';
         let capaCalles, capaSatelite;
-        let watchId = null;
         let especiesDisponibles = [];
         let especiesSeleccionadas = [];
         let filtroActivo = false;
@@ -625,13 +629,6 @@
         { valor: 200, etiqueta: "Radio mediano", texto: "200m" },
         { valor: 500, etiqueta: "Radio grande", texto: "500m" }
         ];
-
-        function detenerGeolocalizacion() {
-            if (watchId !== null) {
-                navigator.geolocation.clearWatch(watchId);
-                watchId = null;
-            }
-        }
 
         function cambiarMapa() {
             currentLayerIndex = (currentLayerIndex + 1) % layerIcons.length;
@@ -773,75 +770,61 @@
             }, 10);
         }
 
-        function cambiarModo(modo) {
-            modoActual = modo;
-            
-            document.getElementById('mode-gps').classList.toggle('active', modo === 'gps');
-            document.getElementById('mode-tap').classList.toggle('active', modo === 'tap');
-            
-            if (modo === 'gps') {
-                detenerGeolocalizacion();
-                obtenerUbicacionGPS();
-            } else {
-                detenerGeolocalizacion();
+function cambiarModo(modo) {
+    modoActual = modo;
+    
+    document.getElementById('mode-gps').classList.toggle('active', modo === 'gps');
+    document.getElementById('mode-tap').classList.toggle('active', modo === 'tap');
+    
+    if (modo === 'gps') {
+        // Solo obtener ubicación una vez al cambiar a modo GPS
+        obtenerUbicacionGPS();
+    } else {
+        // En modo tap, simplemente remover el marcador si existe
+        if (userMarker) map.removeLayer(userMarker);
+        if (circle) map.removeLayer(circle);
+    }
+}
+
+function obtenerUbicacionGPS() {
+    const loading = document.getElementById('loading');
+    loading.style.display = 'block';
+    loading.textContent = 'Obteniendo tu ubicación...';
+    
+    if (navigator.geolocation) {
+        // Usar getCurrentPosition en lugar de watchPosition para obtener solo una vez
+        navigator.geolocation.getCurrentPosition(
+            function(position) {
+                userLat = position.coords.latitude;
+                userLng = position.coords.longitude;
+                
+                map.setView([userLat, userLng], 18);
+                
                 if (userMarker) map.removeLayer(userMarker);
-                if (circle) map.removeLayer(circle);
-            }
-        }
+                userMarker = L.marker([userLat, userLng])
+                    .addTo(map)
+                    .bindPopup('<div class="info-window"><h3>Tu ubicación</h3><p>Estás aquí</p></div>')
+                    .openPopup();
 
-        function obtenerUbicacionGPS() {
-            const loading = document.getElementById('loading');
-            loading.style.display = 'block';
-            loading.textContent = 'Obteniendo tu ubicación...';
-            
-            if (navigator.geolocation) {
-                if (modoActual === 'gps') {
-                    watchId = navigator.geolocation.watchPosition(
-                        function(position) {
-                            userLat = position.coords.latitude;
-                            userLng = position.coords.longitude;
-                            
-                            map.setView([userLat, userLng], 18);
-                            
-                            if (userMarker) map.removeLayer(userMarker);
-                            userMarker = L.marker([userLat, userLng])
-                                .addTo(map)
-                                .bindPopup('<div class="info-window"><h3>Tu ubicación</h3><p>Estás aquí</p></div>')
-                                .openPopup();
-
-                            cargarArbolesCercanos(userLat, userLng);
-                            
-                            mapaInicializado = true;
-                            loading.style.display = 'none';
-                        },
-                        function(error) {
-                            loading.style.display = 'none';
-                            userLat = -34.6037;
-                            userLng = -58.3816;
-                            map.setView([userLat, userLng], 15);
-                            cargarArbolesCercanos(userLat, userLng);
-                        }
-                    );
-                } else {
-                    navigator.geolocation.getCurrentPosition(
-                        function(position) {
-                            userLat = position.coords.latitude;
-                            userLng = position.coords.longitude;
-                            loading.style.display = 'none';
-                        },
-                        function(error) {
-                            loading.style.display = 'none';
-                            userLat = -34.6037;
-                            userLng = -58.3816;
-                        }
-                    );
-                }
-            } else {
+                cargarArbolesCercanos(userLat, userLng);
+                
+                mapaInicializado = true;
                 loading.style.display = 'none';
-                userLat = -34.6037;
-                userLng = -58.3816;
+            },
+            function(error) {
+                loading.style.display = 'none';
+                userLat = -34.5633;
+                userLng = -58.4637;
+                map.setView([userLat, userLng], 15);
+                cargarArbolesCercanos(userLat, userLng);
             }
-        }
+        );
+    } else {
+        loading.style.display = 'none';
+        userLat = -34.5633;
+        userLng = -58.4637;
+    }
+}
 
         function cargarArbolesCercanos(lat, lng) {
             const loading = document.getElementById('loading');
@@ -942,9 +925,9 @@
 
             try {
                 // Intentar cargar el archivo real primero
-                fetch('arbolado2.geojson')
+                fetch('arbolado3.geojson')
                     .then(response => {
-                        if (!response.ok) throw new Error('No se pudo cargar arbolado2.geojson');
+                        if (!response.ok) throw new Error('No se pudo cargar arbolado3.geojson');
                         return response.json();
                     })
                     .then(geojsonData => {
@@ -1262,20 +1245,23 @@ function aplicarRadio() {
         capaCalles.addTo(map);
 
         // Evento para tocar en el mapa
-        map.on('click', function(e) {
-            if (modoActual === 'gps') {
-                cambiarModo('tap');
-            }
-            
-            const lat = e.latlng.lat;
-            const lng = e.latlng.lng;
-            
-            // Guardar la ubicación actual
-            currentCenter = { lat, lng };
-            
-            map.setView([lat, lng], 18);
-            cargarArbolesCercanos(lat, lng);
-        });
+// Evento para tocar en el mapa
+map.on('click', function(e) {
+    if (modoActual === 'gps') {
+        cambiarModo('tap');
+    }
+    
+    const lat = e.latlng.lat;
+    const lng = e.latlng.lng;
+    
+    // Guardar la ubicación actual
+    currentCenter = { lat, lng };
+    
+    // Mantener el zoom actual en lugar de establecerlo a 18
+    const currentZoom = map.getZoom();
+    map.setView([lat, lng], currentZoom);
+    cargarArbolesCercanos(lat, lng);
+});
 
         // Configurar el evento del botón de cambio de capas
         document.getElementById('layerToggleButton').addEventListener('click', function(e) {
