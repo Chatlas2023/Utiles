@@ -587,9 +587,6 @@ header {
                     <span class="radius-value">500m</span>
                 </li>
             </ul>
-            <div class="radius-actions">
-                <button id="applyRadius" class="radius-action-button">Aplicar Radio</button>
-            </div>
         </div>
     </div>
     
@@ -682,7 +679,7 @@ header {
         }
 
         function crearPopupEstadisticas(estadisticas, totalArboles) {
-            let contenido = `<div class="stats-window">`;
+            let contenido = `<div class="stats-window>`;
             
             if (totalArboles === 0) {
                 // Caso especial: cero árboles encontrados
@@ -761,7 +758,7 @@ header {
             setTimeout(() => {
                 const currentCenter = map.getCenter();
                 if (Math.abs(currentCenter.lat - lat) > 0.0001 || Math.abs(currentCenter.lng - lng) > 0.0001) {
-                    // Si no está perfectamente centrado, forzarlo de nuevo
+                    // Si no está perfectemente centrado, forzarlo de nuevo
                     map.setView([lat, lng], currentZoom, {
                         animate: true,
                         duration: 0.3
@@ -1179,28 +1176,6 @@ function eliminarFiltros() {
             }
         }
 
-function aplicarRadio() {
-    const panel = document.getElementById('radiusPanel');
-    panel.classList.remove('show');
-    
-    const selectedRadio = document.querySelector('input[name="radius"]:checked');
-    if (selectedRadio) {
-        radioActual = parseInt(selectedRadio.value);
-        
-        // Guardar el zoom actual
-        const currentZoom = map.getZoom();
-        
-        // Recargar árboles con el nuevo radio en la ubicación actual manteniendo el zoom
-        if (currentCenter) {
-            cargarArbolesCercanos(currentCenter.lat, currentCenter.lng);
-            map.setZoom(currentZoom);
-        } else if (userLat && userLng) {
-            cargarArbolesCercanos(userLat, userLng);
-            map.setZoom(currentZoom);
-        }
-    }
-}
-
         // Configurar eventos de los items de radio
         function configurarEventosRadio() {
             const radioItems = document.querySelectorAll('.radius-item');
@@ -1212,6 +1187,22 @@ function aplicarRadio() {
                     // Actualizar clases selected
                     radioItems.forEach(i => i.classList.remove('selected'));
                     this.classList.add('selected');
+                    
+                    // Aplicar el radio inmediatamente y cerrar el panel
+                    radioActual = parseInt(radio.value);
+                    document.getElementById('radiusPanel').classList.remove('show');
+                    
+                    // Guardar el zoom actual
+                    const currentZoom = map.getZoom();
+                    
+                    // Recargar árboles con el nuevo radio
+                    if (currentCenter) {
+                        cargarArbolesCercanos(currentCenter.lat, currentCenter.lng);
+                        map.setZoom(currentZoom);
+                    } else if (userLat && userLng) {
+                        cargarArbolesCercanos(userLat, userLng);
+                        map.setZoom(currentZoom);
+                    }
                 });
             });
         }
@@ -1277,7 +1268,6 @@ map.on('click', function(e) {
 
         // Configurar eventos del control de radio
         document.getElementById('radiusButton').addEventListener('click', toggleRadiusPanel);
-        document.getElementById('applyRadius').addEventListener('click', aplicarRadio);
         configurarEventosRadio();
 
         // Cerrar los paneles al hacer clic fuera de ellos
