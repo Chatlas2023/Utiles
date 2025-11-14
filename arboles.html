@@ -663,20 +663,22 @@ header {
             });
         }
 
-        function calcularEstadisticas(arboles) {
-            const conteoEspecies = {};
-            
-            arboles.forEach(arbol => {
-                const especie = arbol.properties?.Nombre || 'Desconocida';
-                conteoEspecies[especie] = (conteoEspecies[especie] || 0) + 1;
-            });
-            
-            const especiesOrdenadas = Object.entries(conteoEspecies)
-                .sort((a, b) => b[1] - a[1])
-                .slice(0, 5);
-            
-            return especiesOrdenadas;
-        }
+function calcularEstadisticas(arboles) {
+    const conteoEspecies = {};
+    
+    arboles.forEach(arbol => {
+        const especie = arbol.properties?.Nombre || 'Desconocida';
+        // Aplicar trim aquí también para consistencia
+        const especieLimpia = especie.trim();
+        conteoEspecies[especieLimpia] = (conteoEspecies[especieLimpia] || 0) + 1;
+    });
+    
+    const especiesOrdenadas = Object.entries(conteoEspecies)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5);
+    
+    return especiesOrdenadas;
+}
 
         function crearPopupEstadisticas(estadisticas, totalArboles) {
             let contenido = `<div class="stats-window>`;
@@ -950,14 +952,17 @@ function obtenerUbicacionGPS() {
             datosArboles = features;
 
             // Extraer todas las especies disponibles
-            const especiesSet = new Set();
-            features.forEach(feature => {
-                const especie = feature.properties?.Nombre || 'Desconocida';
-                if (especie) {
-                    especiesSet.add(especie);
-                }
-            });
-            especiesDisponibles = Array.from(especiesSet).sort();
+// Extraer todas las especies disponibles
+const especiesSet = new Set();
+features.forEach(feature => {
+    const especie = feature.properties?.Nombre || 'Desconocida';
+    if (especie) {
+        // Trim para eliminar espacios al inicio y final
+        const especieLimpia = especie.trim();
+        especiesSet.add(especieLimpia);
+    }
+});
+especiesDisponibles = Array.from(especiesSet).sort();
             
             // Actualizar la lista de especies en el panel de filtro
             actualizarListaEspecies();
@@ -975,12 +980,14 @@ function obtenerUbicacionGPS() {
             });
 
             // Aplicar filtro de especies si está activo
-            if (filtroActivo && especiesSeleccionadas.length > 0) {
-                arbolesCercanos = arbolesCercanos.filter(feature => {
-                    const especie = feature.properties?.Nombre || 'Desconocida';
-                    return especiesSeleccionadas.includes(especie);
-                });
-            }
+if (filtroActivo && especiesSeleccionadas.length > 0) {
+    arbolesCercanos = arbolesCercanos.filter(feature => {
+        const especie = feature.properties?.Nombre || 'Desconocida';
+        // Usar trim para comparar correctamente
+        const especieLimpia = especie.trim();
+        return especiesSeleccionadas.includes(especieLimpia);
+    });
+}
 
             estadisticasActuales = calcularEstadisticas(arbolesCercanos);
 
