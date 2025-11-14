@@ -536,7 +536,7 @@ header {
 <body>
     <div class="container">
 <header>
-    <h1>Mapa de Árboles <span class="version">Ver: 2.11 </span></h1>
+    <h1>Mapa de Árboles <span class="version">Ver: 2.10 </span></h1>
     <div class="subtitle">Fuente: Mapa de Arbolado Urbano https://buenosaires.gob.ar/</div>
 </header>
         
@@ -587,9 +587,6 @@ header {
                     <span class="radius-value">500m</span>
                 </li>
             </ul>
-            <div class="radius-actions">
-                <button id="applyRadius" class="radius-action-button">Aplicar Radio</button>
-            </div>
         </div>
     </div>
     
@@ -666,23 +663,25 @@ header {
             });
         }
 
-        function calcularEstadisticas(arboles) {
-            const conteoEspecies = {};
-            
-            arboles.forEach(arbol => {
-                const especie = arbol.properties?.Nombre || 'Desconocida';
-                conteoEspecies[especie] = (conteoEspecies[especie] || 0) + 1;
-            });
-            
-            const especiesOrdenadas = Object.entries(conteoEspecies)
-                .sort((a, b) => b[1] - a[1])
-                .slice(0, 5);
-            
-            return especiesOrdenadas;
-        }
+function calcularEstadisticas(arboles) {
+    const conteoEspecies = {};
+    
+    arboles.forEach(arbol => {
+        const especie = arbol.properties?.Nombre || 'Desconocida';
+        // Aplicar trim aquí también para consistencia
+        const especieLimpia = especie.trim();
+        conteoEspecies[especieLimpia] = (conteoEspecies[especieLimpia] || 0) + 1;
+    });
+    
+    const especiesOrdenadas = Object.entries(conteoEspecies)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5);
+    
+    return especiesOrdenadas;
+}
 
         function crearPopupEstadisticas(estadisticas, totalArboles) {
-            let contenido = `<div class="stats-window">`;
+            let contenido = `<div class="stats-window>`;
             
             if (totalArboles === 0) {
                 // Caso especial: cero árboles encontrados
@@ -761,7 +760,7 @@ header {
             setTimeout(() => {
                 const currentCenter = map.getCenter();
                 if (Math.abs(currentCenter.lat - lat) > 0.0001 || Math.abs(currentCenter.lng - lng) > 0.0001) {
-                    // Si no está perfectamente centrado, forzarlo de nuevo
+                    // Si no está perfectemente centrado, forzarlo de nuevo
                     map.setView([lat, lng], currentZoom, {
                         animate: true,
                         duration: 0.3
@@ -953,14 +952,17 @@ function obtenerUbicacionGPS() {
             datosArboles = features;
 
             // Extraer todas las especies disponibles
-            const especiesSet = new Set();
-            features.forEach(feature => {
-                const especie = feature.properties?.Nombre || 'Desconocida';
-                if (especie) {
-                    especiesSet.add(especie);
-                }
-            });
-            especiesDisponibles = Array.from(especiesSet).sort();
+// Extraer todas las especies disponibles
+const especiesSet = new Set();
+features.forEach(feature => {
+    const especie = feature.properties?.Nombre || 'Desconocida';
+    if (especie) {
+        // Trim para eliminar espacios al inicio y final
+        const especieLimpia = especie.trim();
+        especiesSet.add(especieLimpia);
+    }
+});
+especiesDisponibles = Array.from(especiesSet).sort();
             
             // Actualizar la lista de especies en el panel de filtro
             actualizarListaEspecies();
@@ -978,12 +980,14 @@ function obtenerUbicacionGPS() {
             });
 
             // Aplicar filtro de especies si está activo
-            if (filtroActivo && especiesSeleccionadas.length > 0) {
-                arbolesCercanos = arbolesCercanos.filter(feature => {
-                    const especie = feature.properties?.Nombre || 'Desconocida';
-                    return especiesSeleccionadas.includes(especie);
-                });
-            }
+if (filtroActivo && especiesSeleccionadas.length > 0) {
+    arbolesCercanos = arbolesCercanos.filter(feature => {
+        const especie = feature.properties?.Nombre || 'Desconocida';
+        // Usar trim para comparar correctamente
+        const especieLimpia = especie.trim();
+        return especiesSeleccionadas.includes(especieLimpia);
+    });
+}
 
             estadisticasActuales = calcularEstadisticas(arbolesCercanos);
 
@@ -1179,28 +1183,6 @@ function eliminarFiltros() {
             }
         }
 
-function aplicarRadio() {
-    const panel = document.getElementById('radiusPanel');
-    panel.classList.remove('show');
-    
-    const selectedRadio = document.querySelector('input[name="radius"]:checked');
-    if (selectedRadio) {
-        radioActual = parseInt(selectedRadio.value);
-        
-        // Guardar el zoom actual
-        const currentZoom = map.getZoom();
-        
-        // Recargar árboles con el nuevo radio en la ubicación actual manteniendo el zoom
-        if (currentCenter) {
-            cargarArbolesCercanos(currentCenter.lat, currentCenter.lng);
-            map.setZoom(currentZoom);
-        } else if (userLat && userLng) {
-            cargarArbolesCercanos(userLat, userLng);
-            map.setZoom(currentZoom);
-        }
-    }
-}
-
         // Configurar eventos de los items de radio
         function configurarEventosRadio() {
             const radioItems = document.querySelectorAll('.radius-item');
@@ -1212,6 +1194,22 @@ function aplicarRadio() {
                     // Actualizar clases selected
                     radioItems.forEach(i => i.classList.remove('selected'));
                     this.classList.add('selected');
+                    
+                    // Aplicar el radio inmediatamente y cerrar el panel
+                    radioActual = parseInt(radio.value);
+                    document.getElementById('radiusPanel').classList.remove('show');
+                    
+                    // Guardar el zoom actual
+                    const currentZoom = map.getZoom();
+                    
+                    // Recargar árboles con el nuevo radio
+                    if (currentCenter) {
+                        cargarArbolesCercanos(currentCenter.lat, currentCenter.lng);
+                        map.setZoom(currentZoom);
+                    } else if (userLat && userLng) {
+                        cargarArbolesCercanos(userLat, userLng);
+                        map.setZoom(currentZoom);
+                    }
                 });
             });
         }
@@ -1277,7 +1275,6 @@ map.on('click', function(e) {
 
         // Configurar eventos del control de radio
         document.getElementById('radiusButton').addEventListener('click', toggleRadiusPanel);
-        document.getElementById('applyRadius').addEventListener('click', aplicarRadio);
         configurarEventosRadio();
 
         // Cerrar los paneles al hacer clic fuera de ellos
