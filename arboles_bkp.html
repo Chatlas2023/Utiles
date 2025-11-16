@@ -28,13 +28,16 @@
             flex-direction: column;
         }
         
-header {
-    background-color: #1e1e1e;
-    padding: 10px 15px;
-    text-align: center;
-    border-bottom: 1px solid #333;
-    flex-shrink: 0;
-}
+        header {
+            background-color: #1e1e1e;
+            padding: 10px 15px;
+            text-align: center;
+            border-bottom: 1px solid #333;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
         
         h1 {
             color: #4fc3f7;
@@ -50,15 +53,15 @@ header {
             margin-left: 10px;
         }
         
-.subtitle {
-    color: #a0a0a0;
-    font-size: 10px;
-    margin-top: 5px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    width: 100%;
-}
+        .subtitle {
+            color: #a0a0a0;
+            font-size: 10px;
+            margin-top: 5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            width: 100%;
+        }
         
         #map {
             flex: 1;
@@ -311,7 +314,7 @@ header {
             border-radius: 5px;
             padding: 15px;
             width: 320px;
-            height: 480px; /* 20% más largo (400px * 1.2 = 480px) */
+            height: 480px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.5);
             display: none;
             flex-direction: column;
@@ -332,13 +335,13 @@ header {
         }
         
         .species-item {
-            margin-bottom: 4px; /* Reducido de 8px a 4px para juntar más las filas */
+            margin-bottom: 4px;
             display: flex;
             align-items: center;
-            padding: 4px 5px; /* Reducido el padding vertical */
+            padding: 4px 5px;
             border-radius: 3px;
             transition: background-color 0.2s;
-            min-height: 28px; /* Altura mínima reducida */
+            min-height: 28px;
         }
         
         .species-item:hover {
@@ -419,7 +422,7 @@ header {
         .radius-control {
             position: absolute;
             top: 80px;
-            left: 205px; /* A la derecha del filtro de especies (60px + 145px de ancho aproximado del botón) */
+            left: 205px;
             z-index: 1000;
             background: rgba(30, 30, 30, 0.9);
             border-radius: 5px;
@@ -444,7 +447,7 @@ header {
             background: transparent;
         }
         
-           .radius-button:hover {
+        .radius-button:hover {
             background: rgba(79, 195, 247, 0.3);
         }
         
@@ -452,19 +455,19 @@ header {
             background: rgba(79, 195, 247, 0.5);
         }
         
-.radius-panel {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: rgba(30, 30, 30, 0.95);
-    border-radius: 5px;
-    padding: 15px;
-    width: 220px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.5);
-    display: none;
-    z-index: 1001;
-}
+        .radius-panel {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(30, 30, 30, 0.95);
+            border-radius: 5px;
+            padding: 15px;
+            width: 220px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+            display: none;
+            z-index: 1001;
+        }
         
         .radius-panel.show {
             display: block;
@@ -529,16 +532,58 @@ header {
         .radius-action-button:hover {
             background: #29b6f6;
         }
+        
+        /* Estilos para el indicador de estado */
+        .status-indicator {
+            position: absolute;
+            top: 80px;
+            right: 15px;
+            z-index: 1000;
+            background: rgba(30, 30, 30, 0.9);
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            padding: 8px 12px;
+            font-size: 12px;
+            color: #e0e0e0;
+            display: flex;
+            align-items: center;
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+        
+        .status-dot.loading {
+            background-color: #ff9800;
+            animation: pulse 1.5s infinite;
+        }
+        
+        .status-dot.ready {
+            background-color: #4caf50;
+        }
+        
+        .status-dot.error {
+            background-color: #f44336;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
     </style>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
 <body>
     <div class="container">
-<header>
-    <h1>Mapa de Árboles <span class="version">Ver: 2.10 </span></h1>
-    <div class="subtitle">Fuente: Mapa de Arbolado Urbano https://buenosaires.gob.ar/</div>
-</header>
+        <header>
+            <h1>Mapa de Árboles <span class="version">Ver: 3.2</span></h1>
+            <div class="subtitle">Fuente: Mapa de Arbolado Urbano https://buenosaires.gob.ar/</div>
+        </header>
         
         <div id="map"></div>
     </div>
@@ -590,14 +635,21 @@ header {
         </div>
     </div>
     
+    <!-- Indicador de estado -->
+    <div class="status-indicator" id="statusIndicator">
+        <div class="status-dot loading"></div>
+        <span id="statusText">Cargando datos...</span>
+    </div>
+    
     <div class="mode-toggle">
         <button id="mode-gps" onclick="cambiarModo('gps')" class="active">Usar mi ubicación</button>
         <button id="mode-tap" onclick="cambiarModo('tap')">Tocar en el mapa</button>
     </div>
 
-    <div id="loading" class="loading">Obteniendo tu ubicación...</div>
+    <div id="loading" class="loading">Cargando datos de árboles...</div>
 
     <script>
+        // Variables globales
         let mapaInicializado = false;
         let radioActual = 200;
         let userLat, userLng;
@@ -612,6 +664,8 @@ header {
         let especiesSeleccionadas = [];
         let filtroActivo = false;
         let currentCenter = null;
+        let treeMarkers = [];
+        let statsMarker = null;
 
         const coloresEspecies = [
             '#4CAF50', '#2196F3', '#FF9800', '#9C27B0', '#F44336'
@@ -620,13 +674,22 @@ header {
         const layerIcons = ['🌍', '🛰️'];
         let currentLayerIndex = 0;
 
-        // Opciones de radio disponibles
-        const opcionesRadio = [
-        { valor: 100, etiqueta: "Radio pequeño", texto: "100m" },
-        { valor: 200, etiqueta: "Radio mediano", texto: "200m" },
-        { valor: 500, etiqueta: "Radio grande", texto: "500m" }
-        ];
+        // Función para debug - muestra en consola qué archivos se están cargando
+        function debugLog(message) {
+            console.log(`[DEBUG] ${message}`);
+        }
 
+        // Función para actualizar el indicador de estado
+        function actualizarEstado(mensaje, tipo = 'loading') {
+            const indicator = document.getElementById('statusIndicator');
+            const dot = indicator.querySelector('.status-dot');
+            const text = document.getElementById('statusText');
+            
+            text.textContent = mensaje;
+            dot.className = 'status-dot ' + tipo;
+        }
+
+        // Función para cambiar entre capas de mapa
         function cambiarMapa() {
             currentLayerIndex = (currentLayerIndex + 1) % layerIcons.length;
             const selectedLayer = currentLayerIndex === 0 ? 'calles' : 'satelite';
@@ -643,6 +706,7 @@ header {
             }
         }
 
+        // Función para crear íconos de árboles
         function crearIconoEspecie(indiceColor) {
             const color = coloresEspecies[indiceColor] || '#4CAF50';
             return L.divIcon({
@@ -653,7 +717,6 @@ header {
             });
         }
 
-        // Función para crear ícono gris para otras especies
         function crearIconoOtrasEspecies() {
             return L.divIcon({
                 className: 'tree-icon',
@@ -663,40 +726,37 @@ header {
             });
         }
 
-function calcularEstadisticas(arboles) {
-    const conteoEspecies = {};
-    
-    arboles.forEach(arbol => {
-        const especie = arbol.properties?.Nombre || 'Desconocida';
-        // Aplicar trim aquí también para consistencia
-        const especieLimpia = especie.trim();
-        conteoEspecies[especieLimpia] = (conteoEspecies[especieLimpia] || 0) + 1;
-    });
-    
-    const especiesOrdenadas = Object.entries(conteoEspecies)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 5);
-    
-    return especiesOrdenadas;
-}
+        // Función para calcular estadísticas de especies
+        function calcularEstadisticas(arboles) {
+            const conteoEspecies = {};
+            
+            arboles.forEach(arbol => {
+                const especie = arbol.properties?.Nombre || arbol.properties?.especie || 'Desconocida';
+                const especieLimpia = especie.trim();
+                conteoEspecies[especieLimpia] = (conteoEspecies[especieLimpia] || 0) + 1;
+            });
+            
+            const especiesOrdenadas = Object.entries(conteoEspecies)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 5);
+            
+            return especiesOrdenadas;
+        }
 
+        // Función para crear popup de estadísticas
         function crearPopupEstadisticas(estadisticas, totalArboles) {
-            let contenido = `<div class="stats-window>`;
+            let contenido = `<div class="stats-window">`;
             
             if (totalArboles === 0) {
-                // Caso especial: cero árboles encontrados
-                contenido += `<div class="total-trees">Cero árboles.- </div>`;
+                contenido += `<div class="total-trees">Cero árboles encontrados</div>`;
             } else {
-                // Mostrar el total de árboles en la primera línea
                 contenido += `<div class="total-trees">${totalArboles} árboles encontrados</div>`;
                 
-                // Calcular porcentaje total de las especies mostradas
                 let porcentajeTotal = 0;
                 estadisticas.forEach(([especie, cantidad]) => {
                     porcentajeTotal += (cantidad / totalArboles) * 100;
                 });
                 
-                // Calcular porcentaje de "Otras especies"
                 const porcentajeOtras = 100 - porcentajeTotal;
                 const cantidadOtras = totalArboles - estadisticas.reduce((sum, [_, count]) => sum + count, 0);
                 
@@ -718,7 +778,6 @@ function calcularEstadisticas(arboles) {
                     `;
                 });
                 
-                // Agregar "Otras especies" solo si hay más del 0% y hay árboles
                 if (porcentajeOtras > 0 && totalArboles > 0) {
                     contenido += `
                         <div class="stats-item">
@@ -734,6 +793,7 @@ function calcularEstadisticas(arboles) {
             return contenido;
         }
 
+        // Función para calcular distancia entre dos puntos
         function calcularDistancia(lat1, lon1, lat2, lon2) {
             const R = 6371000;
             const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -746,21 +806,16 @@ function calcularEstadisticas(arboles) {
             return R * c;
         }
 
-        // Función para centrar el mapa con desplazamiento en pantalla
+        // Función para centrar el mapa con desplazamiento
         function centrarMapaConDesplazamiento(lat, lng) {
-            // Forzar el centrado sin restricciones
             const currentZoom = map.getZoom();
-            
-            // Primero establecer el view sin animación para evitar límites
             map.setView([lat, lng], currentZoom, {
                 animate: false
             });
             
-            // Luego, si es necesario, un pequeño ajuste para asegurar el centrado
             setTimeout(() => {
                 const currentCenter = map.getCenter();
                 if (Math.abs(currentCenter.lat - lat) > 0.0001 || Math.abs(currentCenter.lng - lng) > 0.0001) {
-                    // Si no está perfectemente centrado, forzarlo de nuevo
                     map.setView([lat, lng], currentZoom, {
                         animate: true,
                         duration: 0.3
@@ -769,66 +824,130 @@ function calcularEstadisticas(arboles) {
             }, 10);
         }
 
-function cambiarModo(modo) {
-    modoActual = modo;
-    
-    document.getElementById('mode-gps').classList.toggle('active', modo === 'gps');
-    document.getElementById('mode-tap').classList.toggle('active', modo === 'tap');
-    
-    if (modo === 'gps') {
-        // Solo obtener ubicación una vez al cambiar a modo GPS
-        obtenerUbicacionGPS();
-    } else {
-        // En modo tap, simplemente remover el marcador si existe
-        if (userMarker) map.removeLayer(userMarker);
-        if (circle) map.removeLayer(circle);
-    }
-}
-
-function obtenerUbicacionGPS() {
-    const loading = document.getElementById('loading');
-    loading.style.display = 'block';
-    loading.textContent = 'Obteniendo tu ubicación...';
-    
-    if (navigator.geolocation) {
-        // Usar getCurrentPosition en lugar de watchPosition para obtener solo una vez
-        navigator.geolocation.getCurrentPosition(
-            function(position) {
-                userLat = position.coords.latitude;
-                userLng = position.coords.longitude;
-                
-                map.setView([userLat, userLng], 18);
-                
+        // Función para cambiar entre modos de ubicación
+        function cambiarModo(modo) {
+            modoActual = modo;
+            
+            document.getElementById('mode-gps').classList.toggle('active', modo === 'gps');
+            document.getElementById('mode-tap').classList.toggle('active', modo === 'tap');
+            
+            if (modo === 'gps') {
+                obtenerUbicacionGPS();
+            } else {
                 if (userMarker) map.removeLayer(userMarker);
-                userMarker = L.marker([userLat, userLng])
-                    .addTo(map)
-                    .bindPopup('<div class="info-window"><h3>Tu ubicación</h3><p>Estás aquí</p></div>')
-                    .openPopup();
-
-                cargarArbolesCercanos(userLat, userLng);
-                
-                mapaInicializado = true;
-                loading.style.display = 'none';
-            },
-            function(error) {
-                loading.style.display = 'none';
-                userLat = -34.5633;
-                userLng = -58.4637;
-                map.setView([userLat, userLng], 15);
-                cargarArbolesCercanos(userLat, userLng);
+                if (circle) map.removeLayer(circle);
             }
-        );
-    } else {
-        loading.style.display = 'none';
-        userLat = -34.5633;
-        userLng = -58.4637;
-    }
-}
+        }
 
+        // Función para obtener ubicación GPS
+        function obtenerUbicacionGPS() {
+            const loading = document.getElementById('loading');
+            loading.style.display = 'block';
+            loading.textContent = 'Obteniendo tu ubicación...';
+            actualizarEstado('Obteniendo ubicación...', 'loading');
+            
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        userLat = position.coords.latitude;
+                        userLng = position.coords.longitude;
+                        
+                        map.setView([userLat, userLng], 18);
+                        
+                        if (userMarker) map.removeLayer(userMarker);
+                        userMarker = L.marker([userLat, userLng])
+                            .addTo(map)
+                            .bindPopup('<div class="info-window"><h3>Tu ubicación</h3><p>Estás aquí</p></div>')
+                            .openPopup();
+
+                        cargarArbolesCercanos(userLat, userLng);
+                        
+                        mapaInicializado = true;
+                        loading.style.display = 'none';
+                        document.getElementById('statusIndicator').style.display = 'none';
+                    },
+                    function(error) {
+                        loading.style.display = 'none';
+                        userLat = -34.6037;
+                        userLng = -58.3816;
+                        map.setView([userLat, userLng], 15);
+                        cargarArbolesCercanos(userLat, userLng);
+                        actualizarEstado('Ubicación no disponible', 'error');
+                    }
+                );
+            } else {
+                loading.style.display = 'none';
+                userLat = -34.6037;
+                userLng = -58.3816;
+                actualizarEstado('Geolocalización no soportada', 'error');
+            }
+        }
+
+        // Función para cargar datos de árboles
+        async function cargarDatosArboles() {
+            const loading = document.getElementById('loading');
+            loading.style.display = 'block';
+            loading.textContent = 'Cargando datos de árboles...';
+            actualizarEstado('Cargando datos de árboles...', 'loading');
+            
+            datosArboles = [];
+            let archivosCargados = 0;
+            
+            for (let i = 1; i <= 15; i++) {
+                try {
+                    const response = await fetch(`arbolado_comuna_${i}.geojson`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data.features && data.features.length > 0) {
+                            // Usar las coordenadas correctas de Lat/Long
+                            data.features.forEach(feature => {
+                                feature.properties.comuna = i;
+                                
+                                // REEMPLAZAR las coordenadas del geometry con las correctas de las propiedades
+                                if (feature.properties.Lat !== undefined && feature.properties.Long !== undefined) {
+                                    feature.geometry.coordinates = [
+                                        feature.properties.Long,  // longitud
+                                        feature.properties.Lat    // latitud
+                                    ];
+                                }
+                            });
+                            
+                            datosArboles = datosArboles.concat(data.features);
+                            archivosCargados++;
+                            debugLog(`Comuna ${i} cargada: ${data.features.length} árboles`);
+                        }
+                    } else {
+                        debugLog(`Archivo arbolado_comuna_${i}.geojson no encontrado`);
+                    }
+                } catch (error) {
+                    debugLog(`Error cargando comuna ${i}: ${error}`);
+                }
+            }
+            
+            debugLog(`Total de árboles cargados: ${datosArboles.length} de ${archivosCargados} archivos`);
+            
+            // Debug: verificar las coordenadas
+            if (datosArboles.length > 0) {
+                const primerArbol = datosArboles[0];
+                console.log('Coordenadas del primer árbol:', {
+                    coordinates: primerArbol.geometry.coordinates,
+                    properties_Lat: primerArbol.properties.Lat,
+                    properties_Long: primerArbol.properties.Long
+                });
+            }
+            
+            loading.style.display = 'none';
+            return datosArboles;
+        }
+
+        // Función para cargar y mostrar árboles cercanos
         function cargarArbolesCercanos(lat, lng) {
             const loading = document.getElementById('loading');
             loading.style.display = 'block';
             loading.textContent = 'Buscando árboles cercanos...';
+            actualizarEstado('Buscando árboles cercanos...', 'loading');
+
+            debugLog(`Buscando árboles cerca de: ${lat}, ${lng} con radio: ${radioActual}m`);
 
             if (circle) map.removeLayer(circle);
             circle = L.circle([lat, lng], {
@@ -838,137 +957,8 @@ function obtenerUbicacionGPS() {
                 radius: radioActual
             }).addTo(map);
 
-            // Para testing - datos de ejemplo si no existe el archivo
-            const datosEjemplo = {
-                "type": "FeatureCollection",
-                "features": [
-                    {
-                        "type": "Feature",
-                        "geometry": {
-                            "type": "Point",
-                            "coordinates": [-58.3816, -34.6037]
-                        },
-                        "properties": {
-                            "Nombre": "Árbol Ejemplo 1",
-                            "Dir": "Calle Ejemplo 123"
-                        }
-                    },
-                    {
-                        "type": "Feature",
-                        "geometry": {
-                            "type": "Point",
-                            "coordinates": [-58.3820, -34.6040]
-                        },
-                        "properties": {
-                            "Nombre": "Árbol Ejemplo 2",
-                            "Dir": "Calle Ejemplo 456"
-                        }
-                    },
-                    {
-                        "type": "Feature",
-                        "geometry": {
-                            "type": "Point",
-                            "coordinates": [-58.3800, -34.6020]
-                        },
-                        "properties": {
-                            "Nombre": "Árbol Ejemplo 3",
-                            "Dir": "Calle Ejemplo 789"
-                        }
-                    },
-                    {
-                        "type": "Feature",
-                        "geometry": {
-                            "type": "Point",
-                            "coordinates": [-58.3830, -34.6050]
-                        },
-                        "properties": {
-                            "Nombre": "Pino",
-                            "Dir": "Calle Ejemplo 101"
-                        }
-                    },
-                    {
-                        "type": "Feature",
-                        "geometry": {
-                            "type": "Point",
-                            "coordinates": [-58.3790, -34.6010]
-                        },
-                        "properties": {
-                            "Nombre": "Roble",
-                            "Dir": "Calle Ejemplo 202"
-                        }
-                    },
-                    {
-                        "type": "Feature",
-                        "geometry": {
-                            "type": "Point",
-                            "coordinates": [-58.3840, -34.6060]
-                        },
-                        "properties": {
-                            "Nombre": "Eucalipto",
-                            "Dir": "Calle Ejemplo 303"
-                        }
-                    },
-                    {
-                        "type": "Feature",
-                        "geometry": {
-                            "type": "Point",
-                            "coordinates": [-58.3780, -34.6000]
-                        },
-                        "properties": {
-                            "Nombre": "Ciprés",
-                            "Dir": "Calle Ejemplo 404"
-                        }
-                    }
-                ]
-            };
-
-            try {
-                // Intentar cargar el archivo real primero
-                fetch('arbolado3.geojson')
-                    .then(response => {
-                        if (!response.ok) throw new Error('No se pudo cargar arbolado3.geojson');
-                        return response.json();
-                    })
-                    .then(geojsonData => {
-                        procesarArboles(geojsonData, lat, lng);
-                        loading.style.display = 'none';
-                    })
-                    .catch(error => {
-                        // Si falla, usar datos de ejemplo
-                        console.log('Usando datos de ejemplo:', error);
-                        procesarArboles(datosEjemplo, lat, lng);
-                        loading.style.display = 'none';
-                    });
-            } catch (error) {
-                // Fallback completo
-                console.log('Error general, usando datos de ejemplo');
-                procesarArboles(datosEjemplo, lat, lng);
-                loading.style.display = 'none';
-            }
-        }
-
-        function procesarArboles(geojsonData, lat, lng) {
-            const features = geojsonData.features || [];
-            datosArboles = features;
-
-            // Extraer todas las especies disponibles
-// Extraer todas las especies disponibles
-const especiesSet = new Set();
-features.forEach(feature => {
-    const especie = feature.properties?.Nombre || 'Desconocida';
-    if (especie) {
-        // Trim para eliminar espacios al inicio y final
-        const especieLimpia = especie.trim();
-        especiesSet.add(especieLimpia);
-    }
-});
-especiesDisponibles = Array.from(especiesSet).sort();
-            
-            // Actualizar la lista de especies en el panel de filtro
-            actualizarListaEspecies();
-
             // Filtrar árboles cercanos
-            let arbolesCercanos = features.filter(feature => {
+            let arbolesCercanos = datosArboles.filter(feature => {
                 const coordenadas = feature.geometry?.coordinates || [];
                 if (coordenadas.length < 2) return false;
                 
@@ -979,26 +969,24 @@ especiesDisponibles = Array.from(especiesSet).sort();
                 return distancia <= radioActual;
             });
 
+            debugLog(`Árboles encontrados en el radio: ${arbolesCercanos.length}`);
+
             // Aplicar filtro de especies si está activo
-if (filtroActivo && especiesSeleccionadas.length > 0) {
-    arbolesCercanos = arbolesCercanos.filter(feature => {
-        const especie = feature.properties?.Nombre || 'Desconocida';
-        // Usar trim para comparar correctamente
-        const especieLimpia = especie.trim();
-        return especiesSeleccionadas.includes(especieLimpia);
-    });
-}
+            if (filtroActivo && especiesSeleccionadas.length > 0) {
+                arbolesCercanos = arbolesCercanos.filter(feature => {
+                    const especie = feature.properties?.Nombre || feature.properties?.especie || 'Desconocida';
+                    const especieLimpia = especie.trim();
+                    return especiesSeleccionadas.includes(especieLimpia);
+                });
+                debugLog(`Árboles después del filtro: ${arbolesCercanos.length}`);
+            }
 
             estadisticasActuales = calcularEstadisticas(arbolesCercanos);
 
             // Limpiar marcadores anteriores (excepto el marcador del usuario)
-            map.eachLayer(layer => {
-                if (layer instanceof L.Marker && layer !== userMarker) {
-                    map.removeLayer(layer);
-                }
-            });
+            limpiarMarcadoresArboles();
 
-            // Crear mapa de especies a índices de color (solo para top 5)
+            // Crear mapa de especies a índices de color
             const mapaEspeciesColor = {};
             estadisticasActuales.forEach(([especie], index) => {
                 mapaEspeciesColor[especie] = index;
@@ -1008,49 +996,63 @@ if (filtroActivo && especiesSeleccionadas.length > 0) {
             arbolesCercanos.forEach(feature => {
                 const coordenadas = feature.geometry.coordinates;
                 const propiedades = feature.properties || {};
-                const especie = propiedades.Nombre || 'Desconocida';
+                const especie = propiedades.Nombre || propiedades.especie || 'Desconocida';
                 
-                const lng = coordenadas[0];
-                const lat = coordenadas[1];
+                const lngArbol = coordenadas[0];
+                const latArbol = coordenadas[1];
                 
-                // Determinar color según la especie - usar gris para especies no top 5
                 const indiceColor = mapaEspeciesColor[especie];
                 let icono;
                 
                 if (indiceColor !== undefined) {
-                    // Especie está en el top 5 - usar color asignado
                     icono = crearIconoEspecie(indiceColor);
                 } else {
-                    // Especie no está en el top 5 - usar ícono gris
                     icono = crearIconoOtrasEspecies();
                 }
                 
-                const marker = L.marker([lat, lng], { icon: icono }).addTo(map);
+                const marker = L.marker([latArbol, lngArbol], { icon: icono }).addTo(map);
+                treeMarkers.push(marker);
                 
                 const popupContent = `
                     <div class="info-window">
                         <h3>${especie}</h3>
                         ${propiedades.Dir ? `<p><strong>Dirección:</strong> ${propiedades.Dir}</p>` : ''}
+                        ${propiedades.comuna ? `<p><strong>Comuna:</strong> ${propiedades.comuna}</p>` : ''}
                     </div>
                 `;
                 
-                // Agregar evento para centrar el mapa cuando se hace clic en el marcador
                 marker.on('click', function(e) {
-                    centrarMapaConDesplazamiento(lat, lng);
+                    centrarMapaConDesplazamiento(latArbol, lngArbol);
                 });
                 
                 marker.bindPopup(popupContent);
             });
 
             // Crear marcador de estadísticas en el centro
-            const statsMarker = L.marker([lat, lng]).addTo(map);
+            if (statsMarker) map.removeLayer(statsMarker);
+            statsMarker = L.marker([lat, lng]).addTo(map);
             const statsPopupContent = crearPopupEstadisticas(estadisticasActuales, arbolesCercanos.length);
             statsMarker.bindPopup(statsPopupContent).openPopup();
             
-            // Agregar evento para centrar el mapa cuando se hace clic en el popup de estadísticas
             statsMarker.on('click', function(e) {
                 centrarMapaConDesplazamiento(lat, lng);
             });
+
+            loading.style.display = 'none';
+            document.getElementById('statusIndicator').style.display = 'none';
+        }
+
+        // Función para limpiar marcadores de árboles
+        function limpiarMarcadoresArboles() {
+            treeMarkers.forEach(marker => {
+                map.removeLayer(marker);
+            });
+            treeMarkers = [];
+            
+            if (statsMarker) {
+                map.removeLayer(statsMarker);
+                statsMarker = null;
+            }
         }
 
         // Funciones para el filtro de especies
@@ -1060,11 +1062,11 @@ if (filtroActivo && especiesSeleccionadas.length > 0) {
             
             speciesList.innerHTML = '';
             
-const especiesFiltradas = especiesDisponibles.filter(especie => 
-    especie.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").includes(
-        searchTerm.normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-    )
-);
+            const especiesFiltradas = especiesDisponibles.filter(especie => 
+                especie.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").includes(
+                    searchTerm.normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+                )
+            );
             
             especiesFiltradas.forEach(especie => {
                 const li = document.createElement('li');
@@ -1099,63 +1101,56 @@ const especiesFiltradas = especiesDisponibles.filter(especie =>
                 `${especiesSeleccionadas.length} especies seleccionadas`;
         }
 
-function aplicarFiltro() {
-    const panel = document.getElementById('speciesFilterPanel');
-    panel.classList.remove('show');
-    
-    if (especiesSeleccionadas.length > 0) {
-        filtroActivo = true;
-        document.getElementById('speciesFilterButton').textContent = 'Eliminar Filtros';
-        document.getElementById('speciesFilterButton').classList.add('active');
-        
-        // Guardar la ubicación y zoom actual antes de aplicar el filtro
-        currentCenter = map.getCenter();
-        const currentZoom = map.getZoom(); // Guardar el zoom actual
-        
-        // Recargar árboles con el filtro aplicado en la ubicación y zoom actual
-        if (currentCenter) {
-            cargarArbolesCercanos(currentCenter.lat, currentCenter.lng);
-            // Mantener el zoom actual después de cargar
-            map.setZoom(currentZoom);
-        } else if (userLat && userLng) {
-            cargarArbolesCercanos(userLat, userLng);
-            map.setZoom(currentZoom);
+        function aplicarFiltro() {
+            const panel = document.getElementById('speciesFilterPanel');
+            panel.classList.remove('show');
+            
+            if (especiesSeleccionadas.length > 0) {
+                filtroActivo = true;
+                document.getElementById('speciesFilterButton').textContent = 'Eliminar Filtros';
+                document.getElementById('speciesFilterButton').classList.add('active');
+                
+                currentCenter = map.getCenter();
+                const currentZoom = map.getZoom();
+                
+                if (currentCenter) {
+                    cargarArbolesCercanos(currentCenter.lat, currentCenter.lng);
+                    map.setZoom(currentZoom);
+                } else if (userLat && userLng) {
+                    cargarArbolesCercanos(userLat, userLng);
+                    map.setZoom(currentZoom);
+                }
+            } else {
+                eliminarFiltros();
+            }
         }
-    } else {
-        eliminarFiltros();
-    }
-}
 
-function eliminarFiltros() {
-    filtroActivo = false;
-    especiesSeleccionadas = [];
-    
-    // Desmarcar todas las casillas
-    const checkboxes = document.querySelectorAll('.species-checkbox');
-    checkboxes.forEach(cb => cb.checked = false);
-    
-    document.getElementById('speciesFilterButton').textContent = 'Filtro por Especie';
-    document.getElementById('speciesFilterButton').classList.remove('active');
-    document.getElementById('selectedCount').textContent = '0 especies seleccionadas';
-    
-    // Guardar el zoom actual
-    const currentZoom = map.getZoom();
-    
-    // Recargar árboles sin filtro en la ubicación actual manteniendo el zoom
-    if (currentCenter) {
-        cargarArbolesCercanos(currentCenter.lat, currentCenter.lng);
-        map.setZoom(currentZoom);
-    } else if (userLat && userLng) {
-        cargarArbolesCercanos(userLat, userLng);
-        map.setZoom(currentZoom);
-    }
-}
+        function eliminarFiltros() {
+            filtroActivo = false;
+            especiesSeleccionadas = [];
+            
+            const checkboxes = document.querySelectorAll('.species-checkbox');
+            checkboxes.forEach(cb => cb.checked = false);
+            
+            document.getElementById('speciesFilterButton').textContent = 'Filtro por Especie';
+            document.getElementById('speciesFilterButton').classList.remove('active');
+            document.getElementById('selectedCount').textContent = '0 especies seleccionadas';
+            
+            const currentZoom = map.getZoom();
+            
+            if (currentCenter) {
+                cargarArbolesCercanos(currentCenter.lat, currentCenter.lng);
+                map.setZoom(currentZoom);
+            } else if (userLat && userLng) {
+                cargarArbolesCercanos(userLat, userLng);
+                map.setZoom(currentZoom);
+            }
+        }
 
         function toggleFiltroPanel() {
             const panel = document.getElementById('speciesFilterPanel');
             panel.classList.toggle('show');
             
-            // Si se está abriendo el panel, guardar la ubicación actual
             if (panel.classList.contains('show')) {
                 currentCenter = map.getCenter();
             }
@@ -1166,10 +1161,8 @@ function eliminarFiltros() {
             const panel = document.getElementById('radiusPanel');
             panel.classList.toggle('show');
             
-            // Si se está abriendo el panel, guardar la ubicación actual
             if (panel.classList.contains('show')) {
                 currentCenter = map.getCenter();
-                // Seleccionar la opción actual
                 const radioButtons = document.querySelectorAll('.radius-radio');
                 radioButtons.forEach(radio => {
                     radio.checked = parseInt(radio.value) === radioActual;
@@ -1183,7 +1176,6 @@ function eliminarFiltros() {
             }
         }
 
-        // Configurar eventos de los items de radio
         function configurarEventosRadio() {
             const radioItems = document.querySelectorAll('.radius-item');
             radioItems.forEach(item => {
@@ -1191,18 +1183,14 @@ function eliminarFiltros() {
                     const radio = this.querySelector('.radius-radio');
                     radio.checked = true;
                     
-                    // Actualizar clases selected
                     radioItems.forEach(i => i.classList.remove('selected'));
                     this.classList.add('selected');
                     
-                    // Aplicar el radio inmediatamente y cerrar el panel
                     radioActual = parseInt(radio.value);
                     document.getElementById('radiusPanel').classList.remove('show');
                     
-                    // Guardar el zoom actual
                     const currentZoom = map.getZoom();
                     
-                    // Recargar árboles con el nuevo radio
                     if (currentCenter) {
                         cargarArbolesCercanos(currentCenter.lat, currentCenter.lng);
                         map.setZoom(currentZoom);
@@ -1222,8 +1210,8 @@ function eliminarFiltros() {
             zoomSnap: 0.5,
             zoomDelta: 0.5,
             wheelPxPerZoomLevel: 60,
-            maxBoundsViscosity: 0.0, // Esto desactiva la restricción de límites
-            worldCopyJump: true // Permite desplazamiento infinito
+            maxBoundsViscosity: 0.0,
+            worldCopyJump: true
         }).setView([-34.6037, -58.3816], 15);
 
         // Crear capas de mapas
@@ -1239,41 +1227,35 @@ function eliminarFiltros() {
             maxZoom: 22
         });
 
-        // Agregar capa inicial (calles)
         capaCalles.addTo(map);
 
         // Evento para tocar en el mapa
-// Evento para tocar en el mapa
-map.on('click', function(e) {
-    if (modoActual === 'gps') {
-        cambiarModo('tap');
-    }
-    
-    const lat = e.latlng.lat;
-    const lng = e.latlng.lng;
-    
-    // Guardar la ubicación actual
-    currentCenter = { lat, lng };
-    
-    // Mantener el zoom actual en lugar de establecerlo a 18
-    const currentZoom = map.getZoom();
-    map.setView([lat, lng], currentZoom);
-    cargarArbolesCercanos(lat, lng);
-});
+        map.on('click', function(e) {
+            if (modoActual === 'gps') {
+                cambiarModo('tap');
+            }
+            
+            const lat = e.latlng.lat;
+            const lng = e.latlng.lng;
+            
+            currentCenter = { lat, lng };
+            
+            const currentZoom = map.getZoom();
+            map.setView([lat, lng], currentZoom);
+            cargarArbolesCercanos(lat, lng);
+        });
 
-        // Configurar el evento del botón de cambio de capas
+        // Configurar eventos
         document.getElementById('layerToggleButton').addEventListener('click', function(e) {
             e.preventDefault();
             cambiarMapa();
         });
 
-        // Configurar eventos del filtro de especies
         document.getElementById('speciesFilterButton').addEventListener('click', toggleFiltroPanel);
         document.getElementById('applyFilter').addEventListener('click', aplicarFiltro);
         document.getElementById('clearFilter').addEventListener('click', eliminarFiltros);
         document.getElementById('searchSpecies').addEventListener('input', actualizarListaEspecies);
 
-        // Configurar eventos del control de radio
         document.getElementById('radiusButton').addEventListener('click', toggleRadiusPanel);
         configurarEventosRadio();
 
@@ -1293,13 +1275,39 @@ map.on('click', function(e) {
             }
         });
 
-        // Obtener ubicación inicial
-        obtenerUbicacionGPS();
-        
-        // Ajustar el tamaño del mapa después de un breve delay
-        setTimeout(() => {
-            map.invalidateSize();
-        }, 100);
+        // Inicializar la aplicación
+        async function inicializarApp() {
+            debugLog('Inicializando aplicación...');
+            
+            // Cargar datos de árboles primero
+            await cargarDatosArboles();
+            
+            // Extraer especies disponibles
+            const especiesSet = new Set();
+            datosArboles.forEach(feature => {
+                const especie = feature.properties?.Nombre || feature.properties?.especie || 'Desconocida';
+                if (especie) {
+                    const especieLimpia = especie.trim();
+                    especiesSet.add(especieLimpia);
+                }
+            });
+            especiesDisponibles = Array.from(especiesSet).sort();
+            debugLog(`Especies disponibles: ${especiesDisponibles.length}`);
+            
+            actualizarListaEspecies();
+            
+            // Obtener ubicación inicial
+            obtenerUbicacionGPS();
+            
+            setTimeout(() => {
+                map.invalidateSize();
+            }, 100);
+            
+            debugLog('Aplicación inicializada correctamente');
+        }
+
+        // Iniciar la aplicación
+        inicializarApp();
     </script>
 </body>
 </html>
