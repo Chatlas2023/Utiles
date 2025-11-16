@@ -533,8 +533,25 @@
             background: #29b6f6;
         }
         
-        /* Estilos para el indicador de estado */
-        .status-indicator {
+        /* Estilos para las etiquetas de árboles */
+        .tree-label {
+            background: rgba(30, 30, 30, 0.85);
+            color: white;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 11px;
+            white-space: nowrap;
+            max-width: 150px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+            pointer-events: none;
+            margin-left: 8px;
+        }
+        
+        /* Indicador de zoom */
+        .zoom-indicator {
             position: absolute;
             top: 80px;
             right: 15px;
@@ -549,30 +566,19 @@
             align-items: center;
         }
         
-        .status-dot {
+        .zoom-dot {
             width: 8px;
             height: 8px;
             border-radius: 50%;
             margin-right: 6px;
         }
         
-        .status-dot.loading {
-            background-color: #ff9800;
-            animation: pulse 1.5s infinite;
-        }
-        
-        .status-dot.ready {
+        .zoom-dot.labels-visible {
             background-color: #4caf50;
         }
         
-        .status-dot.error {
+        .zoom-dot.labels-hidden {
             background-color: #f44336;
-        }
-        
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.5; }
-            100% { opacity: 1; }
         }
     </style>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -581,7 +587,7 @@
 <body>
     <div class="container">
         <header>
-            <h1>Mapa de Árboles <span class="version">Ver: 3.2</span></h1>
+            <h1>Mapa de Árboles <span class="version">Ver: 3.3</span></h1>
             <div class="subtitle">Fuente: Mapa de Arbolado Urbano https://buenosaires.gob.ar/</div>
         </header>
         
@@ -635,10 +641,10 @@
         </div>
     </div>
     
-    <!-- Indicador de estado -->
-    <div class="status-indicator" id="statusIndicator">
-        <div class="status-dot loading"></div>
-        <span id="statusText">Cargando datos...</span>
+    <!-- Indicador de zoom -->
+    <div class="zoom-indicator" id="zoomIndicator">
+        <div class="zoom-dot labels-hidden"></div>
+        <span id="zoomText">Etiquetas ocultas</span>
     </div>
     
     <div class="mode-toggle">
@@ -665,7 +671,9 @@
         let filtroActivo = false;
         let currentCenter = null;
         let treeMarkers = [];
+        let treeLabels = [];
         let statsMarker = null;
+        let labelsVisible = false;
 
         const coloresEspecies = [
             '#4CAF50', '#2196F3', '#FF9800', '#9C27B0', '#F44336'
@@ -679,14 +687,19 @@
             console.log(`[DEBUG] ${message}`);
         }
 
-        // Función para actualizar el indicador de estado
-        function actualizarEstado(mensaje, tipo = 'loading') {
-            const indicator = document.getElementById('statusIndicator');
-            const dot = indicator.querySelector('.status-dot');
-            const text = document.getElementById('statusText');
+        // Función para actualizar el indicador de zoom
+        function actualizarIndicadorZoom() {
+            const indicator = document.getElementById('zoomIndicator');
+            const dot = indicator.querySelector('.zoom-dot');
+            const text = document.getElementById('zoomText');
             
-            text.textContent = mensaje;
-            dot.className = 'status-dot ' + tipo;
+            if (labelsVisible) {
+                text.textContent = 'Etiquetas visibles';
+                dot.className = 'zoom-dot labels-visible';
+            } else {
+                text.textContent = 'Etiquetas ocultas';
+                dot.className = 'zoom-dot labels-hidden';
+            }
         }
 
         // Función para cambiar entre capas de mapa
@@ -723,6 +736,16 @@
                 html: `<div style="background-color: #cccccc; width: 100%; height: 100%; border-radius: 50%;"></div>`,
                 iconSize: [14, 14],
                 iconAnchor: [7, 7]
+            });
+        }
+
+        // Función para crear etiquetas de árboles
+        function crearEtiquetaArbol(especie) {
+            return L.divIcon({
+                className: 'tree-label',
+                html: especie,
+                iconSize: [150, 20],
+                iconAnchor: [0, 10]
             });
         }
 
@@ -844,7 +867,6 @@
             const loading = document.getElementById('loading');
             loading.style.display = 'block';
             loading.textContent = 'Obteniendo tu ubicación...';
-            actualizarEstado('Obteniendo ubicación...', 'loading');
             
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
@@ -864,7 +886,6 @@
                         
                         mapaInicializado = true;
                         loading.style.display = 'none';
-                        document.getElementById('statusIndicator').style.display = 'none';
                     },
                     function(error) {
                         loading.style.display = 'none';
@@ -872,14 +893,12 @@
                         userLng = -58.3816;
                         map.setView([userLat, userLng], 15);
                         cargarArbolesCercanos(userLat, userLng);
-                        actualizarEstado('Ubicación no disponible', 'error');
                     }
                 );
             } else {
                 loading.style.display = 'none';
                 userLat = -34.6037;
                 userLng = -58.3816;
-                actualizarEstado('Geolocalización no soportada', 'error');
             }
         }
 
@@ -888,7 +907,6 @@
             const loading = document.getElementById('loading');
             loading.style.display = 'block';
             loading.textContent = 'Cargando datos de árboles...';
-            actualizarEstado('Cargando datos de árboles...', 'loading');
             
             datosArboles = [];
             let archivosCargados = 0;
@@ -945,7 +963,6 @@
             const loading = document.getElementById('loading');
             loading.style.display = 'block';
             loading.textContent = 'Buscando árboles cercanos...';
-            actualizarEstado('Buscando árboles cercanos...', 'loading');
 
             debugLog(`Buscando árboles cerca de: ${lat}, ${lng} con radio: ${radioActual}m`);
 
@@ -1026,6 +1043,16 @@
                 });
                 
                 marker.bindPopup(popupContent);
+                
+                // Crear etiqueta para el árbol
+                const label = L.marker([latArbol, lngArbol], {
+                    icon: crearEtiquetaArbol(especie),
+                    interactive: false
+                });
+                treeLabels.push(label);
+                
+                // Mostrar u ocultar etiqueta según el zoom actual
+                actualizarVisibilidadEtiquetas();
             });
 
             // Crear marcador de estadísticas en el centro
@@ -1039,7 +1066,6 @@
             });
 
             loading.style.display = 'none';
-            document.getElementById('statusIndicator').style.display = 'none';
         }
 
         // Función para limpiar marcadores de árboles
@@ -1049,9 +1075,43 @@
             });
             treeMarkers = [];
             
+            treeLabels.forEach(label => {
+                map.removeLayer(label);
+            });
+            treeLabels = [];
+            
             if (statsMarker) {
                 map.removeLayer(statsMarker);
                 statsMarker = null;
+            }
+        }
+
+        // Función para actualizar la visibilidad de las etiquetas según el zoom
+        function actualizarVisibilidadEtiquetas() {
+            // Calcular metros por píxel para determinar el nivel de zoom
+            const zoom = map.getZoom();
+            const metersPerPixel = 156543.03392 * Math.cos(map.getCenter().lat * Math.PI / 180) / Math.pow(2, zoom);
+            const mapWidthMeters = map.getSize().x * metersPerPixel;
+            
+            // Mostrar etiquetas si el ancho del mapa es menor a 100m
+            const shouldShowLabels = mapWidthMeters < 100;
+            
+            if (shouldShowLabels !== labelsVisible) {
+                labelsVisible = shouldShowLabels;
+                
+                if (labelsVisible) {
+                    // Mostrar todas las etiquetas
+                    treeLabels.forEach(label => {
+                        map.addLayer(label);
+                    });
+                } else {
+                    // Ocultar todas las etiquetas
+                    treeLabels.forEach(label => {
+                        map.removeLayer(label);
+                    });
+                }
+                
+                actualizarIndicadorZoom();
             }
         }
 
@@ -1243,6 +1303,16 @@
             const currentZoom = map.getZoom();
             map.setView([lat, lng], currentZoom);
             cargarArbolesCercanos(lat, lng);
+        });
+
+        // Evento para detectar cambios de zoom
+        map.on('zoomend', function() {
+            actualizarVisibilidadEtiquetas();
+        });
+
+        // Evento para detectar movimiento del mapa
+        map.on('moveend', function() {
+            actualizarVisibilidadEtiquetas();
         });
 
         // Configurar eventos
