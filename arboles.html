@@ -854,60 +854,121 @@
         }
 
         // Función para cargar datos de árboles
-        async function cargarDatosArboles() {
-            const loading = document.getElementById('loading');
-            loading.style.display = 'block';
-            loading.textContent = 'Cargando datos de árboles...';
+    // Función para cargar datos de árboles - VERSIÓN CON DEBUG MEJORADO
+async function cargarDatosArboles() {
+    const loading = document.getElementById('loading');
+    loading.style.display = 'block';
+    loading.textContent = 'Cargando datos de árboles...';
+    
+    datosArboles = [];
+    let archivosCargados = 0;
+    let totalArboles = 0;
+    
+    console.log('=== INICIANDO CARGA DE ARCHIVOS GEOJSON ===');
+    
+    for (let i = 1; i <= 15; i++) {
+        const nombreArchivo = `arbolado_comuna_${i}.geojson`;
+        console.log(`🔍 Intentando cargar: ${nombreArchivo}`);
+        
+        try {
+            const response = await fetch(nombreArchivo);
+            console.log(`📊 Estado HTTP para ${nombreArchivo}: ${response.status} ${response.statusText}`);
             
-            datosArboles = [];
-            let archivosCargados = 0;
-            
-            for (let i = 1; i <= 15; i++) {
-                try {
-                    const response = await fetch(`arbolado_comuna_${i}.geojson`);
-                    if (response.ok) {
-                        const data = await response.json();
-                        if (data.features && data.features.length > 0) {
-                            // Usar las coordenadas correctas de Lat/Long
-                            data.features.forEach(feature => {
-                                feature.properties.comuna = i;
-                                
-                                // REEMPLAZAR las coordenadas del geometry con las correctas de las propiedades
-                                if (feature.properties.Lat !== undefined && feature.properties.Long !== undefined) {
-                                    feature.geometry.coordinates = [
-                                        feature.properties.Long,  // longitud
-                                        feature.properties.Lat    // latitud
-                                    ];
-                                }
-                            });
-                            
-                            datosArboles = datosArboles.concat(data.features);
-                            archivosCargados++;
-                            debugLog(`Comuna ${i} cargada: ${data.features.length} árboles`);
+            if (response.ok) {
+                const data = await response.json();
+                console.log(`✅ ${nombreArchivo} cargado - Tipo: ${data.type}, Features: ${data.features ? data.features.length : 'N/A'}`);
+                
+                if (data.features && data.features.length > 0) {
+                    // Usar las coordenadas correctas de Lat/Long
+                    data.features.forEach(feature => {
+                        feature.properties.comuna = i;
+                        
+                        // REEMPLAZAR las coordenadas del geometry con las correctas de las propiedades
+                        if (feature.properties.Lat !== undefined && feature.properties.Long !== undefined) {
+                            feature.geometry.coordinates = [
+                                feature.properties.Long,  // longitud
+                                feature.properties.Lat    // latitud
+                            ];
                         }
-                    } else {
-                        debugLog(`Archivo arbolado_comuna_${i}.geojson no encontrado`);
+                    });
+                    
+                    datosArboles = datosArboles.concat(data.features);
+                    archivosCargados++;
+                    totalArboles += data.features.length;
+                    
+                    console.log(`🌳 Comuna ${i}: ${data.features.length} árboles procesados`);
+                    
+                    // Debug del primer árbol de cada comuna
+                    if (data.features.length > 0) {
+                        const primerArbol = data.features[0];
+                        console.log(`   Primer árbol - Especie: "${primerArbol.properties?.Nombre || primerArbol.properties?.especie}", Coord: ${primerArbol.geometry.coordinates}`);
                     }
-                } catch (error) {
-                    debugLog(`Error cargando comuna ${i}: ${error}`);
+                } else {
+                    console.log(`⚠️  ${nombreArchivo} no tiene features o está vacío`);
                 }
+            } else {
+                console.log(`❌ ${nombreArchivo} no encontrado (${response.status})`);
             }
-            
-            debugLog(`Total de árboles cargados: ${datosArboles.length} de ${archivosCargados} archivos`);
-            
-            // Debug: verificar las coordenadas
-            if (datosArboles.length > 0) {
-                const primerArbol = datosArboles[0];
-                console.log('Coordenadas del primer árbol:', {
-                    coordinates: primerArbol.geometry.coordinates,
-                    properties_Lat: primerArbol.properties.Lat,
-                    properties_Long: primerArbol.properties.Long
-                });
-            }
-            
-            loading.style.display = 'none';
-            return datosArboles;
+        } catch (error) {
+            console.log(`💥 ERROR cargando ${nombreArchivo}:`, error.message);
         }
+    }
+    
+    console.log(`=== RESUMEN FINAL ===`);
+    console.log(`📁 Archivos cargados: ${archivosCargados}/15`);
+    console.log(`🌳 Total de árboles: ${datosArboles.length}`);
+    console.log(`📊 Primeros 3 árboles cargados:`, datosArboles.slice(0, 3));
+    
+    // Si no se cargaron datos, mostrar un mensaje más específico
+    if (datosArboles.length === 0) {
+        console.log('🚨 CRÍTICO: No se cargó ningún árbol. Verifica:');
+        console.log('   1. Que los archivos estén en la misma carpeta que el HTML');
+        console.log('   2. Que los nombres sean exactamente: arbolado_comuna_1.geojson, etc.');
+        console.log('   3. Que el servidor web esté funcionando correctamente');
+        console.log('   4. Que no haya errores CORS');
+        
+        // Crear datos de ejemplo para debugging
+        console.log('🛠️  Creando datos de ejemplo para debugging...');
+        datosArboles = crearDatosEjemploDebug();
+    }
+    
+    loading.style.display = 'none';
+    return datosArboles;
+}
+
+// Función de ejemplo para debugging
+function crearDatosEjemploDebug() {
+    console.log('🔧 Generando datos de ejemplo para debugging...');
+    
+    const datosEjemplo = [];
+    const especies = ['Ficus', 'Ligustro', 'Jacarandá', 'Fresno', 'Tilo'];
+    
+    // Crear algunos árboles de ejemplo alrededor de Buenos Aires
+    for (let i = 0; i < 50; i++) {
+        const lat = -34.6037 + (Math.random() - 0.5) * 0.1;
+        const lng = -58.3816 + (Math.random() - 0.5) * 0.1;
+        const especie = especies[Math.floor(Math.random() * especies.length)];
+        
+        datosEjemplo.push({
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [lng, lat]
+            },
+            "properties": {
+                "Nombre": especie,
+                "especie": especie,
+                "Dir": `Calle Ejemplo ${i + 1}`,
+                "comuna": Math.floor(Math.random() * 15) + 1,
+                "Lat": lat,
+                "Long": lng
+            }
+        });
+    }
+    
+    console.log(`🎯 Datos de ejemplo creados: ${datosEjemplo.length} árboles`);
+    return datosEjemplo;
+}
 
         // Función para cargar y mostrar árboles cercanos
         function cargarArbolesCercanos(lat, lng) {
