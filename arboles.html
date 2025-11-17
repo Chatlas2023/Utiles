@@ -619,6 +619,7 @@
     </div>
 
     <div id="loading" class="loading">Cargando datos de árboles...</div>
+
     <script>
         // Variables globales
         let mapaInicializado = false;
@@ -839,7 +840,6 @@
                     },
                     function(error) {
                         loading.style.display = 'none';
-                        // Si falla la geolocalización, usar centro de Buenos Aires
                         userLat = -34.6037;
                         userLng = -58.3816;
                         map.setView([userLat, userLng], 15);
@@ -895,11 +895,21 @@
             
             debugLog(`Total de árboles cargados: ${datosArboles.length} de ${archivosCargados} archivos`);
             
+            // Debug: verificar las coordenadas
+            if (datosArboles.length > 0) {
+                const primerArbol = datosArboles[0];
+                console.log('Coordenadas del primer árbol:', {
+                    coordinates: primerArbol.geometry.coordinates,
+                    properties_Lat: primerArbol.properties.Lat,
+                    properties_Long: primerArbol.properties.Long
+                });
+            }
+            
             loading.style.display = 'none';
             return datosArboles;
         }
 
-        // Función para cargar y mostrar árboles cercanos - CORREGIDA
+        // Función para cargar y mostrar árboles cercanos
         function cargarArbolesCercanos(lat, lng) {
             const loading = document.getElementById('loading');
             loading.style.display = 'block';
@@ -915,57 +925,19 @@
                 radius: radioActual
             }).addTo(map);
 
-            // Filtrar árboles cercanos - CORREGIDO
+            // Filtrar árboles cercanos
             let arbolesCercanos = datosArboles.filter(feature => {
                 const coordenadas = feature.geometry?.coordinates || [];
                 if (coordenadas.length < 2) return false;
                 
-                // LAS COORDENADAS ESTÁN COMO [LONGITUD, LATITUD]
-                const arbolLng = coordenadas[0]; // Longitud
-                const arbolLat = coordenadas[1]; // Latitud
+                const arbolLng = coordenadas[0];
+                const arbolLat = coordenadas[1];
                 
                 const distancia = calcularDistancia(lat, lng, arbolLat, arbolLng);
                 return distancia <= radioActual;
             });
 
             debugLog(`Árboles encontrados en el radio: ${arbolesCercanos.length}`);
-
-            // Si no encuentra árboles, hacer una búsqueda más amplia para debugging
-            if (arbolesCercanos.length === 0) {
-                console.log('🔍 Realizando búsqueda de diagnóstico...');
-                
-                // Buscar árboles en un radio más grande para ver si hay algún problema
-                const arbolesCercanosDebug = datosArboles.filter(feature => {
-                    const coordenadas = feature.geometry?.coordinates || [];
-                    if (coordenadas.length < 2) return false;
-                    
-                    const arbolLng = coordenadas[0];
-                    const arbolLat = coordenadas[1];
-                    
-                    const distancia = calcularDistancia(lat, lng, arbolLat, arbolLng);
-                    return distancia <= 1000; // 1km para debugging
-                });
-                
-                console.log(`🔍 Árboles dentro de 1km: ${arbolesCercanosDebug.length}`);
-                
-                if (arbolesCercanosDebug.length > 0) {
-                    // Mostrar los 5 más cercanos
-                    const arbolesOrdenados = arbolesCercanosDebug
-                        .map(feature => {
-                            const coordenadas = feature.geometry.coordinates;
-                            const distancia = calcularDistancia(lat, lng, coordenadas[1], coordenadas[0]);
-                            return { feature, distancia };
-                        })
-                        .sort((a, b) => a.distancia - b.distancia)
-                        .slice(0, 5);
-                    
-                    console.log('📍 5 árboles más cercanos:');
-                    arbolesOrdenados.forEach((arbol, index) => {
-                        const coords = arbol.feature.geometry.coordinates;
-                        console.log(`   ${index + 1}. ${arbol.feature.properties?.Nombre} - ${arbol.distancia.toFixed(0)}m - (${coords[1]}, ${coords[0]})`);
-                    });
-                }
-            }
 
             // Aplicar filtro de especies si está activo
             if (filtroActivo && especiesSeleccionadas.length > 0) {
@@ -1355,6 +1327,6 @@
 
         // Iniciar la aplicación
         inicializarApp();
-        </script>
+    </script>
 </body>
 </html>
