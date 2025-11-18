@@ -287,8 +287,9 @@
             line-height: 35px;
             text-align: center;
             text-decoration: none;
-            color: white;
+            color: #4fc3f7; /* Color más destacado */
             font-size: 14px;
+            font-weight: 600; /* Texto más grueso */
             border-radius: 5px;
             transition: background-color 0.2s;
             padding: 0 15px;
@@ -296,14 +297,18 @@
             cursor: pointer;
             border: none;
             background: transparent;
+            text-shadow: 0 0 8px rgba(79, 195, 247, 0.5); /* Efecto de brillo */
         }
         
         .species-filter-button:hover {
             background: rgba(79, 195, 247, 0.3);
+            color: #ffffff;
         }
         
         .species-filter-button.active {
             background: rgba(79, 195, 247, 0.5);
+            color: #ffffff;
+            text-shadow: 0 0 12px rgba(79, 195, 247, 0.8);
         }
         
         .species-filter-panel {
@@ -402,21 +407,27 @@
             border-radius: 3px;
         }
         
-        .search-species {
-            width: 100%;
-            padding: 8px 10px;
-            margin-bottom: 10px;
-            border: 1px solid #444;
-            border-radius: 4px;
-            background: #1e1e1e;
-            color: #e0e0e0;
-            font-size: 14px;
-        }
-        
-        .search-species:focus {
-            outline: none;
-            border-color: #4fc3f7;
-        }
+.search-species {
+    width: 100%;
+    padding: 8px 10px;
+    margin-bottom: 10px;
+    border: 1px solid #444;
+    border-radius: 4px;
+    background: #2a2a2a; /* Fondo más claro que el original */
+    color: #ffffff; /* Texto blanco para mejor contraste */
+    font-size: 14px;
+}
+
+.search-species:focus {
+    outline: none;
+    border-color: #4fc3f7;
+    background: #333333; /* Fondo ligeramente más claro al enfocar */
+    color: #ffffff;
+}
+
+.search-species::placeholder {
+    color: #b0b0b0; /* Color del placeholder más visible */
+}
         
         /* Estilos para el control de radio */
         .radius-control {
@@ -463,7 +474,7 @@
             background: rgba(30, 30, 30, 0.95);
             border-radius: 5px;
             padding: 15px;
-            width: 220px;
+            width: 240px; /* Un poco más ancho para el nuevo radio */
             box-shadow: 0 2px 10px rgba(0,0,0,0.5);
             display: none;
             z-index: 1001;
@@ -559,7 +570,7 @@
 <body>
     <div class="container">
         <header>
-            <h1>Mapa de Árboles <span class="version">Ver: 3.3</span></h1>
+            <h1>Mapa de Árboles <span class="version">Ver: 3.4</span></h1>
             <div class="subtitle">Fuente: Mapa de Arbolado Urbano https://buenosaires.gob.ar/</div>
         </header>
         
@@ -608,6 +619,11 @@
                     <input type="radio" name="radius" class="radius-radio" id="radius500" value="500">
                     <label class="radius-label" for="radius500">Radio grande</label>
                     <span class="radius-value">500m</span>
+                </li>
+                <li class="radius-item" data-value="1000">
+                    <input type="radio" name="radius" class="radius-radio" id="radius1000" value="1000">
+                    <label class="radius-label" for="radius1000">Radio muy grande</label>
+                    <span class="radius-value">1000m</span>
                 </li>
             </ul>
         </div>
@@ -895,136 +911,121 @@
             
             debugLog(`Total de árboles cargados: ${datosArboles.length} de ${archivosCargados} archivos`);
             
-            // Debug: verificar las coordenadas
-            if (datosArboles.length > 0) {
-                const primerArbol = datosArboles[0];
-                console.log('Coordenadas del primer árbol:', {
-                    coordinates: primerArbol.geometry.coordinates,
-                    properties_Lat: primerArbol.properties.Lat,
-                    properties_Long: primerArbol.properties.Long
-                });
-            }
-            
             loading.style.display = 'none';
             return datosArboles;
         }
 
-        // Función para cargar y mostrar árboles cercanos
-       // Función para cargar y mostrar árboles cercanos - MODIFICADA
-function cargarArbolesCercanos(lat, lng) {
-    const loading = document.getElementById('loading');
-    loading.style.display = 'block';
-    loading.textContent = 'Buscando árboles cercanos...';
+        // Función para cargar y mostrar árboles cercanos - MODIFICADA
+        function cargarArbolesCercanos(lat, lng) {
+            const loading = document.getElementById('loading');
+            loading.style.display = 'block';
+            loading.textContent = 'Buscando árboles cercanos...';
 
-    debugLog(`Buscando árboles cerca de: ${lat}, ${lng} con radio: ${radioActual}m`);
+            debugLog(`Buscando árboles cerca de: ${lat}, ${lng} con radio: ${radioActual}m`);
 
-    // Limpiar el círculo anterior
-    if (circle) map.removeLayer(circle);
-    circle = null;
+            // Limpiar el círculo anterior y crear uno nuevo (siempre visible)
+            if (circle) map.removeLayer(circle);
+            circle = L.circle([lat, lng], {
+                color: '#4fc3f7',
+                fillColor: '#4fc3f7',
+                fillOpacity: 0.1,
+                radius: radioActual
+            }).addTo(map);
 
-    // Filtrar árboles cercanos
-    let arbolesCercanos = datosArboles.filter(feature => {
-        const coordenadas = feature.geometry?.coordinates || [];
-        if (coordenadas.length < 2) return false;
-        
-        const arbolLng = coordenadas[0];
-        const arbolLat = coordenadas[1];
-        
-        const distancia = calcularDistancia(lat, lng, arbolLat, arbolLng);
-        return distancia <= radioActual;
-    });
+            // Filtrar árboles cercanos
+            let arbolesCercanos = datosArboles.filter(feature => {
+                const coordenadas = feature.geometry?.coordinates || [];
+                if (coordenadas.length < 2) return false;
+                
+                const arbolLng = coordenadas[0];
+                const arbolLat = coordenadas[1];
+                
+                const distancia = calcularDistancia(lat, lng, arbolLat, arbolLng);
+                return distancia <= radioActual;
+            });
 
-    debugLog(`Árboles encontrados en el radio: ${arbolesCercanos.length}`);
+            debugLog(`Árboles encontrados en el radio: ${arbolesCercanos.length}`);
 
-    // SOLO MOSTRAR EL CÍRCULO AZUL SI HAY CERO ÁRBOLES
-    if (arbolesCercanos.length === 0) {
-        circle = L.circle([lat, lng], {
-            color: '#4fc3f7',
-            fillColor: '#4fc3f7',
-            fillOpacity: 0.1,
-            radius: radioActual
-        }).addTo(map);
-    }
+            // Aplicar filtro de especies si está activo
+            if (filtroActivo && especiesSeleccionadas.length > 0) {
+                arbolesCercanos = arbolesCercanos.filter(feature => {
+                    const especie = feature.properties?.Nombre || feature.properties?.especie || 'Desconocida';
+                    const especieLimpia = especie.trim();
+                    return especiesSeleccionadas.includes(especieLimpia);
+                });
+                debugLog(`Árboles después del filtro: ${arbolesCercanos.length}`);
+            }
 
-    // Aplicar filtro de especies si está activo
-    if (filtroActivo && especiesSeleccionadas.length > 0) {
-        arbolesCercanos = arbolesCercanos.filter(feature => {
-            const especie = feature.properties?.Nombre || feature.properties?.especie || 'Desconocida';
-            const especieLimpia = especie.trim();
-            return especiesSeleccionadas.includes(especieLimpia);
-        });
-        debugLog(`Árboles después del filtro: ${arbolesCercanos.length}`);
-    }
+            estadisticasActuales = calcularEstadisticas(arbolesCercanos);
 
-    estadisticasActuales = calcularEstadisticas(arbolesCercanos);
+            // Limpiar marcadores anteriores (excepto el marcador del usuario)
+            limpiarMarcadoresArboles();
 
-    // Limpiar marcadores anteriores (excepto el marcador del usuario)
-    limpiarMarcadoresArboles();
+            // Crear mapa de especies a índices de color
+            const mapaEspeciesColor = {};
+            estadisticasActuales.forEach(([especie], index) => {
+                mapaEspeciesColor[especie] = index;
+            });
 
-    // Crear mapa de especies a índices de color
-    const mapaEspeciesColor = {};
-    estadisticasActuales.forEach(([especie], index) => {
-        mapaEspeciesColor[especie] = index;
-    });
+            // Crear marcadores con íconos por especie
+            arbolesCercanos.forEach(feature => {
+                const coordenadas = feature.geometry.coordinates;
+                const propiedades = feature.properties || {};
+                const especie = propiedades.Nombre || propiedades.especie || 'Desconocida';
+                
+                const lngArbol = coordenadas[0];
+                const latArbol = coordenadas[1];
+                
+                const indiceColor = mapaEspeciesColor[especie];
+                let icono;
+                
+                if (indiceColor !== undefined) {
+                    icono = crearIconoEspecie(indiceColor);
+                } else {
+                    icono = crearIconoOtrasEspecies();
+                }
+                
+                const marker = L.marker([latArbol, lngArbol], { icon: icono }).addTo(map);
+                treeMarkers.push(marker);
+                
+                const popupContent = `
+                    <div class="info-window">
+                        <h3>${especie}</h3>
+                        ${propiedades.Dir ? `<p><strong>Dirección:</strong> ${propiedades.Dir}</p>` : ''}
+                        ${propiedades.comuna ? `<p><strong>Comuna:</strong> ${propiedades.comuna}</p>` : ''}
+                    </div>
+                `;
+                
+                marker.on('click', function(e) {
+                    centrarMapaConDesplazamiento(latArbol, lngArbol);
+                });
+                
+                marker.bindPopup(popupContent);
+                
+                // Crear etiqueta para el árbol
+                const label = L.marker([latArbol, lngArbol], {
+                    icon: crearEtiquetaArbol(especie),
+                    interactive: false
+                });
+                treeLabels.push(label);
+                
+                // Mostrar u ocultar etiqueta según el zoom actual
+                actualizarVisibilidadEtiquetas();
+            });
 
-    // Crear marcadores con íconos por especie
-    arbolesCercanos.forEach(feature => {
-        const coordenadas = feature.geometry.coordinates;
-        const propiedades = feature.properties || {};
-        const especie = propiedades.Nombre || propiedades.especie || 'Desconocida';
-        
-        const lngArbol = coordenadas[0];
-        const latArbol = coordenadas[1];
-        
-        const indiceColor = mapaEspeciesColor[especie];
-        let icono;
-        
-        if (indiceColor !== undefined) {
-            icono = crearIconoEspecie(indiceColor);
-        } else {
-            icono = crearIconoOtrasEspecies();
+            // Crear marcador de estadísticas en el centro (siempre visible)
+            if (statsMarker) map.removeLayer(statsMarker);
+            statsMarker = L.marker([lat, lng]).addTo(map);
+            const statsPopupContent = crearPopupEstadisticas(estadisticasActuales, arbolesCercanos.length);
+            statsMarker.bindPopup(statsPopupContent).openPopup();
+            
+            statsMarker.on('click', function(e) {
+                centrarMapaConDesplazamiento(lat, lng);
+            });
+
+            loading.style.display = 'none';
         }
-        
-        const marker = L.marker([latArbol, lngArbol], { icon: icono }).addTo(map);
-        treeMarkers.push(marker);
-        
-        const popupContent = `
-            <div class="info-window">
-                <h3>${especie}</h3>
-                ${propiedades.Dir ? `<p><strong>Dirección:</strong> ${propiedades.Dir}</p>` : ''}
-                ${propiedades.comuna ? `<p><strong>Comuna:</strong> ${propiedades.comuna}</p>` : ''}
-            </div>
-        `;
-        
-        marker.on('click', function(e) {
-            centrarMapaConDesplazamiento(latArbol, lngArbol);
-        });
-        
-        marker.bindPopup(popupContent);
-        
-        // Crear etiqueta para el árbol
-        const label = L.marker([latArbol, lngArbol], {
-            icon: crearEtiquetaArbol(especie),
-            interactive: false
-        });
-        treeLabels.push(label);
-        
-        // Mostrar u ocultar etiqueta según el zoom actual
-        actualizarVisibilidadEtiquetas();
-    });
 
-    // Crear marcador de estadísticas en el centro (siempre visible)
-    if (statsMarker) map.removeLayer(statsMarker);
-    statsMarker = L.marker([lat, lng]).addTo(map);
-    const statsPopupContent = crearPopupEstadisticas(estadisticasActuales, arbolesCercanos.length);
-    statsMarker.bindPopup(statsPopupContent).openPopup();
-    
-    statsMarker.on('click', function(e) {
-        centrarMapaConDesplazamiento(lat, lng);
-    });
-
-    loading.style.display = 'none';
-}
         // Función para limpiar marcadores de árboles
         function limpiarMarcadoresArboles() {
             treeMarkers.forEach(marker => {
@@ -1140,27 +1141,33 @@ function cargarArbolesCercanos(lat, lng) {
             }
         }
 
-        function eliminarFiltros() {
-            filtroActivo = false;
-            especiesSeleccionadas = [];
-            
-            const checkboxes = document.querySelectorAll('.species-checkbox');
-            checkboxes.forEach(cb => cb.checked = false);
-            
-            document.getElementById('speciesFilterButton').textContent = 'Filtro por Especie';
-            document.getElementById('speciesFilterButton').classList.remove('active');
-            document.getElementById('selectedCount').textContent = '0 especies seleccionadas';
-            
-            const currentZoom = map.getZoom();
-            
-            if (currentCenter) {
-                cargarArbolesCercanos(currentCenter.lat, currentCenter.lng);
-                map.setZoom(currentZoom);
-            } else if (userLat && userLng) {
-                cargarArbolesCercanos(userLat, userLng);
-                map.setZoom(currentZoom);
-            }
-        }
+        // Función MODIFICADA para eliminar filtros sin mostrar el panel
+// Función MODIFICADA para eliminar filtros sin mostrar el panel
+function eliminarFiltros() {
+    // Cerrar el panel si está abierto
+    const panel = document.getElementById('speciesFilterPanel');
+    panel.classList.remove('show');
+    
+    filtroActivo = false;
+    especiesSeleccionadas = [];
+    
+    const checkboxes = document.querySelectorAll('.species-checkbox');
+    checkboxes.forEach(cb => cb.checked = false);
+    
+    document.getElementById('speciesFilterButton').textContent = 'Filtro por Especie';
+    document.getElementById('speciesFilterButton').classList.remove('active');
+    document.getElementById('selectedCount').textContent = '0 especies seleccionadas';
+    
+    const currentZoom = map.getZoom();
+    
+    if (currentCenter) {
+        cargarArbolesCercanos(currentCenter.lat, currentCenter.lng);
+        map.setZoom(currentZoom);
+    } else if (userLat && userLng) {
+        cargarArbolesCercanos(userLat, userLng);
+        map.setZoom(currentZoom);
+    }
+}
 
         function toggleFiltroPanel() {
             const panel = document.getElementById('speciesFilterPanel');
