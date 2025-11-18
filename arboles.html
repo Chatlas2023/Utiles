@@ -407,21 +407,27 @@
             border-radius: 3px;
         }
         
-        .search-species {
-            width: 100%;
-            padding: 8px 10px;
-            margin-bottom: 10px;
-            border: 1px solid #444;
-            border-radius: 4px;
-            background: #1e1e1e;
-            color: #e0e0e0;
-            font-size: 14px;
-        }
-        
-        .search-species:focus {
-            outline: none;
-            border-color: #4fc3f7;
-        }
+.search-species {
+    width: 100%;
+    padding: 8px 10px;
+    margin-bottom: 10px;
+    border: 1px solid #444;
+    border-radius: 4px;
+    background: #2a2a2a; /* Fondo más claro que el original */
+    color: #ffffff; /* Texto blanco para mejor contraste */
+    font-size: 14px;
+}
+
+.search-species:focus {
+    outline: none;
+    border-color: #4fc3f7;
+    background: #333333; /* Fondo ligeramente más claro al enfocar */
+    color: #ffffff;
+}
+
+.search-species::placeholder {
+    color: #b0b0b0; /* Color del placeholder más visible */
+}
         
         /* Estilos para el control de radio */
         .radius-control {
@@ -1136,31 +1142,32 @@
         }
 
         // Función MODIFICADA para eliminar filtros sin mostrar el panel
-        function eliminarFiltros() {
-            // Cerrar el panel si está abierto
-            const panel = document.getElementById('speciesFilterPanel');
-            panel.classList.remove('show');
-            
-            filtroActivo = false;
-            especiesSeleccionadas = [];
-            
-            const checkboxes = document.querySelectorAll('.species-checkbox');
-            checkboxes.forEach(cb => cb.checked = false);
-            
-            document.getElementById('speciesFilterButton').textContent = 'Filtro por Especie';
-            document.getElementById('speciesFilterButton').classList.remove('active');
-            document.getElementById('selectedCount').textContent = '0 especies seleccionadas';
-            
-            const currentZoom = map.getZoom();
-            
-            if (currentCenter) {
-                cargarArbolesCercanos(currentCenter.lat, currentCenter.lng);
-                map.setZoom(currentZoom);
-            } else if (userLat && userLng) {
-                cargarArbolesCercanos(userLat, userLng);
-                map.setZoom(currentZoom);
-            }
-        }
+// Función MODIFICADA para eliminar filtros sin mostrar el panel
+function eliminarFiltros() {
+    // Cerrar el panel si está abierto
+    const panel = document.getElementById('speciesFilterPanel');
+    panel.classList.remove('show');
+    
+    filtroActivo = false;
+    especiesSeleccionadas = [];
+    
+    const checkboxes = document.querySelectorAll('.species-checkbox');
+    checkboxes.forEach(cb => cb.checked = false);
+    
+    document.getElementById('speciesFilterButton').textContent = 'Filtro por Especie';
+    document.getElementById('speciesFilterButton').classList.remove('active');
+    document.getElementById('selectedCount').textContent = '0 especies seleccionadas';
+    
+    const currentZoom = map.getZoom();
+    
+    if (currentCenter) {
+        cargarArbolesCercanos(currentCenter.lat, currentCenter.lng);
+        map.setZoom(currentZoom);
+    } else if (userLat && userLng) {
+        cargarArbolesCercanos(userLat, userLng);
+        map.setZoom(currentZoom);
+    }
+}
 
         function toggleFiltroPanel() {
             const panel = document.getElementById('speciesFilterPanel');
