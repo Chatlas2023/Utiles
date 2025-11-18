@@ -663,7 +663,18 @@
 
         const layerIcons = ['🌍', '🛰️'];
         let currentLayerIndex = 0;
-
+        // Función para calcular el nivel de zoom basado en el radio
+function calcularZoomParaRadio(radio) {
+    // Niveles de zoom aproximados para diferentes radios en metros
+    const zoomLevels = {
+        100: 18,   // Muy cercano
+        200: 17,   // Cercano  
+        500: 16,   // Medio
+        1000: 15   // Amplio
+    };
+    
+    return zoomLevels[radio] || 16; // Valor por defecto
+}
         // Función para debug - muestra en consola qué archivos se están cargando
         function debugLog(message) {
             console.log(`[DEBUG] ${message}`);
@@ -1198,31 +1209,38 @@ function eliminarFiltros() {
             }
         }
 
-        function configurarEventosRadio() {
-            const radioItems = document.querySelectorAll('.radius-item');
-            radioItems.forEach(item => {
-                item.addEventListener('click', function() {
-                    const radio = this.querySelector('.radius-radio');
-                    radio.checked = true;
-                    
-                    radioItems.forEach(i => i.classList.remove('selected'));
-                    this.classList.add('selected');
-                    
-                    radioActual = parseInt(radio.value);
-                    document.getElementById('radiusPanel').classList.remove('show');
-                    
-                    const currentZoom = map.getZoom();
-                    
-                    if (currentCenter) {
-                        cargarArbolesCercanos(currentCenter.lat, currentCenter.lng);
-                        map.setZoom(currentZoom);
-                    } else if (userLat && userLng) {
-                        cargarArbolesCercanos(userLat, userLng);
-                        map.setZoom(currentZoom);
-                    }
-                });
-            });
-        }
+function configurarEventosRadio() {
+    const radioItems = document.querySelectorAll('.radius-item');
+    radioItems.forEach(item => {
+        item.addEventListener('click', function() {
+            const radio = this.querySelector('.radius-radio');
+            radio.checked = true;
+            
+            radioItems.forEach(i => i.classList.remove('selected'));
+            this.classList.add('selected');
+            
+            radioActual = parseInt(radio.value);
+            document.getElementById('radiusPanel').classList.remove('show');
+            
+            // Calcular el zoom apropiado para el radio seleccionado
+            const nuevoZoom = calcularZoomParaRadio(radioActual);
+            
+            // Aplicar el nuevo zoom manteniendo el centro actual
+            if (currentCenter) {
+                map.setView([currentCenter.lat, currentCenter.lng], nuevoZoom);
+                cargarArbolesCercanos(currentCenter.lat, currentCenter.lng);
+            } else if (userLat && userLng) {
+                map.setView([userLat, userLng], nuevoZoom);
+                cargarArbolesCercanos(userLat, userLng);
+            } else {
+                // Si no hay centro definido, usar el centro del mapa actual
+                const center = map.getCenter();
+                map.setView([center.lat, center.lng], nuevoZoom);
+                cargarArbolesCercanos(center.lat, center.lng);
+            }
+        });
+    });
+}
 
         // Inicializar el mapa
         const map = L.map('map', {
@@ -1252,20 +1270,22 @@ function eliminarFiltros() {
         capaCalles.addTo(map);
 
         // Evento para tocar en el mapa
-        map.on('click', function(e) {
-            if (modoActual === 'gps') {
-                cambiarModo('tap');
-            }
-            
-            const lat = e.latlng.lat;
-            const lng = e.latlng.lng;
-            
-            currentCenter = { lat, lng };
-            
-            const currentZoom = map.getZoom();
-            map.setView([lat, lng], currentZoom);
-            cargarArbolesCercanos(lat, lng);
-        });
+// Evento para tocar en el mapa - MODIFICADO
+map.on('click', function(e) {
+    if (modoActual === 'gps') {
+        cambiarModo('tap');
+    }
+    
+    const lat = e.latlng.lat;
+    const lng = e.latlng.lng;
+    
+    currentCenter = { lat, lng };
+    
+    // Usar el zoom calculado para el radio actual en lugar del zoom actual
+    const zoomApropiado = calcularZoomParaRadio(radioActual);
+    map.setView([lat, lng], zoomApropiado);
+    cargarArbolesCercanos(lat, lng);
+});
 
         // Evento para detectar cambios de zoom
         map.on('zoomend', function() {
