@@ -1152,12 +1152,29 @@ function calcularZoomParaRadio(radio) {
             }
         }
 
-        // Función MODIFICADA para eliminar filtros sin mostrar el panel
-// Función MODIFICADA para eliminar filtros sin mostrar el panel
+// Función para eliminar filtros sin mostrar el panel
 function eliminarFiltros() {
     // Cerrar el panel si está abierto
     const panel = document.getElementById('speciesFilterPanel');
     panel.classList.remove('show');
+    
+    // ESTABLECER EL RADIO EN 200m ANTES DE REDIBUJAR
+    radioActual = 200;
+    
+    // Actualizar la interfaz del control de radio
+    const radio200 = document.getElementById('radius200');
+    if (radio200) {
+        radio200.checked = true;
+        
+        // Actualizar la selección visual en el panel de radio
+        const radioItems = document.querySelectorAll('.radius-item');
+        radioItems.forEach(item => {
+            item.classList.remove('selected');
+            if (item.querySelector('.radius-radio').value === '200') {
+                item.classList.add('selected');
+            }
+        });
+    }
     
     filtroActivo = false;
     especiesSeleccionadas = [];
