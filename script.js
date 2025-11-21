@@ -89,13 +89,18 @@ const demoQuestions = [
 
 // === AÑADE ESTA FUNCIÓN NUEVA ===
 // Función para cargar noticias reales desde GNews API
+// === FUNCIÓN CORREGIDA CON PROXY ===
+// Función para cargar noticias reales desde GNews API
 async function loadRealNews() {
-    // ⚠️ REEMPLAZA ESTA API KEY CON LA TUYA ⚠️
     const apiKey = 'cd358617b03acad6467b57dfe9cbdb81';
-    const url = `https://gnews.io/api/v4/top-headlines?token=${apiKey}&lang=es&max=10`;
+    
+    // Usar proxy para evitar CORS
+    const proxyUrl = 'https://api.allorigins.win/raw?url=';
+    const targetUrl = `https://gnews.io/api/v4/top-headlines?token=${apiKey}&lang=es&max=10`;
     
     try {
-        const response = await fetch(url);
+        console.log('Intentando cargar noticias...');
+        const response = await fetch(proxyUrl + encodeURIComponent(targetUrl));
         
         if (!response.ok) {
             throw new Error(`Error HTTP: ${response.status}`);
@@ -103,7 +108,7 @@ async function loadRealNews() {
         
         const data = await response.json();
         
-        console.log('Noticias recibidas de GNews:', data); // Para debug
+        console.log('Noticias recibidas de GNews:', data);
         
         if (data.articles && data.articles.length > 0) {
             return generateQuestionsFromArticles(data.articles);
@@ -112,7 +117,6 @@ async function loadRealNews() {
         }
     } catch (error) {
         console.error('Error cargando noticias reales:', error);
-        // Lanzar el error para que sea manejado por loadQuestions()
         throw error;
     }
 }
