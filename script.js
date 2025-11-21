@@ -1,5 +1,5 @@
 // =============================================
-// QUIZ DE ACTUALIDAD - v4.0 - SOLO API REAL
+// QUIZ DE ACTUALIDAD - v4.1 - PROXY FUNCIONANDO
 // Última actualización: 2024-01-15
 // =============================================
 
@@ -32,53 +32,70 @@ const setupLink = document.getElementById('setup-link');
 async function loadRealNews() {
     const apiKey = 'cd358617b03acad6467b57dfe9cbdb81';
     
-    console.log('🔄 v4.0 - Cargando noticias reales desde GNews...');
+    console.log('🔄 v4.1 - Cargando noticias reales desde GNews...');
     
     try {
-        // PROXY ALTERNATIVO - Más confiable
-        const proxyUrl = 'https://api.codetabs.com/v1/proxy?quest=';
+        // PROXY FUNCIONANDO - Sin requerimientos de autorización
+        const proxyUrl = 'https://api.allorigins.win/raw?url=';
         const targetUrl = `https://gnews.io/api/v4/top-headlines?token=${apiKey}&lang=es&max=15`;
         
-        const response = await fetch(proxyUrl + encodeURIComponent(targetUrl));
+        console.log('🔗 URL completa:', proxyUrl + encodeURIComponent(targetUrl));
+        
+        const response = await fetch(proxyUrl + encodeURIComponent(targetUrl), {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+            }
+        });
         
         if (!response.ok) {
-            throw new Error(`Error HTTP: ${response.status}`);
+            throw new Error(`Error HTTP: ${response.status} - ${response.statusText}`);
         }
         
         const data = await response.json();
         
-        console.log('✅ v4.0 - Noticias recibidas:', data);
+        console.log('✅ v4.1 - Noticias recibidas correctamente');
+        console.log('📊 Cantidad de artículos:', data.articles ? data.articles.length : 0);
         
         if (data.articles && data.articles.length > 0) {
             const generatedQuestions = generateQuestionsFromArticles(data.articles);
-            console.log(`✅ v4.0 - Preguntas generadas: ${generatedQuestions.length}`);
+            console.log(`✅ v4.1 - Preguntas generadas: ${generatedQuestions.length}`);
             return generatedQuestions;
         } else {
-            throw new Error('No se encontraron noticias en la respuesta');
+            throw new Error('No se encontraron noticias en la respuesta de la API');
         }
     } catch (error) {
-        console.error('❌ v4.0 - Error cargando noticias reales:', error);
+        console.error('❌ v4.1 - Error cargando noticias reales:', error);
         throw new Error('No se pudieron cargar noticias reales. Intenta más tarde.');
     }
 }
 
 // Generar preguntas a partir de artículos reales
 function generateQuestionsFromArticles(articles) {
-    console.log('📝 v4.0 - Procesando artículos reales...');
+    console.log('📝 v4.1 - Procesando artículos reales...');
     
     // Filtrar artículos con título e imagen válidos
     const validArticles = articles.filter(article => {
         const hasValidImage = article.image && 
-                             article.image.startsWith('http');
+                             article.image.startsWith('http') &&
+                             article.image !== 'https://placehold.co/600x400' && // Excluir placeholders
+                             !article.image.includes('default');
+        
         const hasValidTitle = article.title && 
-                             article.title.length > 10;
-        return hasValidImage && hasValidTitle;
+                             article.title.length > 15 &&
+                             !article.title.includes('undefined');
+        
+        if (hasValidImage && hasValidTitle) {
+            console.log(`📰 Artículo válido: "${article.title.substring(0, 50)}..."`);
+            return true;
+        }
+        return false;
     }).slice(0, 10);
     
-    console.log(`✅ v4.0 - Artículos válidos encontrados: ${validArticles.length}`);
+    console.log(`✅ v4.1 - Artículos válidos encontrados: ${validArticles.length}`);
     
-    if (validArticles.length === 0) {
-        throw new Error('No hay artículos con imágenes y títulos válidos');
+    if (validArticles.length < 3) {
+        throw new Error(`Solo se encontraron ${validArticles.length} artículos válidos. Se necesitan al menos 3.`);
     }
     
     return validArticles.map((article, index) => {
@@ -99,7 +116,7 @@ function generateQuestionsFromArticles(articles) {
         
         // Si no hay suficientes opciones incorrectas, crear genéricas
         while (incorrectOptions.length < 2) {
-            incorrectOptions.push("Noticia sobre eventos internacionales");
+            incorrectOptions.push("Noticia sobre eventos internacionales recientes");
         }
         
         // Preparar título correcto
@@ -114,7 +131,8 @@ function generateQuestionsFromArticles(articles) {
         
         const correctAnswerIndex = options.indexOf(correctTitle);
         
-        console.log(`❓ v4.0 - Pregunta ${index + 1}: "${correctTitle.substring(0, 50)}..."`);
+        console.log(`❓ v4.1 - Pregunta ${index + 1}: "${correctTitle.substring(0, 50)}..."`);
+        console.log(`🖼️ Imagen: ${article.image}`);
         
         return {
             question: "¿Cuál es el titular correcto para esta noticia?",
@@ -132,6 +150,7 @@ function cleanTitle(title) {
         .replace(/\[.*?\]/g, '') // Remover [Fuente]
         .replace(/\(.*?\)/g, '') // Remover (Fuente)
         .replace(/ - .*$/, '')   // Remover " - Fuente" al final
+        .replace(/\.$/, '')      // Remover punto final
         .trim();
 }
 
@@ -153,7 +172,7 @@ setupLink.addEventListener('click', showSetupGuide);
 
 // Iniciar el quiz
 async function startQuiz() {
-    console.log('🚀 v4.0 - Iniciando quiz con noticias reales...');
+    console.log('🚀 v4.1 - Iniciando quiz con noticias reales...');
     startScreen.classList.remove('active');
     loadingScreen.classList.add('active');
     
@@ -168,16 +187,16 @@ async function startQuiz() {
         quizScreen.classList.add('active');
         showQuestion();
     } catch (error) {
-        console.error('❌ v4.0 - Error crítico:', error);
+        console.error('❌ v4.1 - Error crítico:', error);
         loadingScreen.classList.remove('active');
         startScreen.classList.add('active');
-        alert('❌ No se pudieron cargar noticias reales en este momento. Intenta más tarde.');
+        alert('❌ No se pudieron cargar noticias reales en este momento. El servicio puede estar temporalmente no disponible. Intenta más tarde.');
     }
 }
 
 // Cargar preguntas - SOLO API REAL
 async function loadQuestions() {
-    console.log('📡 v4.0 - Conectando con API de noticias...');
+    console.log('📡 v4.1 - Conectando con API de noticias...');
     questions = await loadRealNews();
     
     if (questions.length === 0) {
@@ -185,19 +204,24 @@ async function loadQuestions() {
     }
     
     shuffleArray(questions);
-    console.log(`✅ v4.0 - ${questions.length} preguntas reales cargadas exitosamente`);
+    console.log(`✅ v4.1 - ${questions.length} preguntas reales cargadas exitosamente`);
 }
 
 // Mostrar la pregunta actual
 function showQuestion() {
     if (!questions[currentQuestionIndex]) {
-        console.error('❌ v4.0 - Error: No hay pregunta para mostrar');
+        console.error('❌ v4.1 - Error: No hay pregunta para mostrar');
         return;
     }
     
     const question = questions[currentQuestionIndex];
     
-    console.log(`📄 v4.0 - Mostrando noticia real ${currentQuestionIndex + 1}`);
+    console.log(`📄 v4.1 - Mostrando noticia real ${currentQuestionIndex + 1}`);
+    console.log('🔍 Detalles pregunta:', {
+        titulo: question.options[question.correctAnswer],
+        imagen: question.image,
+        opciones: question.options
+    });
     
     // Establecer imagen de la noticia real
     questionImage.src = question.image;
@@ -205,7 +229,7 @@ function showQuestion() {
     
     // Manejar error de imagen
     questionImage.onerror = function() {
-        console.log('🖼️ v4.0 - Imagen no disponible, mostrando placeholder');
+        console.log('🖼️ v4.1 - Imagen no disponible, mostrando placeholder');
         this.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjVmNWY1Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxOCIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPuKKoiBOb3RpY2lhIHJlYWwgY29uIGltYWdlbiDiiqI8L3RleHQ+PC9zdmc+';
     };
     
@@ -291,7 +315,7 @@ function showResults() {
         resultMessage.textContent = "Sigue informándote. Las noticias cambian rápidamente.";
     }
     
-    console.log(`🎯 v4.0 - Quiz completado con noticias reales. Puntuación: ${score}/${questions.length}`);
+    console.log(`🎯 v4.1 - Quiz completado con noticias reales. Puntuación: ${score}/${questions.length}`);
 }
 
 // Reiniciar el quiz
@@ -323,7 +347,7 @@ function shareResults() {
 // Mostrar información de la API
 function showSetupGuide(e) {
     e.preventDefault();
-    alert(`QUIZ DE ACTUALIDAD v4.0
+    alert(`QUIZ DE ACTUALIDAD v4.1
 
 ✅ MODO: NOTICIAS REALES
 🌐 Fuente: GNews API
@@ -337,9 +361,9 @@ El quiz está funcionando con noticias actuales en tiempo real.`);
 function showVersionInfo() {
     const versionInfo = document.getElementById('version-info');
     if (versionInfo) {
-        versionInfo.textContent = `Versión: 4.0 | Noticias Reales | API: GNews`;
+        versionInfo.textContent = `Versión: 4.1 | Noticias Reales | API: GNews`;
     }
-    console.log('🔍 QUIZ DE ACTUALIDAD - v4.0 - NOTICIAS REALES');
+    console.log('🔍 QUIZ DE ACTUALIDAD - v4.1 - NOTICIAS REALES');
     console.log('📅 Última actualización: 2024-01-15');
     console.log('🌐 Fuente: GNews API');
     console.log('✅ MODO: Noticias reales en tiempo real');
