@@ -296,8 +296,9 @@ function showQuestion() {
         questionImage.src = question.image;
         questionImage.alt = "Imagen de la noticia real";
         questionImage.onerror = function() {
-            console.log('🖼️ v4.2 - Imagen no disponible, mostrando placeholder');
-            this.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjVmNWY1Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxOCIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPuKKoiBOb3RpY2lhIHJlYWwgY29uIGltYWdlbiDiiqI8L3RleHQ+PC9zdmc+';
+            console.log('🖼️ Imagen no disponible, usando placeholder mejorado');
+            this.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjIyMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjhmOGY4Ii8+PGNpcmNsZSBjeD0iMjAwIiBjeT0iODAiIHI9IjMwIiBmaWxsPSIjZGRkIi8+PHJlY3QgeD0iMTUwIiB5PSIxMjAiIHdpZHRoPSIxMDAiIGhlaWdodD0iMTUiIHJ4PSI3IiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iMjAwIiB5PSIxODAiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+Tm90aWNpYSByZWFsPC90ZXh0Pjwvc3ZnPg==';
+            this.alt = "Imagen de noticia no disponible";
         };
     }
     
