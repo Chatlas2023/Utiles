@@ -354,16 +354,17 @@ function shareResults() {
 }
 
 // Mostrar guía de configuración
+// Mostrar guía de configuración - ACTUALIZAR ESTA FUNCIÓN
 function showSetupGuide(e) {
     e.preventDefault();
     alert(`Para configurar noticias reales:
 
-1. Regístrate en NewsAPI (newsapi.org)
+1. Regístrate en GNews: https://gnews.io/register
 2. Obtén tu API Key gratuita
-3. Crea un backend simple para hacer las peticiones
-4. Modifica el código para conectar con tu API
+3. En script.js, busca: const apiKey = 'cd358617b03acad6467b57dfe9cbdb81'
+4. Reemplaza ese texto con tu API Key real
 
-Actualmente el quiz usa datos de demostración.`);
+¡Listo! Tu quiz ya está usando noticias reales en español.`);
 }
 
 // Precargar imágenes para mejor experiencia
