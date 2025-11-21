@@ -87,6 +87,84 @@ const demoQuestions = [
     }
 ];
 
+// === AÑADE ESTA FUNCIÓN NUEVA ===
+// Función para cargar noticias reales desde GNews API
+async function loadRealNews() {
+    // ⚠️ REEMPLAZA ESTA API KEY CON LA TUYA ⚠️
+    const apiKey = 'cd358617b03acad6467b57dfe9cbdb81';
+    const url = `https://gnews.io/api/v4/top-headlines?token=${apiKey}&lang=es&max=10`;
+    
+    try {
+        const response = await fetch(url);
+        
+        if (!response.ok) {
+            throw new Error(`Error HTTP: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        console.log('Noticias recibidas de GNews:', data); // Para debug
+        
+        if (data.articles && data.articles.length > 0) {
+            return generateQuestionsFromArticles(data.articles);
+        } else {
+            throw new Error('No se encontraron noticias en la respuesta');
+        }
+    } catch (error) {
+        console.error('Error cargando noticias reales:', error);
+        // Lanzar el error para que sea manejado por loadQuestions()
+        throw error;
+    }
+}
+
+// Función para generar preguntas a partir de artículos reales
+function generateQuestionsFromArticles(articles) {
+    // Filtrar artículos que tengan título e imagen
+    const validArticles = articles.filter(article => 
+        article.title && article.image
+    ).slice(0, 10);
+    
+    return validArticles.map((article, index) => {
+        // Crear opciones incorrectas a partir de otros artículos
+        const otherArticles = validArticles.filter((_, i) => i !== index);
+        const incorrectOptions = [];
+        
+        for (let i = 0; i < 2 && i < otherArticles.length; i++) {
+            // Acortar títulos muy largos para mejor visualización
+            let title = otherArticles[i].title;
+            if (title.length > 80) {
+                title = title.substring(0, 77) + '...';
+            }
+            incorrectOptions.push(title);
+        }
+        
+        // Completar con opciones genéricas si es necesario
+        while (incorrectOptions.length < 2) {
+            incorrectOptions.push("Noticia sobre eventos actuales importantes");
+        }
+        
+        // Acortar título correcto si es muy largo
+        let correctTitle = article.title;
+        if (correctTitle.length > 80) {
+            correctTitle = correctTitle.substring(0, 77) + '...';
+        }
+        
+        // Mezclar opciones
+        const options = [correctTitle, ...incorrectOptions];
+        shuffleArray(options);
+        
+        const correctAnswerIndex = options.indexOf(correctTitle);
+        
+        return {
+            question: "¿Cuál es el titular correcto para esta noticia?",
+            image: article.image,
+            options: options,
+            correctAnswer: correctAnswerIndex,
+            source: article.source?.name || "GNews"
+        };
+    });
+}
+// === FIN DE LAS FUNCIONES NUEVAS ===
 // Event listeners
 startBtn.addEventListener('click', startQuiz);
 nextBtn.addEventListener('click', nextQuestion);
@@ -114,10 +192,28 @@ function startQuiz() {
 }
 
 // Cargar preguntas
-function loadQuestions() {
-    questions = [...demoQuestions];
-    // Mezclar preguntas para variedad
-    shuffleArray(questions);
+// Cargar preguntas - VERSIÓN CON GNEWS API
+async function loadQuestions() {
+    try {
+        // Intenta cargar noticias reales primero
+        questions = await loadRealNews();
+        
+        // Si no hay suficientes noticias reales, completar con demo
+        if (questions.length < 10) {
+            const needed = 10 - questions.length;
+            const additionalQuestions = demoQuestions.slice(0, needed);
+            questions = [...questions, ...additionalQuestions];
+        }
+        
+        // Mezclar preguntas para variedad
+        shuffleArray(questions);
+        
+    } catch (error) {
+        console.error('Error cargando noticias reales, usando demo:', error);
+        // Fallback a datos de demostración
+        questions = [...demoQuestions];
+        shuffleArray(questions);
+    }
 }
 
 // Función para mezclar array
