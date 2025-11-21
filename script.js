@@ -145,42 +145,52 @@ async function loadRealNews() {
 }
 
 // Generar preguntas a partir de artículos reales
+// Generar preguntas a partir de artículos reales - VERSIÓN MEJORADA
 function generateQuestionsFromArticles(articles) {
-    console.log('📝 v4.2 - Procesando artículos reales...');
+    console.log('📝 v4.3 - Procesando artículos reales...');
+    
+    // 🔄 MEZCLAR LOS ARTÍCULOS antes de filtrar
+    const shuffledArticles = [...articles];
+    for (let i = shuffledArticles.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffledArticles[i], shuffledArticles[j]] = [shuffledArticles[j], shuffledArticles[i]];
+    }
     
     // Filtrar artículos con título e imagen válidos
-    const validArticles = articles.filter(article => {
+    const validArticles = shuffledArticles.filter(article => {
         const hasValidImage = article.image && 
                              article.image.startsWith('http') &&
-                             article.image !== 'https://placehold.co/600x400' && // Excluir placeholders
-                             !article.image.includes('default');
+                             !article.image.includes('placeholder');
         
         const hasValidTitle = article.title && 
                              article.title.length > 15 &&
                              !article.title.includes('undefined');
         
-        if (hasValidImage && hasValidTitle) {
-            console.log(`📰 Artículo válido: "${article.title.substring(0, 50)}..."`);
-            return true;
-        }
-        return false;
-    }).slice(0, 10);
+        return hasValidImage && hasValidTitle;
+    }).slice(0, 10); // Tomar máximo 10 artículos
     
-    console.log(`✅ v4.2 - Artículos válidos encontrados: ${validArticles.length}`);
+    console.log(`✅ v4.3 - Artículos válidos encontrados: ${validArticles.length}`);
     
     if (validArticles.length < 3) {
-        throw new Error(`Solo se encontraron ${validArticles.length} artículos válidos. Se necesitan al menos 3.`);
+        throw new Error(`Solo se encontraron ${validArticles.length} artículos válidos`);
     }
     
     return validArticles.map((article, index) => {
         // Crear opciones incorrectas de otros artículos
         const otherArticles = validArticles.filter((_, i) => i !== index);
+        
+        // 🔄 MEZCLAR LOS ARTÍCULOS PARA OPCIONES INCORRECTAS
+        const shuffledOthers = [...otherArticles];
+        for (let i = shuffledOthers.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffledOthers[i], shuffledOthers[j]] = [shuffledOthers[j], shuffledOthers[i]];
+        }
+        
         const incorrectOptions = [];
         
         // Tomar 2 títulos de otros artículos como opciones incorrectas
-        for (let i = 0; i < 2 && i < otherArticles.length; i++) {
-            let wrongTitle = otherArticles[i].title;
-            // Limpiar y acortar título
+        for (let i = 0; i < 2 && i < shuffledOthers.length; i++) {
+            let wrongTitle = shuffledOthers[i].title;
             wrongTitle = cleanTitle(wrongTitle);
             if (wrongTitle.length > 80) {
                 wrongTitle = wrongTitle.substring(0, 77) + '...';
@@ -190,7 +200,20 @@ function generateQuestionsFromArticles(articles) {
         
         // Si no hay suficientes opciones incorrectas, crear genéricas
         while (incorrectOptions.length < 2) {
-            incorrectOptions.push("Noticia sobre eventos internacionales recientes");
+            const genericOptions = [
+                "Noticia sobre eventos internacionales",
+                "Información de actualidad mundial",
+                "Suceso de relevancia global",
+                "Evento de impacto internacional"
+            ];
+            const randomGeneric = genericOptions[Math.floor(Math.random() * genericOptions.length)];
+            incorrectOptions.push(randomGeneric);
+        }
+        
+        // 🔄 MEZCLAR LAS OPCIONES INCORRECTAS
+        for (let i = incorrectOptions.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [incorrectOptions[i], incorrectOptions[j]] = [incorrectOptions[j], incorrectOptions[i]];
         }
         
         // Preparar título correcto
@@ -205,8 +228,7 @@ function generateQuestionsFromArticles(articles) {
         
         const correctAnswerIndex = options.indexOf(correctTitle);
         
-        console.log(`❓ v4.2 - Pregunta ${index + 1}: "${correctTitle.substring(0, 50)}..."`);
-        console.log(`🖼️ Imagen: ${article.image}`);
+        console.log(`❓ v4.3 - Pregunta ${index + 1}: "${correctTitle.substring(0, 50)}..."`);
         
         return {
             question: "¿Cuál es el titular correcto para esta noticia?",
