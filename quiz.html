@@ -3,91 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quiz de Actualidad</title>
+    <title>Quiz de Actualidad - Noticias Reales</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="container">
-        <!-- Pantalla de inicio -->
-        <div id="start-screen" class="screen active">
-            <h1>📰 Quiz de Actualidad</h1>
-            <p>Prueba tus conocimientos sobre las noticias más recientes.</p>
-            <p>Responde 10 preguntas y descubre cuánto sabes sobre lo que pasa en el mundo.</p>
-            <div class="feature-list">
-                <div class="feature">
-                    <span class="icon">🔄</span>
-                    <span>Noticias actualizadas</span>
-                </div>
-                <div class="feature">
-                    <span class="icon">📱</span>
-                    <span>Optimizado para móviles</span>
-                </div>
-                <div class="feature">
-                    <span class="icon">⏱️</span>
-                    <span>Quiz rápido de 10 preguntas</span>
-                </div>
-            </div>
-            <button id="start-btn" class="button">Comenzar Quiz</button>
-            <div class="demo-note">
-                <small>Usando datos de demostración - Para noticias reales necesitas configurar una API</small>
-            </div>
-        </div>
-        
-        <!-- Pantalla de carga -->
-        <div id="loading-screen" class="screen">
-            <div class="loading">
-                <div class="spinner"></div>
-                <p>Cargando preguntas...</p>
-                <p>Preparando tu quiz de actualidad</p>
-            </div>
-        </div>
-        
-        <!-- Pantalla de preguntas -->
-        <div id="quiz-screen" class="screen">
-            <div class="quiz-header">
-                <div class="progress-text">Pregunta <span id="current-question">1</span> de 10</div>
-                <div class="progress">
-                    <div class="progress-bar" id="progress-bar"></div>
-                </div>
-            </div>
-            
-            <div class="question-container">
-                <img id="question-image" class="question-image" src="" alt="Imagen de la noticia" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjVmNWY1Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxOCIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPuKKoiBJbWFnZW4gbm8gZGlzcG9uaWJsZSDiioI8L3RleHQ+PC9zdmc+'">
-                <div id="question-text" class="question-text"></div>
-                <div id="options" class="options"></div>
-            </div>
-            
-            <button id="next-btn" class="button" disabled>Siguiente</button>
-        </div>
-        
-        <!-- Pantalla de resultados -->
-        <div id="result-screen" class="screen">
-            <h1>🎉 Resultados</h1>
-            <div class="result">
-                <p>Has completado el quiz de actualidad</p>
-                <div class="score-display">
-                    <div class="score-circle" id="score-circle">
-                        <span id="score-value">0</span>
-                        <small>/10</small>
-                    </div>
-                </div>
-                <div id="score-text" class="score-text"></div>
-                <p id="result-message" class="result-message"></p>
-                <div class="result-actions">
-                    <button id="restart-btn" class="button restart">🔄 Jugar de nuevo</button>
-                    <button id="share-btn" class="button share">📤 Compartir resultado</button>
-                </div>
-                <div class="news-source">
-                    <small>Fuente: Datos de demostración - <a href="#" id="setup-link">Configurar noticias reales</a></small>
-                </div>
-            </div>
-        </div>
+        <!-- Tus pantallas aquí -->
     </div>
 
     <footer>
-        <p>Quiz de Actualidad &copy; 2023 - Desarrollado para GitHub Pages</p>
+        <p>Quiz de Actualidad &copy; 2023 - v4.0 - Noticias Reales</p>
+        <p id="version-info" style="font-size: 12px; opacity: 0.7;"></p>
     </footer>
 
-    <script src="script.js"></script>
+    <!-- ⚠️ AGREGA EL PARÁMETRO DE VERSIÓN ⚠️ -->
+    <script src="script.js?v=4.0"></script>
 </body>
 </html>
