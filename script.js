@@ -122,11 +122,23 @@ async function loadRealNews() {
 }
 
 // Función para generar preguntas a partir de artículos reales
+// Función para generar preguntas a partir de artículos reales
 function generateQuestionsFromArticles(articles) {
+    console.log('Artículos recibidos para procesar:', articles);
+    
     // Filtrar artículos que tengan título e imagen
-    const validArticles = articles.filter(article => 
-        article.title && article.image
-    ).slice(0, 10);
+    const validArticles = articles.filter(article => {
+        const hasImage = article.image && article.image.startsWith('http');
+        const hasTitle = article.title && article.title.length > 10;
+        return hasTitle && hasImage;
+    }).slice(0, 10);
+    
+    console.log('Artículos válidos después del filtro:', validArticles);
+    
+    // Si no hay suficientes artículos válidos, lanzar error
+    if (validArticles.length < 3) {
+        throw new Error('No hay suficientes artículos con imágenes válidas');
+    }
     
     return validArticles.map((article, index) => {
         // Crear opciones incorrectas a partir de otros artículos
@@ -134,8 +146,9 @@ function generateQuestionsFromArticles(articles) {
         const incorrectOptions = [];
         
         for (let i = 0; i < 2 && i < otherArticles.length; i++) {
-            // Acortar títulos muy largos para mejor visualización
             let title = otherArticles[i].title;
+            // Limpiar y acortar títulos
+            title = title.replace(/\[.*?\]/g, '').trim(); // Remover [Fuente]
             if (title.length > 80) {
                 title = title.substring(0, 77) + '...';
             }
@@ -144,11 +157,11 @@ function generateQuestionsFromArticles(articles) {
         
         // Completar con opciones genéricas si es necesario
         while (incorrectOptions.length < 2) {
-            incorrectOptions.push("Noticia sobre eventos actuales importantes");
+            incorrectOptions.push("Noticia sobre eventos actuales");
         }
         
-        // Acortar título correcto si es muy largo
-        let correctTitle = article.title;
+        // Limpiar y acortar título correcto
+        let correctTitle = article.title.replace(/\[.*?\]/g, '').trim();
         if (correctTitle.length > 80) {
             correctTitle = correctTitle.substring(0, 77) + '...';
         }
@@ -158,6 +171,13 @@ function generateQuestionsFromArticles(articles) {
         shuffleArray(options);
         
         const correctAnswerIndex = options.indexOf(correctTitle);
+        
+        console.log('Pregunta generada:', {
+            titulo: correctTitle,
+            imagen: article.image,
+            opciones: options,
+            correcta: correctAnswerIndex
+        });
         
         return {
             question: "¿Cuál es el titular correcto para esta noticia?",
@@ -230,12 +250,21 @@ function shuffleArray(array) {
 }
 
 // Mostrar la pregunta actual
+// Mostrar la pregunta actual - VERSIÓN MEJORADA
 function showQuestion() {
     const question = questions[currentQuestionIndex];
     
-    // Actualizar imagen
+    console.log('Mostrando pregunta:', question);
+    
+    // Actualizar imagen con manejo de errores
     questionImage.src = question.image;
-    questionImage.alt = "Imagen relacionada con la pregunta";
+    questionImage.alt = "Imagen de la noticia";
+    
+    // Manejar errores de imagen
+    questionImage.onerror = function() {
+        console.log('Error cargando imagen, usando placeholder');
+        this.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjVmNWY1Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxOCIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPuKKoiBJbWFnZW4gbm8gZGlzcG9uaWJsZSDiioI8L3RleHQ+PC9zdmc+';
+    };
     
     // Actualizar texto de la pregunta
     questionText.textContent = question.question;
