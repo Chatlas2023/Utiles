@@ -599,7 +599,6 @@
         
         <div class="result-actions">
             <button id="restart-btn" class="button restart">🔄 Jugar de nuevo</button>
-            <button id="read-all-news" class="button read-all-news">📖 Leer todas las noticias</button>
             <button id="share-btn" class="button share">📤 Compartir resultado</button>
         </div>
         <div class="news-source">
@@ -723,13 +722,6 @@ function setupEventListeners() {
     if (setupLink) {
         setupLink.addEventListener('click', showSetupGuide);
         console.log('✅ Listener agregado: setupLink');
-    }
-    
-    // NUEVO: Listener para el botón de leer todas las noticias
-    const readAllNewsBtn = document.getElementById('read-all-news');
-    if (readAllNewsBtn) {
-        readAllNewsBtn.addEventListener('click', openAllNews);
-        console.log('✅ Listener agregado: read-all-news');
     }
     
     console.log('✅ v4.4 - Todos los event listeners configurados');
@@ -1305,12 +1297,6 @@ function showNewsResults() {
             hasValidUrls = true;
         }
     });
-    
-    // Ocultar el botón "Leer todas las noticias" si no hay URLs válidas
-    const readAllBtn = document.getElementById('read-all-news');
-    if (readAllBtn) {
-        readAllBtn.style.display = hasValidUrls ? 'block' : 'none';
-    }
 }
 
     // Mostrar resultados
@@ -1338,35 +1324,7 @@ function showResults() {
     
     console.log(`🎯 v4.4 - Quiz completado con noticias reales. Puntuación: ${score}/${questions.length}`);
 }
-    // Función para abrir todas las noticias en nuevas pestañas
-// Función para abrir todas las noticias en nuevas pestañas
-function openAllNews() {
-    let openedCount = 0;
-    
-    questions.forEach((question, index) => {
-        const hasValidUrl = question.articleUrl && 
-                           question.articleUrl.startsWith('http') && 
-                           question.articleUrl !== 'undefined';
-        
-        if (hasValidUrl) {
-            setTimeout(() => {
-                window.open(question.articleUrl, '_blank');
-                openedCount++;
-                
-                // Si es la última, mostrar mensaje
-                if (openedCount === questions.filter(q => 
-                    q.articleUrl && q.articleUrl.startsWith('http')).length) {
-                    console.log(`📖 Se abrieron ${openedCount} artículos`);
-                }
-            }, index * 500); // Esperar 500ms entre cada apertura
-        }
-    });
-    
-    if (openedCount === 0) {
-        alert('No hay enlaces de noticias disponibles para abrir.');
-    }
-}
-    // Función para debug de la API
+
 // Función para debug de la API
 function debugApiResponse(data) {
     console.log('🔍 DEBUG - Fuentes de noticias encontradas:');
