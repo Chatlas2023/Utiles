@@ -683,12 +683,12 @@
                 const randomCategory = categories[Math.floor(Math.random() * categories.length)];
                 
                 // 🔄 VARIAR EL PAÍS para más diversidad
-                const countries = ['es', 'mx', 'ar', 'co', 'us'];
+                const countries = ['ar', 'us'];
                 const randomCountry = countries[Math.floor(Math.random() * countries.length)];
                 
                 const proxyUrl = 'https://api.allorigins.win/raw?url=';
-                const targetUrl = `https://gnews.io/api/v4/top-headlines?token=${apiKey}&lang=es&max=20&category=${randomCategory}&country=${randomCountry}`;
-                
+              const targetUrl = `https://gnews.io/api/v4/top-headlines?token=${apiKey}&lang=es&max=20&country=ar`; // Argentina por defecto
+
                 console.log('🔗 URL completa:', proxyUrl + encodeURIComponent(targetUrl));
                 console.log(`🎯 Categoría: ${randomCategory}, País: ${randomCountry}`);
                 
