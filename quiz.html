@@ -734,69 +734,131 @@ function setupEventListeners() {
 }
 
     // 🔍 FUNCIÓN PARA VERIFICACIÓN RÁPIDA DE IMÁGENES
-    function quickImageCheck(imageUrl) {
-        if (!imageUrl || !imageUrl.startsWith('http')) {
-            return false;
-        }
-        
-        // Lista de dominios confiables
-        const trustedDomains = [
-            'unsplash.com', 'gettyimages', 'reuters.com', 'apnews.com',
-            'bbc.co.uk', 'cnn.com', 'nytimes.com', 'elpaís.com',
-            'clarin.com', 'lanacion.com', 'infobae.com', 'elmundo.es',
-            'abc.es', 'lavanguardia.com', 'elperiodico.com', '20minutos.es',
-            'rtve.es', 'antena3.com', 'telecinco.es', 'lasexta.com',
-            'mediotiempo.com', 'record.com.mx', 'milenio.com', 'excelsior.com.mx',
-            'eluniversal.com.mx', 'granma.cu', 'telesurtv.net', 'dw.com'
-        ];
-        
-        // Lista de dominios problemáticos
-        const blockedDomains = [
-            'placeholder', 'default', 'placehold.co', 'dummyimage.com',
-            'via.placeholder.com', 'example.com', 'test.com'
-        ];
-        
-        const isTrusted = trustedDomains.some(domain => imageUrl.includes(domain));
-        const isBlocked = blockedDomains.some(domain => imageUrl.includes(domain));
-        
-        // Verificar extensión de archivo de imagen
-        const imageExtensions = ['.jpg', '.jpeg', '.png', '.webp', '.gif', '.bmp'];
-        const hasImageExtension = imageExtensions.some(ext => imageUrl.toLowerCase().includes(ext));
-        
-        // Verificar patrones comunes de CDN de imágenes
-        const hasImagePatterns = imageUrl.includes('/images/') || 
-                               imageUrl.includes('/img/') || 
-                               imageUrl.includes('/fotos/') ||
-                               imageUrl.includes('/photo/') ||
-                               imageUrl.includes('/imagenes/') ||
-                               imageUrl.includes('/foto/') ||
-                               imageUrl.includes('/photogallery/');
-        
-        return !isBlocked && (isTrusted || hasImageExtension || hasImagePatterns);
+// 🔍 FUNCIÓN PARA VERIFICACIÓN RÁPIDA DE IMÁGENES Y MEDIOS
+function quickImageCheck(imageUrl) {
+    if (!imageUrl || !imageUrl.startsWith('http')) {
+        return false;
     }
+    
+    // Lista de dominios confiables DE ARGENTINA Y EE.UU.
+    const trustedDomains = [
+        // Argentina
+        'infobae.com', 'clarin.com', 'lanacion.com', 'lanacion.com.ar',
+        'pagina12.com.ar', 'ambito.com', 'cronista.com', 'perfil.com',
+        'telam.com.ar', 'diariopopular.com.ar', 'lavoz.com.ar',
+        'losandes.com.ar', 'lmneuquen.com.ar', 'rionegro.com.ar',
+        
+        // Estados Unidos (medios en español o internacionales)
+        'cnn.com', 'cnnespanol.cnn.com', 'bbc.com', 'bbc.co.uk',
+        'reuters.com', 'apnews.com', 'bloomberg.com', 'wsj.com',
+        'nytimes.com', 'washingtonpost.com', 'usatoday.com',
+        'nbcnews.com', 'abcnews.go.com', 'cbsnews.com', 'foxnews.com',
+        
+        // Medios internacionales que cubren noticias de AR/US
+        'france24.com', 'dw.com', 'euronews.com', 'aljazeera.com'
+    ];
+    
+    // Lista de dominios problemáticos o no deseados
+    const blockedDomains = [
+        'placeholder', 'default', 'placehold.co', 'dummyimage.com',
+        'via.placeholder.com', 'example.com', 'test.com',
+        // Medios de otros países que no queremos
+        'eluniversal.com.mx', 'elmundo.es', 'elpaís.com', 'abc.es',
+        'lavanguardia.com', 'elperiodico.com', '20minutos.es',
+        'rtve.es', 'antena3.com', 'telecinco.es', 'lasexta.com',
+        'record.com.mx', 'milenio.com', 'excelsior.com.mx',
+        'granma.cu', 'telesurtv.net', 'elpais.com' // específicamente El País
+    ];
+    
+    const isTrusted = trustedDomains.some(domain => imageUrl.toLowerCase().includes(domain));
+    const isBlocked = blockedDomains.some(domain => imageUrl.toLowerCase().includes(domain));
+    
+    // Verificar extensión de archivo de imagen
+    const imageExtensions = ['.jpg', '.jpeg', '.png', '.webp', '.gif', '.bmp'];
+    const hasImageExtension = imageExtensions.some(ext => imageUrl.toLowerCase().includes(ext));
+    
+    // Verificar patrones comunes de CDN de imágenes
+    const hasImagePatterns = imageUrl.includes('/images/') || 
+                           imageUrl.includes('/img/') || 
+                           imageUrl.includes('/fotos/') ||
+                           imageUrl.includes('/photo/') ||
+                           imageUrl.includes('/imagenes/') ||
+                           imageUrl.includes('/foto/') ||
+                           imageUrl.includes('/photogallery/');
+    
+    return !isBlocked && (isTrusted || hasImageExtension || hasImagePatterns);
+}
+    // 🔍 FUNCIÓN PARA FILTRAR MEDIOS POR PAÍS
+function filterByCountryAndSource(articles) {
+    console.log('🌎 Filtrando medios por Argentina y EE.UU....');
+    
+    // Medios de Argentina
+    const argentinaMedia = [
+        'infobae', 'clarin', 'lanacion', 'página 12', 'pagina12', 'ámbito',
+        'cronista', 'perfil', 'télam', 'telam', 'diario popular', 'la voz',
+        'los andes', 'lm neuquen', 'río negro'
+    ];
+    
+    // Medios de Estados Unidos (en español o internacionales)
+    const usMedia = [
+        'cnn', 'bbc', 'reuters', 'associated press', 'ap news', 'bloomberg',
+        'wall street journal', 'new york times', 'washington post', 'usa today',
+        'nbc', 'abc', 'cbs', 'fox news', 'france 24', 'dw', 'euronews', 'al jazeera'
+    ];
+    
+    const filteredArticles = articles.filter(article => {
+        if (!article.source || !article.source.name) return false;
+        
+        const sourceName = article.source.name.toLowerCase();
+        const articleTitle = article.title ? article.title.toLowerCase() : '';
+        const articleUrl = article.url ? article.url.toLowerCase() : '';
+        
+        // Verificar si es de Argentina
+        const isFromArgentina = argentinaMedia.some(media => 
+            sourceName.includes(media) || 
+            articleTitle.includes('argentina') ||
+            articleUrl.includes('.com.ar')
+        );
+        
+        // Verificar si es de EE.UU.
+        const isFromUS = usMedia.some(media => 
+            sourceName.includes(media) ||
+            articleTitle.includes('estados unidos') ||
+            articleTitle.includes('ee.uu.') ||
+            articleTitle.includes('eeuu') ||
+            articleUrl.includes('.com')
+        );
+        
+        return isFromArgentina || isFromUS;
+    });
+    
+    console.log(`📊 Después del filtro por país: ${filteredArticles.length} artículos`);
+    return filteredArticles;
+}
 
     // Función principal para cargar noticias reales
+// Función principal para cargar noticias reales
 // Función principal para cargar noticias reales
 async function loadRealNews() {
     const apiKey = 'cd358617b03acad6467b57dfe9cbdb81';
     
-    console.log('🔄 v4.4 - Cargando noticias de Argentina y Estados Unidos...');
+    console.log('🔄 v4.4 - Cargando noticias EXCLUSIVAS de Argentina y Estados Unidos...');
     
     try {
-        // VARIAR LAS CATEGORÍAS pero solo para AR y US
-        const categories = ['general', 'world', 'nation', 'business', 'technology', 'entertainment', 'sports', 'science', 'health'];
+        // VARIAR LAS CATEGORÍAS
+        const categories = ['general', 'world', 'business', 'technology', 'sports', 'health'];
         const randomCategory = categories[Math.floor(Math.random() * categories.length)];
         
-        // 🔥 CAMBIO: SOLO ARGENTINA Y ESTADOS UNIDOS
+        // SOLO ARGENTINA Y ESTADOS UNIDOS
         const countries = ['ar', 'us'];
         const randomCountry = countries[Math.floor(Math.random() * countries.length)];
         
         const proxyUrl = 'https://api.allorigins.win/raw?url=';
-        const targetUrl = `https://gnews.io/api/v4/top-headlines?token=${apiKey}&lang=es&max=30&category=${randomCategory}&country=${randomCountry}`;
+        const targetUrl = `https://gnews.io/api/v4/top-headlines?token=${apiKey}&lang=es&max=40&category=${randomCategory}&country=${randomCountry}`;
         
         console.log('🔗 URL completa:', proxyUrl + encodeURIComponent(targetUrl));
         console.log(`🎯 Categoría: ${randomCategory}, País: ${randomCountry}`);
-        console.log(`🌎 FILTRO: Solo noticias de Argentina (ar) y Estados Unidos (us)`);
+        console.log(`🌎 FILTRO: Solo medios de Argentina y EE.UU.`);
         
         const response = await fetch(proxyUrl + encodeURIComponent(targetUrl), {
             method: 'GET',
@@ -818,21 +880,25 @@ async function loadRealNews() {
         console.log('📊 Cantidad de artículos brutos:', data.articles ? data.articles.length : 0);
         
         if (data.articles && data.articles.length > 0) {
-            // FILTRADO RIGUROSO ANTES de generar preguntas
-            const articlesWithImages = data.articles.filter(article => 
+            // 🔥 NUEVO: PRIMERO FILTRAR POR PAÍS/MEDIO
+            const countryFilteredArticles = filterByCountryAndSource(data.articles);
+            
+            // LUEGO FILTRADO RIGUROSO por imágenes y títulos
+            const articlesWithImages = countryFilteredArticles.filter(article => 
                 quickImageCheck(article.image) && 
                 article.title && 
                 article.title.length > 15
             );
             
-            console.log(`📊 Artículos con imágenes válidas: ${articlesWithImages.length}`);
+            console.log(`📊 Artículos después de filtros: ${articlesWithImages.length}`);
+            console.log(`🌍 Origen: ${articlesWithImages.length > 0 ? articlesWithImages[0].source?.name : 'N/A'}`);
             
             if (articlesWithImages.length >= 3) {
                 const generatedQuestions = generateQuestionsFromArticles(articlesWithImages);
-                console.log(`✅ v4.4 - Preguntas generadas con imágenes: ${generatedQuestions.length}`);
+                console.log(`✅ v4.4 - Preguntas generadas: ${generatedQuestions.length}`);
                 return generatedQuestions;
             } else {
-                console.log('🔄 No hay suficientes artículos con imágenes, intentando con el otro país...');
+                console.log('🔄 No hay suficientes artículos filtrados, intentando con el otro país...');
                 return await loadAlternativeCountryNews(apiKey, randomCountry);
             }
         } else {
@@ -840,7 +906,7 @@ async function loadRealNews() {
         }
     } catch (error) {
         console.error('❌ v4.4 - Error cargando noticias:', error);
-        throw new Error('No se pudieron cargar noticias de Argentina y Estados Unidos. Intenta más tarde.');
+        throw new Error('No se pudieron cargar noticias exclusivas de Argentina y Estados Unidos. Intenta más tarde.');
     }
 }
     // Función para cargar noticias del país alternativo
@@ -1249,15 +1315,26 @@ function openAllNews() {
     }
 }
     // Función para debug de la API
+// Función para debug de la API
 function debugApiResponse(data) {
-    console.log('🔍 DEBUG - Respuesta completa de la API:');
+    console.log('🔍 DEBUG - Fuentes de noticias encontradas:');
     if (data.articles && data.articles.length > 0) {
+        const sources = new Set();
         data.articles.forEach((article, index) => {
+            if (article.source && article.source.name) {
+                sources.add(article.source.name);
+            }
+        });
+        
+        console.log('📰 Medios encontrados:', Array.from(sources));
+        
+        // Mostrar primeros 5 artículos para debug
+        data.articles.slice(0, 5).forEach((article, index) => {
             console.log(`📄 Artículo ${index + 1}:`);
             console.log(`   📰 Título: ${article.title}`);
-            console.log(`   🖼️ Imagen: ${article.image}`);
+            console.log(`   🏢 Fuente: ${article.source?.name}`);
+            console.log(`   🖼️ Imagen: ${article.image ? '✅' : '❌'}`);
             console.log(`   🔗 URL: ${article.url}`);
-            console.log(`   📍 Fuente:`, article.source);
         });
     }
 }
@@ -1295,12 +1372,13 @@ function showSetupGuide(e) {
     alert(`QUIZ DE ACTUALIDAD v4.4
 
 ✅ MODO: NOTICIAS REALES
-🌎 PAÍSES: Argentina y Estados Unidos
+🌎 EXCLUSIVO: Argentina y Estados Unidos
+📰 MEDIOS: Infobae, Clarín, La Nación, CNN, BBC, Reuters, etc.
 🌐 Fuente: GNews API
 📊 Preguntas generadas automáticamente
 🖼️ Imágenes reales garantizadas
 
-El quiz está funcionando con noticias actuales de Argentina y EE.UU.`);
+El quiz está funcionando EXCLUSIVAMENTE con noticias de medios de Argentina y EE.UU.`);
 }
 
     // Mostrar información de versión
