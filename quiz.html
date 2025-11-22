@@ -524,21 +524,26 @@
 <body>
     <div class="container">
         <!-- Pantalla de inicio -->
-        <div id="start-screen" class="screen active">
-            <h1>📰 Quiz de Actualidad</h1>
-            <p>Pon a prueba tus conocimientos con noticias reales</p>
-            <div class="feature-list">
-                <div class="feature">
-                    <span class="icon">🔍</span>
-                    <span>Noticias en tiempo real</span>
-                </div>
-                <div class="feature">
-                    <span class="icon">🎯</span>
-                    <span>10 preguntas desafiantes</span>
-                </div>
-            </div>
-            <button id="start-btn" class="button">Comenzar Quiz</button>
+<!-- Pantalla de inicio -->
+<div id="start-screen" class="screen active">
+    <h1>📰 Quiz de Actualidad</h1>
+    <p>Pon a prueba tus conocimientos con noticias reales</p>
+    <div class="feature-list">
+        <div class="feature">
+            <span class="icon">🌎</span>
+            <span>Noticias de Argentina y EE.UU.</span>
         </div>
+        <div class="feature">
+            <span class="icon">🔍</span>
+            <span>Noticias en tiempo real</span>
+        </div>
+        <div class="feature">
+            <span class="icon">🎯</span>
+            <span>10 preguntas desafiantes</span>
+        </div>
+    </div>
+    <button id="start-btn" class="button">Comenzar Quiz</button>
+</div>
         
         <!-- Pantalla de carga -->
         <div id="loading-screen" class="screen">
@@ -771,91 +776,108 @@ function setupEventListeners() {
     }
 
     // Función principal para cargar noticias reales
-    async function loadRealNews() {
-        const apiKey = 'cd358617b03acad6467b57dfe9cbdb81';
+// Función principal para cargar noticias reales
+async function loadRealNews() {
+    const apiKey = 'cd358617b03acad6467b57dfe9cbdb81';
+    
+    console.log('🔄 v4.4 - Cargando noticias de Argentina y Estados Unidos...');
+    
+    try {
+        // VARIAR LAS CATEGORÍAS pero solo para AR y US
+        const categories = ['general', 'world', 'nation', 'business', 'technology', 'entertainment', 'sports', 'science', 'health'];
+        const randomCategory = categories[Math.floor(Math.random() * categories.length)];
         
-        console.log('🔄 v4.4 - Cargando noticias reales con verificación de imágenes...');
+        // 🔥 CAMBIO: SOLO ARGENTINA Y ESTADOS UNIDOS
+        const countries = ['ar', 'us'];
+        const randomCountry = countries[Math.floor(Math.random() * countries.length)];
         
-        try {
-            // VARIAR LAS CATEGORÍAS para obtener noticias diferentes
-            const categories = ['general', 'world', 'nation', 'business', 'technology', 'entertainment', 'sports', 'science', 'health'];
-            const randomCategory = categories[Math.floor(Math.random() * categories.length)];
-            
-            // VARIAR EL PAÍS para más diversidad
-            const countries = ['ar', 'us'];
-            const randomCountry = countries[Math.floor(Math.random() * countries.length)];
-            
-            const proxyUrl = 'https://api.allorigins.win/raw?url=';
-            const targetUrl = `https://gnews.io/api/v4/top-headlines?token=${apiKey}&lang=es&max=30&category=${randomCategory}&country=${randomCountry}&from=${getCurrentDate()}`;
-            
-            console.log('🔗 URL completa:', proxyUrl + encodeURIComponent(targetUrl));
-            console.log(`🎯 Categoría: ${randomCategory}, País: ${randomCountry}`);
-            
-            const response = await fetch(proxyUrl + encodeURIComponent(targetUrl), {
-                method: 'GET',
-                headers: {
-                    'Accept': 'application/json',
-                }
-            });
-            
-            if (!response.ok) {
-                throw new Error(`Error HTTP: ${response.status} - ${response.statusText}`);
-            }
-            
-            const data = await response.json();
-            debugApiResponse(data);
-            
-            console.log('✅ v4.4 - Noticias recibidas correctamente');
-            console.log('📊 Cantidad de artículos brutos:', data.articles ? data.articles.length : 0);
-            
-            if (data.articles && data.articles.length > 0) {
-                // FILTRADO RIGUROSO ANTES de generar preguntas
-                const articlesWithImages = data.articles.filter(article => 
-                    quickImageCheck(article.image) && 
-                    article.title && 
-                    article.title.length > 15
-                );
-                
-                console.log(`📊 Artículos con imágenes válidas: ${articlesWithImages.length}`);
-                
-                if (articlesWithImages.length >= 3) {
-                    const generatedQuestions = generateQuestionsFromArticles(articlesWithImages);
-                    console.log(`✅ v4.4 - Preguntas generadas con imágenes: ${generatedQuestions.length}`);
-                    return generatedQuestions;
-                } else {
-                    console.log('🔄 No hay suficientes artículos con imágenes, intentando categoría general...');
-                    return await loadGeneralNewsFallback(apiKey);
-                }
-            } else {
-                throw new Error('No se encontraron noticias en la respuesta de la API');
-            }
-        } catch (error) {
-            console.error('❌ v4.4 - Error cargando noticias reales:', error);
-            throw new Error('No se pudieron cargar noticias reales. Intenta más tarde.');
-        }
-    }
-
-    // Función de fallback para categoría general
-    async function loadGeneralNewsFallback(apiKey) {
         const proxyUrl = 'https://api.allorigins.win/raw?url=';
-        const targetUrl = `https://gnews.io/api/v4/top-headlines?token=${apiKey}&lang=es&max=30&country=ar&from=${getCurrentDate()}`;
-        const response = await fetch(proxyUrl + encodeURIComponent(targetUrl));
+        const targetUrl = `https://gnews.io/api/v4/top-headlines?token=${apiKey}&lang=es&max=30&category=${randomCategory}&country=${randomCountry}`;
+        
+        console.log('🔗 URL completa:', proxyUrl + encodeURIComponent(targetUrl));
+        console.log(`🎯 Categoría: ${randomCategory}, País: ${randomCountry}`);
+        console.log(`🌎 FILTRO: Solo noticias de Argentina (ar) y Estados Unidos (us)`);
+        
+        const response = await fetch(proxyUrl + encodeURIComponent(targetUrl), {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`Error HTTP: ${response.status} - ${response.statusText}`);
+        }
+        
         const data = await response.json();
         
+        // NUEVO: Debug de la respuesta
+        debugApiResponse(data);
+        
+        console.log('✅ v4.4 - Noticias recibidas correctamente');
+        console.log('📊 Cantidad de artículos brutos:', data.articles ? data.articles.length : 0);
+        
         if (data.articles && data.articles.length > 0) {
+            // FILTRADO RIGUROSO ANTES de generar preguntas
             const articlesWithImages = data.articles.filter(article => 
                 quickImageCheck(article.image) && 
                 article.title && 
                 article.title.length > 15
             );
             
+            console.log(`📊 Artículos con imágenes válidas: ${articlesWithImages.length}`);
+            
             if (articlesWithImages.length >= 3) {
-                return generateQuestionsFromArticles(articlesWithImages);
+                const generatedQuestions = generateQuestionsFromArticles(articlesWithImages);
+                console.log(`✅ v4.4 - Preguntas generadas con imágenes: ${generatedQuestions.length}`);
+                return generatedQuestions;
+            } else {
+                console.log('🔄 No hay suficientes artículos con imágenes, intentando con el otro país...');
+                return await loadAlternativeCountryNews(apiKey, randomCountry);
             }
+        } else {
+            throw new Error('No se encontraron noticias en la respuesta de la API');
         }
-        
-        throw new Error('No se pudieron cargar noticias con imágenes válidas');
+    } catch (error) {
+        console.error('❌ v4.4 - Error cargando noticias:', error);
+        throw new Error('No se pudieron cargar noticias de Argentina y Estados Unidos. Intenta más tarde.');
     }
+}
+    // Función para cargar noticias del país alternativo
+async function loadAlternativeCountryNews(apiKey, excludedCountry) {
+    console.log('🔄 Intentando con el país alternativo...');
+    
+    // Determinar el país alternativo
+    const countries = ['ar', 'us'];
+    const alternativeCountry = countries.find(country => country !== excludedCountry);
+    
+    const categories = ['general', 'world', 'business', 'technology', 'sports'];
+    const randomCategory = categories[Math.floor(Math.random() * categories.length)];
+    
+    const proxyUrl = 'https://api.allorigins.win/raw?url=';
+    const targetUrl = `https://gnews.io/api/v4/top-headlines?token=${apiKey}&lang=es&max=30&category=${randomCategory}&country=${alternativeCountry}`;
+    
+    console.log(`🔄 País alternativo: ${alternativeCountry}, Categoría: ${randomCategory}`);
+    
+    const response = await fetch(proxyUrl + encodeURIComponent(targetUrl));
+    const data = await response.json();
+    
+    if (data.articles && data.articles.length > 0) {
+        const articlesWithImages = data.articles.filter(article => 
+            quickImageCheck(article.image) && 
+            article.title && 
+            article.title.length > 15
+        );
+        
+        console.log(`📊 Artículos con imágenes válidas (${alternativeCountry}): ${articlesWithImages.length}`);
+        
+        if (articlesWithImages.length >= 3) {
+            return generateQuestionsFromArticles(articlesWithImages);
+        }
+    }
+    
+    throw new Error('No se pudieron cargar noticias con imágenes válidas de Argentina ni Estados Unidos');
+}
 
     // Generar preguntas a partir de artículos reales
 // Generar preguntas a partir de artículos reales - VERSIÓN MEJORADA PARA 10 PREGUNTAS
@@ -1267,31 +1289,33 @@ function debugApiResponse(data) {
     }
 
     // Mostrar información de la API
-    function showSetupGuide(e) {
-        if (e) e.preventDefault();
-        alert(`QUIZ DE ACTUALIDAD v4.4
+// Mostrar información de la API
+function showSetupGuide(e) {
+    if (e) e.preventDefault();
+    alert(`QUIZ DE ACTUALIDAD v4.4
 
 ✅ MODO: NOTICIAS REALES
+🌎 PAÍSES: Argentina y Estados Unidos
 🌐 Fuente: GNews API
 📊 Preguntas generadas automáticamente
 🖼️ Imágenes reales garantizadas
 
-El quiz está funcionando con noticias actuales en tiempo real.`);
-    }
+El quiz está funcionando con noticias actuales de Argentina y EE.UU.`);
+}
 
     // Mostrar información de versión
-    function showVersionInfo() {
-        const versionInfo = document.getElementById('version-info');
-        if (versionInfo) {
-            versionInfo.textContent = `Versión: 4.4 | Noticias Reales | API: GNews`;
-        }
-        console.log('🔍 QUIZ DE ACTUALIDAD - v4.4 - NOTICIAS REALES');
-        console.log('📅 Última actualización: 2024-01-15');
-        console.log('🌐 Fuente: GNews API');
-        console.log('✅ MODO: Noticias reales en tiempo real');
-        console.log('🖼️ GARANTÍA: Todas las preguntas tienen imágenes válidas');
-        console.log('🚀 Script cargado correctamente');
+function showVersionInfo() {
+    const versionInfo = document.getElementById('version-info');
+    if (versionInfo) {
+        versionInfo.textContent = `Versión: 4.4 | Noticias AR/US | API: GNews`;
     }
+    console.log('🔍 QUIZ DE ACTUALIDAD - v4.4 - NOTICIAS ARGENTINA Y EE.UU.');
+    console.log('📅 Última actualización: 2024-01-15');
+    console.log('🌎 Fuente: GNews API (Argentina y Estados Unidos)');
+    console.log('✅ MODO: Noticias reales en tiempo real');
+    console.log('🖼️ GARANTÍA: Todas las preguntas tienen imágenes válidas');
+    console.log('🚀 Script cargado correctamente');
+}
 
     // Inicializar aplicación
     function initializeApp() {
