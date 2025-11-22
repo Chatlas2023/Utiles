@@ -841,14 +841,15 @@ function filterByCountryAndSource(articles) {
     // Función principal para cargar noticias reales
 // Función principal para cargar noticias reales
 // Función principal para cargar noticias reales
+// Función principal para cargar noticias reales
 async function loadRealNews() {
     const apiKey = 'cd358617b03acad6467b57dfe9cbdb81';
     
-    console.log('🔄 v4.4 - Cargando noticias EXCLUSIVAS de Argentina y Estados Unidos...');
+    console.log('🔄 v4.4 - Cargando noticias EXCLUSIVAS de Argentina y Estados Unidos (sin deportes)...');
     
     try {
-        // VARIAR LAS CATEGORÍAS
-        const categories = ['general', 'world', 'business', 'technology', 'sports', 'health'];
+        // VARIAR LAS CATEGORÍAS - EXCLUYENDO DEPORTES
+        const categories = ['general', 'world', 'business', 'technology', 'science', 'health', 'entertainment'];
         const randomCategory = categories[Math.floor(Math.random() * categories.length)];
         
         // SOLO ARGENTINA Y ESTADOS UNIDOS
@@ -860,6 +861,7 @@ async function loadRealNews() {
         
         console.log('🔗 URL completa:', proxyUrl + encodeURIComponent(targetUrl));
         console.log(`🎯 Categoría: ${randomCategory}, País: ${randomCountry}`);
+        console.log(`🚫 FILTRO: Excluyendo deportes`);
         console.log(`🌎 FILTRO: Solo medios de Argentina y EE.UU.`);
         
         const response = await fetch(proxyUrl + encodeURIComponent(targetUrl), {
@@ -882,8 +884,11 @@ async function loadRealNews() {
         console.log('📊 Cantidad de artículos brutos:', data.articles ? data.articles.length : 0);
         
         if (data.articles && data.articles.length > 0) {
-            // 🔥 NUEVO: PRIMERO FILTRAR POR PAÍS/MEDIO
-            const countryFilteredArticles = filterByCountryAndSource(data.articles);
+            // 🔥 NUEVO: FILTRAR PARA EXCLUIR NOTICIAS DE DEPORTES
+            const nonSportsArticles = filterOutSports(data.articles);
+            
+            // LUEGO FILTRAR POR PAÍS/MEDIO
+            const countryFilteredArticles = filterByCountryAndSource(nonSportsArticles);
             
             // LUEGO FILTRADO RIGUROSO por imágenes y títulos
             const articlesWithImages = countryFilteredArticles.filter(article => 
@@ -892,12 +897,11 @@ async function loadRealNews() {
                 article.title.length > 15
             );
             
-            console.log(`📊 Artículos después de filtros: ${articlesWithImages.length}`);
-            console.log(`🌍 Origen: ${articlesWithImages.length > 0 ? articlesWithImages[0].source?.name : 'N/A'}`);
+            console.log(`📊 Artículos después de todos los filtros: ${articlesWithImages.length}`);
             
             if (articlesWithImages.length >= 3) {
                 const generatedQuestions = generateQuestionsFromArticles(articlesWithImages);
-                console.log(`✅ v4.4 - Preguntas generadas: ${generatedQuestions.length}`);
+                console.log(`✅ v4.4 - Preguntas generadas (sin deportes): ${generatedQuestions.length}`);
                 return generatedQuestions;
             } else {
                 console.log('🔄 No hay suficientes artículos filtrados, intentando con el otro país...');
@@ -908,43 +912,89 @@ async function loadRealNews() {
         }
     } catch (error) {
         console.error('❌ v4.4 - Error cargando noticias:', error);
-        throw new Error('No se pudieron cargar noticias exclusivas de Argentina y Estados Unidos. Intenta más tarde.');
+        throw new Error('No se pudieron cargar noticias (sin deportes) de Argentina y Estados Unidos. Intenta más tarde.');
     }
 }
+    // 🔍 FUNCIÓN PARA EXCLUIR NOTICIAS DE DEPORTES
+function filterOutSports(articles) {
+    console.log('🚫 Filtrando y excluyendo noticias de deportes...');
+    
+    const sportsKeywords = [
+        // Deportes en general
+        'fútbol', 'futbol', 'football', 'deporte', 'deportes', 'deportivo', 'deportiva',
+        'partido', 'jugador', 'equipo', 'liga', 'campeonato', 'torneo', 'competencia',
+        // Deportes específicos
+        'fútbol', 'futbol', 'futbolístico', 'futbolera', 'futbolero',
+        'básquet', 'basquet', 'baloncesto', 'basketball',
+        'tenis', 'voleibol', 'vóley', 'rugby', 'hockey', 'golf',
+        'boxeo', 'mma', 'ufc', 'formula 1', 'f1', 'automovilismo',
+        'ciclismo', 'atletismo', 'natación', 'olímpico', 'olimpico',
+        // Equipos y competiciones
+        'champions', 'libertadores', 'copa', 'supercopa', 'mundial',
+        'nba', 'nfl', 'mlb', 'nhl', 'mls'
+    ];
+    
+    const filteredArticles = articles.filter(article => {
+        if (!article.title) return true;
+        
+        const title = article.title.toLowerCase();
+        const description = article.description ? article.description.toLowerCase() : '';
+        
+        // Verificar si el título contiene palabras clave de deportes
+        const isSportsRelated = sportsKeywords.some(keyword => 
+            title.includes(keyword) || description.includes(keyword)
+        );
+        
+        if (isSportsRelated) {
+            console.log(`🚫 Excluido por deportes: "${article.title.substring(0, 60)}..."`);
+            return false;
+        }
+        
+        return true;
+    });
+    
+    console.log(`📊 Después de excluir deportes: ${filteredArticles.length} artículos`);
+    return filteredArticles;
+}
     // Función para cargar noticias del país alternativo
+// Función para cargar noticias del país alternativo
 async function loadAlternativeCountryNews(apiKey, excludedCountry) {
-    console.log('🔄 Intentando con el país alternativo...');
+    console.log('🔄 Intentando con el país alternativo (sin deportes)...');
     
     // Determinar el país alternativo
     const countries = ['ar', 'us'];
     const alternativeCountry = countries.find(country => country !== excludedCountry);
     
-    const categories = ['general', 'world', 'business', 'technology', 'sports'];
+    // CATEGORÍAS SIN DEPORTES
+    const categories = ['general', 'world', 'business', 'technology', 'science', 'health'];
     const randomCategory = categories[Math.floor(Math.random() * categories.length)];
     
     const proxyUrl = 'https://api.allorigins.win/raw?url=';
-    const targetUrl = `https://gnews.io/api/v4/top-headlines?token=${apiKey}&lang=es&max=30&category=${randomCategory}&country=${alternativeCountry}`;
+    const targetUrl = `https://gnews.io/api/v4/top-headlines?token=${apiKey}&lang=es&max=40&category=${randomCategory}&country=${alternativeCountry}`;
     
-    console.log(`🔄 País alternativo: ${alternativeCountry}, Categoría: ${randomCategory}`);
+    console.log(`🔄 País alternativo: ${alternativeCountry}, Categoría: ${randomCategory} (sin deportes)`);
     
     const response = await fetch(proxyUrl + encodeURIComponent(targetUrl));
     const data = await response.json();
     
     if (data.articles && data.articles.length > 0) {
-        const articlesWithImages = data.articles.filter(article => 
+        // APLICAR FILTRO DE DEPORTES
+        const nonSportsArticles = filterOutSports(data.articles);
+        
+        const articlesWithImages = nonSportsArticles.filter(article => 
             quickImageCheck(article.image) && 
             article.title && 
             article.title.length > 15
         );
         
-        console.log(`📊 Artículos con imágenes válidas (${alternativeCountry}): ${articlesWithImages.length}`);
+        console.log(`📊 Artículos con imágenes válidas (${alternativeCountry}, sin deportes): ${articlesWithImages.length}`);
         
         if (articlesWithImages.length >= 3) {
             return generateQuestionsFromArticles(articlesWithImages);
         }
     }
     
-    throw new Error('No se pudieron cargar noticias con imágenes válidas de Argentina ni Estados Unidos');
+    throw new Error('No se pudieron cargar noticias con imágenes válidas (sin deportes) de Argentina ni Estados Unidos');
 }
 
     // Generar preguntas a partir de artículos reales
@@ -1369,29 +1419,32 @@ function debugApiResponse(data) {
 
     // Mostrar información de la API
 // Mostrar información de la API
+// Mostrar información de la API
 function showSetupGuide(e) {
     if (e) e.preventDefault();
     alert(`QUIZ DE ACTUALIDAD v4.4
 
 ✅ MODO: NOTICIAS REALES
 🌎 EXCLUSIVO: Argentina y Estados Unidos
+🚫 SIN DEPORTES: Fútbol, básquet, tenis, etc.
 📰 MEDIOS: Infobae, Clarín, La Nación, CNN, BBC, Reuters, etc.
 🌐 Fuente: GNews API
 📊 Preguntas generadas automáticamente
 🖼️ Imágenes reales garantizadas
 
-El quiz está funcionando EXCLUSIVAMENTE con noticias de medios de Argentina y EE.UU.`);
+El quiz está funcionando EXCLUSIVAMENTE con noticias de medios de Argentina y EE.UU., excluyendo deportes.`);
 }
 
-    // Mostrar información de versión
+// Mostrar información de versión
 function showVersionInfo() {
     const versionInfo = document.getElementById('version-info');
     if (versionInfo) {
-        versionInfo.textContent = `Versión: 4.4 | Noticias AR/US | API: GNews`;
+        versionInfo.textContent = `Versión: 4.4 | Noticias AR/US | Sin deportes | API: GNews`;
     }
-    console.log('🔍 QUIZ DE ACTUALIDAD - v4.4 - NOTICIAS ARGENTINA Y EE.UU.');
+    console.log('🔍 QUIZ DE ACTUALIDAD - v4.4 - NOTICIAS ARGENTINA Y EE.UU. (SIN DEPORTES)');
     console.log('📅 Última actualización: 2024-01-15');
     console.log('🌎 Fuente: GNews API (Argentina y Estados Unidos)');
+    console.log('🚫 FILTRO: Excluyendo noticias deportivas');
     console.log('✅ MODO: Noticias reales en tiempo real');
     console.log('🖼️ GARANTÍA: Todas las preguntas tienen imágenes válidas');
     console.log('🚀 Script cargado correctamente');
