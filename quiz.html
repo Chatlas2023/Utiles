@@ -830,81 +830,155 @@ function filterByCountryAndSource(articles) {
     return filteredArticles;
 }
 
-    // Función principal para cargar noticias reales
-// Función principal para cargar noticias reales
-// Función principal para cargar noticias reales
-// Función principal para cargar noticias reales
+// Función principal MEJORADA para cargar noticias
 async function loadRealNews() {
     const apiKey = 'cd358617b03acad6467b57dfe9cbdb81';
     
-    console.log('🔄 v4.4 - Cargando noticias EXCLUSIVAS de Argentina y Estados Unidos (sin deportes)...');
+    console.log('🔄 Cargando noticias de Argentina y EE.UU. (sin deportes)...');
     
     try {
-        // VARIAR LAS CATEGORÍAS - EXCLUYENDO DEPORTES
-        const categories = ['general', 'world', 'business', 'technology', 'science', 'health', 'entertainment'];
-        const randomCategory = categories[Math.floor(Math.random() * categories.length)];
+        // INTENTO PRINCIPAL con timeout
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000);
         
-        // SOLO ARGENTINA Y ESTADOS UNIDOS
+        const categories = ['general', 'world', 'business', 'technology', 'science', 'health'];
+        const randomCategory = categories[Math.floor(Math.random() * categories.length)];
         const countries = ['ar', 'us'];
         const randomCountry = countries[Math.floor(Math.random() * countries.length)];
         
         const proxyUrl = 'https://api.allorigins.win/raw?url=';
-        const targetUrl = `https://gnews.io/api/v4/top-headlines?token=${apiKey}&lang=es&max=40&category=${randomCategory}&country=${randomCountry}`;
-        
-        console.log('🔗 URL completa:', proxyUrl + encodeURIComponent(targetUrl));
-        console.log(`🎯 Categoría: ${randomCategory}, País: ${randomCountry}`);
-        console.log(`🚫 FILTRO: Excluyendo deportes`);
-        console.log(`🌎 FILTRO: Solo medios de Argentina y EE.UU.`);
+        const targetUrl = `https://gnews.io/api/v4/top-headlines?token=${apiKey}&lang=es&max=50&category=${randomCategory}&country=${randomCountry}`;
         
         const response = await fetch(proxyUrl + encodeURIComponent(targetUrl), {
             method: 'GET',
-            headers: {
-                'Accept': 'application/json',
-            }
+            headers: { 'Accept': 'application/json' },
+            signal: controller.signal
         });
         
-        if (!response.ok) {
-            throw new Error(`Error HTTP: ${response.status} - ${response.statusText}`);
-        }
+        clearTimeout(timeoutId);
+        
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
         
         const data = await response.json();
         
-        // NUEVO: Debug de la respuesta
-        debugApiResponse(data);
-        
-        console.log('✅ v4.4 - Noticias recibidas correctamente');
-        console.log('📊 Cantidad de artículos brutos:', data.articles ? data.articles.length : 0);
-        
-        if (data.articles && data.articles.length > 0) {
-            // 🔥 NUEVO: FILTRAR PARA EXCLUIR NOTICIAS DE DEPORTES
-            const nonSportsArticles = filterOutSports(data.articles);
-            
-            // LUEGO FILTRAR POR PAÍS/MEDIO
-            const countryFilteredArticles = filterByCountryAndSource(nonSportsArticles);
-            
-            // LUEGO FILTRADO RIGUROSO por imágenes y títulos
-            const articlesWithImages = countryFilteredArticles.filter(article => 
-                quickImageCheck(article.image) && 
-                article.title && 
-                article.title.length > 15
-            );
-            
-            console.log(`📊 Artículos después de todos los filtros: ${articlesWithImages.length}`);
-            
-            if (articlesWithImages.length >= 3) {
-                const generatedQuestions = generateQuestionsFromArticles(articlesWithImages);
-                console.log(`✅ v4.4 - Preguntas generadas (sin deportes): ${generatedQuestions.length}`);
-                return generatedQuestions;
-            } else {
-                console.log('🔄 No hay suficientes artículos filtrados, intentando con el otro país...');
-                return await loadAlternativeCountryNews(apiKey, randomCountry);
-            }
-        } else {
-            throw new Error('No se encontraron noticias en la respuesta de la API');
+        if (!data.articles || data.articles.length === 0) {
+            throw new Error('No hay artículos');
         }
+        
+        // Procesar y filtrar
+        const nonSportsArticles = filterOutSports(data.articles);
+        const countryFilteredArticles = filterByCountryAndSource(nonSportsArticles);
+        const articlesWithImages = countryFilteredArticles.filter(article => 
+            quickImageCheck(article.image) && 
+            article.title && 
+            article.title.length > 15
+        );
+        
+        console.log(`✅ Artículos válidos: ${articlesWithImages.length}`);
+        
+        if (articlesWithImages.length >= 3) {
+            return generateQuestionsFromArticles(articlesWithImages);
+        } else {
+            throw new Error('No suficientes artículos válidos');
+        }
+        
     } catch (error) {
-        console.error('❌ v4.4 - Error cargando noticias:', error);
-        throw new Error('No se pudieron cargar noticias (sin deportes) de Argentina y Estados Unidos. Intenta más tarde.');
+        console.log('🔄 API falló, usando noticias de respaldo...');
+        return getBackupNews();
+    }
+}
+    // Noticias de respaldo predefinidas (Argentina y EE.UU., sin deportes)
+function getBackupNews() {
+    const backupArticles = [
+        {
+            title: "Argentina anuncia nuevo plan económico para estabilizar el mercado financiero",
+            image: "https://images.unsplash.com/photo-1591696205602-2f950c417dad?w=400&h=250&fit=crop",
+            url: "https://www.example.com/argentina-economia",
+            source: { name: "Medios Argentinos" }
+        },
+        {
+            title: "Estados Unidos presenta innovación tecnológica en inteligencia artificial para salud",
+            image: "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=400&h=250&fit=crop", 
+            url: "https://www.example.com/usa-tecnologia-salud",
+            source: { name: "Medios EE.UU." }
+        },
+        {
+            title: "Avances en energías renovables: Argentina y EE.UU. firman acuerdo de cooperación",
+            image: "https://images.unsplash.com/photo-1466611653911-95081537e5b7?w=400&h=250&fit=crop",
+            url: "https://www.example.com/energias-renovables",
+            source: { name: "Cooperación Internacional" }
+        },
+        {
+            title: "Nuevas políticas educativas transforman el sistema universitario en Argentina",
+            image: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=400&h=250&fit=crop",
+            url: "https://www.example.com/educacion-argentina",
+            source: { name: "Educación Hoy" }
+        },
+        {
+            title: "Empresas tecnológicas de EE.UU. expanden inversiones en América Latina",
+            image: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=400&h=250&fit=crop",
+            url: "https://www.example.com/tecnologia-eeuu-latam",
+            source: { name: "Tecnología Global" }
+        },
+        {
+            title: "Investigación científica conjunta entre Argentina y EE.UU. muestra resultados prometedores",
+            image: "https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=400&h=250&fit=crop",
+            url: "https://www.example.com/ciencia-colaboracion",
+            source: { name: "Ciencia Internacional" }
+        },
+        {
+            title: "Mercados financieros reaccionan a nuevas medidas comerciales entre Argentina y EE.UU.",
+            image: "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=400&h=250&fit=crop",
+            url: "https://www.example.com/finanzas-comercio",
+            source: { name: "Economía Global" }
+        },
+        {
+            title: "Innovación en agricultura sostenible: experiencias compartidas entre ambos países",
+            image: "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=400&h=250&fit=crop",
+            url: "https://www.example.com/agricultura-sostenible", 
+            source: { name: "Agro Tecnología" }
+        },
+        {
+            title: "Avances médicos desarrollados en EE.UU. serán implementados en hospitales argentinos",
+            image: "https://images.unsplash.com/photo-1551076805-e1869033e561?w=400&h=250&fit=crop",
+            url: "https://www.example.com/medicina-colaboracion",
+            source: { name: "Salud Internacional" }
+        },
+        {
+            title: "Cultura y entretenimiento: festival conjunto promueve intercambio Argentina-EE.UU.",
+            image: "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=400&h=250&fit=crop",
+            url: "https://www.example.com/cultura-entretenimiento",
+            source: { name: "Cultura Global" }
+        }
+    ];
+    
+    console.log('✅ Usando noticias de respaldo predefinidas');
+    return generateQuestionsFromArticles(backupArticles);
+}
+
+// En startQuiz, elimina el catch que muestra alerta:
+async function startQuiz() {
+    console.log('🚀 Iniciando quiz...');
+    
+    if (!startScreen || !loadingScreen || !quizScreen) return;
+    
+    startScreen.classList.remove('active');
+    loadingScreen.classList.add('active');
+    
+    currentQuestionIndex = 0;
+    score = 0;
+    selectedOption = null;
+    
+    try {
+        await loadQuestions();
+        loadingScreen.classList.remove('active');
+        quizScreen.classList.add('active');
+        showQuestion();
+    } catch (error) {
+        console.error('Error:', error);
+        // Recuperación silenciosa - ya está implementada en loadRealNews
+        loadingScreen.classList.remove('active');
+        startScreen.classList.add('active');
     }
 }
     // 🔍 FUNCIÓN PARA EXCLUIR NOTICIAS DE DEPORTES
