@@ -330,6 +330,100 @@
             animation: spin 1.2s linear infinite;
             margin-bottom: 15px;
         }
+        /* NUEVO: SECCIÓN DE NOTICIAS COMPLETAS */
+.news-results {
+    margin: 20px 0;
+    text-align: left;
+}
+
+.news-results h3 {
+    text-align: center;
+    margin-bottom: 15px;
+    color: #2c3e50;
+    font-size: 18px;
+}
+
+.news-item {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 12px;
+    margin-bottom: 10px;
+    border-left: 4px solid #3498db;
+    transition: all 0.3s ease;
+}
+
+.news-item:hover {
+    background: #e8f4fc;
+    transform: translateX(5px);
+}
+
+.news-item.correct {
+    border-left-color: #2ecc71;
+}
+
+.news-item.incorrect {
+    border-left-color: #e74c3c;
+}
+
+.news-title {
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #2c3e50;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.news-status {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.news-status.correct {
+    background: #d5f4e6;
+    color: #27ae60;
+}
+
+.news-status.incorrect {
+    background: #fdeaea;
+    color: #e74c3c;
+}
+
+.read-article-btn {
+    display: inline-block;
+    padding: 8px 16px;
+    background: #3498db;
+    color: white;
+    text-decoration: none;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+    margin-top: 5px;
+}
+
+.read-article-btn:hover {
+    background: #2980b9;
+    transform: translateY(-2px);
+}
+
+.news-actions {
+    margin-top: 15px;
+}
+
+.read-all-news {
+    background: #9b59b6;
+    margin-top: 10px;
+}
+
+.read-all-news:hover {
+    background: #8e44ad;
+}
 
         @keyframes spin {
             to { transform: rotate(360deg); }
@@ -474,27 +568,38 @@
         </div>
         
         <!-- Pantalla de resultados -->
-        <div id="result-screen" class="screen">
-            <h1>🎉 Resultados</h1>
-            <div class="result">
-                <p>Has completado el quiz de actualidad</p>
-                <div class="score-display">
-                    <div class="score-circle" id="score-circle">
-                        <span id="score-value">0</span>
-                        <small>/10</small>
-                    </div>
-                </div>
-                <div id="score-text" class="score-text"></div>
-                <p id="result-message" class="result-message"></p>
-                <div class="result-actions">
-                    <button id="restart-btn" class="button restart">🔄 Jugar de nuevo</button>
-                    <button id="share-btn" class="button share">📤 Compartir resultado</button>
-                </div>
-                <div class="news-source">
-                    <small>Fuente: Noticias reales - <a href="#" id="setup-link">Información</a></small>
-                </div>
+        <!-- Pantalla de resultados -->
+<div id="result-screen" class="screen">
+    <h1>🎉 Resultados</h1>
+    <div class="result">
+        <p>Has completado el quiz de actualidad</p>
+        <div class="score-display">
+            <div class="score-circle" id="score-circle">
+                <span id="score-value">0</span>
+                <small>/10</small>
             </div>
         </div>
+        <div id="score-text" class="score-text"></div>
+        <p id="result-message" class="result-message"></p>
+        
+        <!-- NUEVA SECCIÓN: NOTICIAS COMPLETAS -->
+        <div class="news-results">
+            <h3>📰 Resumen de Noticias</h3>
+            <div id="news-list" class="news-list">
+                <!-- Las noticias se cargarán aquí dinámicamente -->
+            </div>
+        </div>
+        
+        <div class="result-actions">
+            <button id="restart-btn" class="button restart">🔄 Jugar de nuevo</button>
+            <button id="read-all-news" class="button read-all-news">📖 Leer todas las noticias</button>
+            <button id="share-btn" class="button share">📤 Compartir resultado</button>
+        </div>
+        <div class="news-source">
+            <small>Fuente: Noticias reales - <a href="#" id="setup-link">Información</a></small>
+        </div>
+    </div>
+</div>
     </div>
 
     <footer>
@@ -584,36 +689,44 @@
     }
 
     // Función para configurar event listeners
-    function setupEventListeners() {
-        console.log('🎯 v4.4 - Configurando event listeners...');
-        
-        if (startBtn) {
-            startBtn.addEventListener('click', startQuiz);
-            console.log('✅ Listener agregado: startBtn');
-        }
-        
-        if (nextBtn) {
-            nextBtn.addEventListener('click', nextQuestion);
-            console.log('✅ Listener agregado: nextBtn');
-        }
-        
-        if (restartBtn) {
-            restartBtn.addEventListener('click', restartQuiz);
-            console.log('✅ Listener agregado: restartBtn');
-        }
-        
-        if (shareBtn) {
-            shareBtn.addEventListener('click', shareResults);
-            console.log('✅ Listener agregado: shareBtn');
-        }
-        
-        if (setupLink) {
-            setupLink.addEventListener('click', showSetupGuide);
-            console.log('✅ Listener agregado: setupLink');
-        }
-        
-        console.log('✅ v4.4 - Todos los event listeners configurados');
+// Función para configurar event listeners
+function setupEventListeners() {
+    console.log('🎯 v4.4 - Configurando event listeners...');
+    
+    if (startBtn) {
+        startBtn.addEventListener('click', startQuiz);
+        console.log('✅ Listener agregado: startBtn');
     }
+    
+    if (nextBtn) {
+        nextBtn.addEventListener('click', nextQuestion);
+        console.log('✅ Listener agregado: nextBtn');
+    }
+    
+    if (restartBtn) {
+        restartBtn.addEventListener('click', restartQuiz);
+        console.log('✅ Listener agregado: restartBtn');
+    }
+    
+    if (shareBtn) {
+        shareBtn.addEventListener('click', shareResults);
+        console.log('✅ Listener agregado: shareBtn');
+    }
+    
+    if (setupLink) {
+        setupLink.addEventListener('click', showSetupGuide);
+        console.log('✅ Listener agregado: setupLink');
+    }
+    
+    // NUEVO: Listener para el botón de leer todas las noticias
+    const readAllNewsBtn = document.getElementById('read-all-news');
+    if (readAllNewsBtn) {
+        readAllNewsBtn.addEventListener('click', openAllNews);
+        console.log('✅ Listener agregado: read-all-news');
+    }
+    
+    console.log('✅ v4.4 - Todos los event listeners configurados');
+}
 
     // 🔍 FUNCIÓN PARA VERIFICACIÓN RÁPIDA DE IMÁGENES
     function quickImageCheck(imageUrl) {
@@ -850,7 +963,11 @@ function generateQuestionsFromArticles(articles) {
                 options: options,
                 correctAnswer: correctAnswerIndex,
                 source: article.source?.name || "Medios Internacionales",
-                hasValidImage: true
+                hasValidImage: true,
+                    articleUrl: article.url,
+    fullTitle: cleanTitle(article.title),
+    userAnswer: null, // Se llenará después
+    isCorrect: null   // Se llenará después
             });
         }
         
@@ -1047,55 +1164,100 @@ function generateQuestionsFromArticles(articles) {
     }
 
     // Pasar a la siguiente pregunta
-    function nextQuestion() {
-        const correctAnswer = questions[currentQuestionIndex].correctAnswer;
-        const options = document.querySelectorAll('.option');
-        
-        // Mostrar feedback visual
-        options[correctAnswer].classList.add('correct');
-        if (selectedOption !== correctAnswer) {
-            options[selectedOption].classList.add('incorrect');
-        } else {
-            score++;
-        }
-        
-        // Deshabilitar opciones
-        options.forEach(option => {
-            option.style.pointerEvents = 'none';
-        });
-        
-        // Avanzar después de delay
-        setTimeout(() => {
-            currentQuestionIndex++;
-            if (currentQuestionIndex < questions.length) {
-                showQuestion();
-            } else {
-                showResults();
-            }
-        }, 1500);
+// Pasar a la siguiente pregunta
+function nextQuestion() {
+    const correctAnswer = questions[currentQuestionIndex].correctAnswer;
+    const options = document.querySelectorAll('.option');
+    
+    // Guardar la respuesta del usuario
+    questions[currentQuestionIndex].userAnswer = selectedOption;
+    questions[currentQuestionIndex].isCorrect = (selectedOption === correctAnswer);
+    
+    // Mostrar feedback visual
+    options[correctAnswer].classList.add('correct');
+    if (selectedOption !== correctAnswer) {
+        options[selectedOption].classList.add('incorrect');
+    } else {
+        score++;
     }
+    
+    // Resto del código igual...
+    options.forEach(option => {
+        option.style.pointerEvents = 'none';
+    });
+    
+    setTimeout(() => {
+        currentQuestionIndex++;
+        if (currentQuestionIndex < questions.length) {
+            showQuestion();
+        } else {
+            showResults();
+        }
+    }, 1500);
+}
+    // Mostrar lista de noticias con opción de leer artículos completos
+function showNewsResults() {
+    const newsList = document.getElementById('news-list');
+    if (!newsList) return;
+    
+    newsList.innerHTML = '';
+    
+    questions.forEach((question, index) => {
+        const newsItem = document.createElement('div');
+        newsItem.className = `news-item ${question.isCorrect ? 'correct' : 'incorrect'}`;
+        
+        const status = question.isCorrect ? '✅ Correcto' : '❌ Incorrecto';
+        const statusClass = question.isCorrect ? 'correct' : 'incorrect';
+        
+        newsItem.innerHTML = `
+            <div class="news-status ${statusClass}">${status}</div>
+            <div class="news-title">${question.fullTitle}</div>
+            ${question.articleUrl ? `
+                <a href="${question.articleUrl}" target="_blank" class="read-article-btn">
+                    📖 Leer artículo completo
+                </a>
+            ` : '<small>Enlace no disponible</small>'}
+        `;
+        
+        newsList.appendChild(newsItem);
+    });
+}
 
     // Mostrar resultados
-    function showResults() {
-        if (quizScreen) quizScreen.classList.remove('active');
-        if (resultScreen) resultScreen.classList.add('active');
-        
-        if (scoreValue) scoreValue.textContent = score;
-        if (scoreText) scoreText.textContent = `${score} de ${questions.length} correctas`;
-        
-        // Mensaje personalizado
-        if (resultMessage) {
-            if (score >= 8) {
-                resultMessage.textContent = "¡Excelente! Estás muy informado sobre las noticias actuales.";
-            } else if (score >= 5) {
-                resultMessage.textContent = "Buen trabajo. Mantente leyendo noticias para mejorar.";
-            } else {
-                resultMessage.textContent = "Sigue informándote. Las noticias cambian rápidamente.";
-            }
+// Mostrar resultados
+function showResults() {
+    if (quizScreen) quizScreen.classList.remove('active');
+    if (resultScreen) resultScreen.classList.add('active');
+    
+    if (scoreValue) scoreValue.textContent = score;
+    if (scoreText) scoreText.textContent = `${score} de ${questions.length} correctas`;
+    
+    // Mensaje personalizado
+    if (resultMessage) {
+        if (score >= 8) {
+            resultMessage.textContent = "¡Excelente! Estás muy informado sobre las noticias actuales.";
+        } else if (score >= 5) {
+            resultMessage.textContent = "Buen trabajo. Mantente leyendo noticias para mejorar.";
+        } else {
+            resultMessage.textContent = "Sigue informándote. Las noticias cambian rápidamente.";
         }
-        
-        console.log(`🎯 v4.4 - Quiz completado con noticias reales. Puntuación: ${score}/${questions.length}`);
     }
+    
+    // MOSTRAR LAS NOTICIAS
+    showNewsResults();
+    
+    console.log(`🎯 v4.4 - Quiz completado con noticias reales. Puntuación: ${score}/${questions.length}`);
+}
+    // Función para abrir todas las noticias en nuevas pestañas
+function openAllNews() {
+    questions.forEach((question, index) => {
+        if (question.articleUrl) {
+            setTimeout(() => {
+                window.open(question.articleUrl, '_blank');
+            }, index * 300); // Esperar 300ms entre cada apertura
+        }
+    });
+}
 
     // Reiniciar el quiz
     function restartQuiz() {
