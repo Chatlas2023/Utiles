@@ -253,18 +253,11 @@
         }
 
         /* PANTALLA RESULTADOS COMPACTA */
-#result-screen {
-    text-align: center;
-    justify-content: flex-start; /* Cambiado de center a flex-start */
-    gap: 15px;
-    overflow-y: auto; /* Permitir scroll interno */
+        #result-screen {
+            text-align: center;
+            justify-content: center;
+            gap: 15px;
         }
-        .result {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
 
         .score-display {
             margin: 20px 0;
@@ -307,15 +300,9 @@
             line-height: 1.4;
         }
 
-.result-actions {
-    margin: 20px 0;
-    width: 100%;
-    position: sticky;
-    bottom: 0;
-    background: white;
-    padding-top: 10px;
-    border-top: 1px solid #ecf0f1;
-}
+        .result-actions {
+            margin: 20px 0;
+        }
 
         .news-source {
             margin-top: 15px;
@@ -349,30 +336,6 @@
 .news-results {
     margin: 20px 0;
     text-align: left;
-    width: 100%;
-    max-height: none; /* Quitar límite de altura */
-}
-        /* Scroll personalizado para la lista de noticias */
-.news-list::-webkit-scrollbar {
-    width: 6px;
-}
-        .news-list::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 3px;
-}
-
-.news-list::-webkit-scrollbar-thumb {
-    background: #c1c1c1;
-    border-radius: 3px;
-}
-
-.news-list::-webkit-scrollbar-thumb:hover {
-    background: #a8a8a8;
-}
-        .news-list {
-    max-height: 300px; /* Limitar altura de la lista de noticias */
-    overflow-y: auto; /* Scroll solo en la lista de noticias */
-    padding-right: 5px;
 }
 
 .news-results h3 {
