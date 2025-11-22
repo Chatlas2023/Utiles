@@ -25,7 +25,7 @@
         .container {
             max-width: 100%;
             margin: 0 auto;
-            height: calc(100vh - 30px);
+            height: calc(85vh - 20px);
             display: flex;
             flex-direction: column;
         }
@@ -34,7 +34,7 @@
             display: none;
             background: white;
             border-radius: 15px;
-            padding: 20px;
+            padding: 15px;
             box-shadow: 0 8px 25px rgba(0,0,0,0.2);
             animation: fadeIn 0.5s ease;
             flex: 1;
@@ -63,7 +63,7 @@
         #start-screen {
             text-align: center;
             justify-content: center;
-            gap: 15px;
+            gap: 12px;
         }
 
         #start-screen p {
@@ -73,9 +73,9 @@
         }
 
         .feature-list {
-            margin: 15px 0;
+            margin: 12px 0;
             background: #f8f9fa;
-            padding: 15px;
+            padding: 12px;
             border-radius: 10px;
             border-left: 4px solid #3498db;
         }
@@ -84,7 +84,7 @@
             display: flex;
             align-items: center;
             margin: 8px 0;
-            font-size: 14px;
+            font-size: 16px;
         }
 
         .feature .icon {
@@ -135,18 +135,18 @@
 
         .question-image {
             width: 100%;
-            height: 150px;
+            height: 120px;
             object-fit: cover;
             border-radius: 10px;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
             border: 2px solid white;
             background: #f8f9fa;
         }
 
         .question-text {
-            font-size: 16px;
-            margin-bottom: 15px;
+            font-size: 15px;
+            margin-bottom: 12px;
             font-weight: 600;
             line-height: 1.4;
             color: #2c3e50;
@@ -157,14 +157,14 @@
         .options {
             display: flex;
             flex-direction: column;
-            gap: 10px;
-            margin-bottom: 20px;
+            gap: 8px;
+            margin-bottom: 15px;
             flex: 1;
             overflow-y: auto;
         }
 
         .option {
-            padding: 14px 16px;
+            padding: 12px 14px;
             background: #f8f9fa;
             border: 2px solid #e9ecef;
             border-radius: 10px;
@@ -203,12 +203,12 @@
         .button {
             display: block;
             width: 100%;
-            padding: 16px;
+            padding: 14px;
             background: #2ecc71;
             color: white;
             border: none;
             border-radius: 10px;
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
@@ -258,8 +258,8 @@
         }
 
         .score-circle {
-            width: 120px;
-            height: 120px;
+            width: 100px;
+            height: 100px;
             border-radius: 50%;
             background: linear-gradient(135deg, #3498db, #2ecc71);
             color: white;
@@ -268,7 +268,7 @@
             align-items: center;
             justify-content: center;
             margin: 0 auto 20px;
-            font-size: 32px;
+            font-size: 28px;
             font-weight: bold;
             box-shadow: 0 8px 20px rgba(0,0,0,0.2);
             border: 4px solid white;
@@ -321,10 +321,10 @@
             border: 5px solid rgba(52, 152, 219, 0.2);
             border-left-color: #3498db;
             border-radius: 50%;
-            width: 50px;
-            height: 50px;
+            width: 40px;
+            height: 40px;
             animation: spin 1.2s linear infinite;
-            margin: 0 auto 20px;
+            margin-bottom: 15px;
         }
 
         @keyframes spin {
@@ -335,13 +335,13 @@
         footer {
             text-align: center;
             color: white;
-            margin-top: 15px;
+            margin-top: 10px;
             font-size: 12px;
             opacity: 0.8;
         }
 
         /* RESPONSIVE ADICIONAL */
-        @media (max-height: 700px) {
+        @media (max-height: 650px) {
             .container {
                 height: auto;
                 min-height: 100vh;
@@ -352,12 +352,12 @@
             }
             
             .options {
-                gap: 8px;
+                gap: 6px;
             }
             
             .option {
-                padding: 12px 14px;
-                font-size: 14px;
+                padding: 10px 12px;
+                font-size: 13px;
             }
             
             .button {
@@ -366,9 +366,9 @@
             }
             
             .score-circle {
-                width: 100px;
-                height: 100px;
-                font-size: 28px;
+                width: 80px;
+                height: 80px;
+                font-size: 24px;
             }
         }
 
@@ -683,12 +683,12 @@
                 const randomCategory = categories[Math.floor(Math.random() * categories.length)];
                 
                 // 🔄 VARIAR EL PAÍS para más diversidad
-                const countries = ['es', 'mx', 'ar', 'co', 'us'];
+                const countries = ['ar', 'us'];
                 const randomCountry = countries[Math.floor(Math.random() * countries.length)];
                 
                 const proxyUrl = 'https://api.allorigins.win/raw?url=';
-                const targetUrl = `https://gnews.io/api/v4/top-headlines?token=${apiKey}&lang=es&max=20&category=${randomCategory}&country=${randomCountry}`;
-                
+              const targetUrl = `https://gnews.io/api/v4/top-headlines?token=${apiKey}&lang=es&max=20&country=ar`; // Argentina por defecto
+
                 console.log('🔗 URL completa:', proxyUrl + encodeURIComponent(targetUrl));
                 console.log(`🎯 Categoría: ${randomCategory}, País: ${randomCountry}`);
                 
