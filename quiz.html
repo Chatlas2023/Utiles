@@ -1059,11 +1059,11 @@ function generateQuestionsFromArticles(articles) {
 
         // Tomar 2 títulos de otros artículos como opciones incorrectas
         for (let i = 0; i < shuffledOthers.length && incorrectOptions.length < 2; i++) {
-            let wrongTitle = shuffledOthers[i].title;
-            wrongTitle = cleanTitle(wrongTitle);
-            if (wrongTitle.length > 80) {
-                wrongTitle = wrongTitle.substring(0, 77) + '...';
-            }
+let wrongTitle = shuffledOthers[i].title;
+wrongTitle = cleanTitle(wrongTitle);
+if (wrongTitle.length > 70) {
+    wrongTitle = wrongTitle.substring(0, 67) + '...';
+}
             
             if (!usedTitles.has(wrongTitle)) {
                 incorrectOptions.push(wrongTitle);
@@ -1072,11 +1072,10 @@ function generateQuestionsFromArticles(articles) {
         }
         
         // Preparar título correcto
-        let correctTitle = cleanTitle(article.title);
-        if (correctTitle.length > 80) {
-            correctTitle = correctTitle.substring(0, 77) + '...';
-        }
-        
+let correctTitle = cleanTitle(article.title);
+if (correctTitle.length > 70) {
+    correctTitle = correctTitle.substring(0, 67) + '...';
+}
         // Mezclar opciones
         const options = [correctTitle, ...incorrectOptions];
         shuffleArray(options);
@@ -1299,8 +1298,8 @@ function showNewsResults() {
         
         newsItem.innerHTML = `
             <div class="news-content">
-                <div class="news-title">${question.fullTitle}</div>
-            </div>
+<div class="news-title">${question.fullTitle.length > 70 ? question.fullTitle.substring(0, 67) + '...' : question.fullTitle}</div>
+</div>
             <div class="news-actions">
                 <span class="news-status ${statusClass}">${status}</span>
                 ${hasValidUrl ? `
