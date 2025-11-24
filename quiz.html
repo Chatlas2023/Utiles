@@ -892,11 +892,10 @@ async function loadRealNews() {
             const countryFilteredArticles = filterByCountryAndSource(nonSportsArticles);
             
             // LUEGO FILTRADO RIGUROSO por imágenes y títulos
-            const articlesWithImages = countryFilteredArticles.filter(article => 
-                quickImageCheck(article.image) && 
-                article.title && 
-                article.title.length > 15
-            );
+const articlesWithImages = countryFilteredArticles.filter(article => 
+    article.title && 
+    article.title.length > 15
+);
             
             console.log(`📊 Artículos después de todos los filtros: ${articlesWithImages.length}`);
             
@@ -982,11 +981,10 @@ async function loadAlternativeCountryNews(apiKey, excludedCountry) {
         // APLICAR FILTRO DE DEPORTES
         const nonSportsArticles = filterOutSports(data.articles);
         
-        const articlesWithImages = nonSportsArticles.filter(article => 
-            quickImageCheck(article.image) && 
-            article.title && 
-            article.title.length > 15
-        );
+const articlesWithImages = nonSportsArticles.filter(article => 
+    article.title && 
+    article.title.length > 15
+);
         
         console.log(`📊 Artículos con imágenes válidas (${alternativeCountry}, sin deportes): ${articlesWithImages.length}`);
         
@@ -1017,15 +1015,15 @@ function generateQuestionsFromArticles(articles) {
     for (const article of shuffledArticles) {
         if (validArticles.length >= 10) break;
         
-        const imageCheck = quickImageCheck(article.image);
-        const titleCheck = article.title && 
-                          article.title.length > 15 &&
-                          !article.title.includes('undefined');
+const imageCheck = article.image && article.image.startsWith('http');
+const titleCheck = article.title && 
+                  article.title.length > 15 &&
+                  !article.title.includes('undefined');
         
         // NUEVO: Verificar que tenga URL
         const urlCheck = article.url && article.url.startsWith('http');
         
-        if (imageCheck && titleCheck && urlCheck) {
+if (titleCheck && urlCheck) {
             console.log(`✅ Artículo válido: "${article.title.substring(0, 50)}..."`);
             console.log(`   🖼️ Imagen: ${article.image}`);
             console.log(`   🔗 URL: ${article.url}`);
