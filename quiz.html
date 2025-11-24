@@ -1061,7 +1061,7 @@ function generateQuestionsFromArticles(articles) {
         for (let i = 0; i < shuffledOthers.length && incorrectOptions.length < 2; i++) {
 let wrongTitle = shuffledOthers[i].title;
 wrongTitle = cleanTitle(wrongTitle);
-if (wrongTitle.length > 70) {
+if (wrongTitle.length > 50) {
     wrongTitle = wrongTitle.substring(0, 67) + '...';
 }
             
@@ -1073,7 +1073,7 @@ if (wrongTitle.length > 70) {
         
         // Preparar título correcto
 let correctTitle = cleanTitle(article.title);
-if (correctTitle.length > 70) {
+if (correctTitle.length > 50) {
     correctTitle = correctTitle.substring(0, 67) + '...';
 }
         // Mezclar opciones
@@ -1298,7 +1298,7 @@ function showNewsResults() {
         
         newsItem.innerHTML = `
             <div class="news-content">
-<div class="news-title">${question.fullTitle.length > 70 ? question.fullTitle.substring(0, 67) + '...' : question.fullTitle}</div>
+<div class="news-title">${question.fullTitle.length > 50 ? question.fullTitle.substring(0, 47) + '...' : question.fullTitle}</div>
 </div>
             <div class="news-actions">
                 <span class="news-status ${statusClass}">${status}</span>
