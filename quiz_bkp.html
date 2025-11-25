@@ -300,9 +300,15 @@
             line-height: 1.4;
         }
 
-        .result-actions {
-            margin: 20px 0;
-        }
+.result-actions {
+    margin: 20px 0;
+    display: flex;
+    gap: 10px;
+}
+        .result-actions .button {
+    flex: 1;
+    margin-top: 0;
+}
 
         .news-source {
             margin-top: 15px;
@@ -585,10 +591,12 @@
         
         <!-- Pantalla de resultados -->
         <!-- Pantalla de resultados -->
+<!-- Pantalla de resultados -->
 <div id="result-screen" class="screen">
     <h1>🎉 Resultados</h1>
     <div class="result">
-        <p>Has completado el quiz de actualidad</p>
+        <!-- ELIMINAR ESTAS LÍNEAS -->
+        <!-- <p>Has completado el quiz de actualidad</p> -->
         <div class="score-display">
             <div class="score-circle" id="score-circle">
                 <span id="score-value">0</span>
@@ -596,19 +604,20 @@
             </div>
         </div>
         <div id="score-text" class="score-text"></div>
-        <p id="result-message" class="result-message"></p>
+        <!-- <p id="result-message" class="result-message"></p> -->
         
         <!-- NUEVA SECCIÓN: NOTICIAS COMPLETAS -->
         <div class="news-results">
-            <h3>📰 Resumen de Noticias</h3>
+            <!-- ELIMINAR ESTE TÍTULO -->
+            <!-- <h3>📰 Resumen de Noticias</h3> -->
             <div id="news-list" class="news-list">
                 <!-- Las noticias se cargarán aquí dinámicamente -->
             </div>
         </div>
         
         <div class="result-actions">
-            <button id="restart-btn" class="button restart">🔄 Jugar de nuevo</button>
-            <button id="share-btn" class="button share">📤 Compartir resultado</button>
+            <button id="restart-btn" class="button restart">🔄 Jugar</button>
+            <button id="share-btn" class="button share">📤 Compartir</button>
         </div>
         <div class="news-source">
             <small>Fuente: Noticias reales - <a href="#" id="setup-link">Información</a></small>
@@ -892,11 +901,10 @@ async function loadRealNews() {
             const countryFilteredArticles = filterByCountryAndSource(nonSportsArticles);
             
             // LUEGO FILTRADO RIGUROSO por imágenes y títulos
-            const articlesWithImages = countryFilteredArticles.filter(article => 
-                quickImageCheck(article.image) && 
-                article.title && 
-                article.title.length > 15
-            );
+const articlesWithImages = countryFilteredArticles.filter(article => 
+    article.title && 
+    article.title.length > 15
+);
             
             console.log(`📊 Artículos después de todos los filtros: ${articlesWithImages.length}`);
             
@@ -982,11 +990,10 @@ async function loadAlternativeCountryNews(apiKey, excludedCountry) {
         // APLICAR FILTRO DE DEPORTES
         const nonSportsArticles = filterOutSports(data.articles);
         
-        const articlesWithImages = nonSportsArticles.filter(article => 
-            quickImageCheck(article.image) && 
-            article.title && 
-            article.title.length > 15
-        );
+const articlesWithImages = nonSportsArticles.filter(article => 
+    article.title && 
+    article.title.length > 15
+);
         
         console.log(`📊 Artículos con imágenes válidas (${alternativeCountry}, sin deportes): ${articlesWithImages.length}`);
         
@@ -1017,15 +1024,15 @@ function generateQuestionsFromArticles(articles) {
     for (const article of shuffledArticles) {
         if (validArticles.length >= 10) break;
         
-        const imageCheck = quickImageCheck(article.image);
-        const titleCheck = article.title && 
-                          article.title.length > 15 &&
-                          !article.title.includes('undefined');
+const imageCheck = article.image && article.image.startsWith('http');
+const titleCheck = article.title && 
+                  article.title.length > 15 &&
+                  !article.title.includes('undefined');
         
         // NUEVO: Verificar que tenga URL
         const urlCheck = article.url && article.url.startsWith('http');
         
-        if (imageCheck && titleCheck && urlCheck) {
+if (titleCheck && urlCheck) {
             console.log(`✅ Artículo válido: "${article.title.substring(0, 50)}..."`);
             console.log(`   🖼️ Imagen: ${article.image}`);
             console.log(`   🔗 URL: ${article.url}`);
@@ -1059,11 +1066,11 @@ function generateQuestionsFromArticles(articles) {
 
         // Tomar 2 títulos de otros artículos como opciones incorrectas
         for (let i = 0; i < shuffledOthers.length && incorrectOptions.length < 2; i++) {
-            let wrongTitle = shuffledOthers[i].title;
-            wrongTitle = cleanTitle(wrongTitle);
-            if (wrongTitle.length > 80) {
-                wrongTitle = wrongTitle.substring(0, 77) + '...';
-            }
+let wrongTitle = shuffledOthers[i].title;
+wrongTitle = cleanTitle(wrongTitle);
+if (wrongTitle.length > 50) {
+    wrongTitle = wrongTitle.substring(0, 67) + '...';
+}
             
             if (!usedTitles.has(wrongTitle)) {
                 incorrectOptions.push(wrongTitle);
@@ -1072,11 +1079,10 @@ function generateQuestionsFromArticles(articles) {
         }
         
         // Preparar título correcto
-        let correctTitle = cleanTitle(article.title);
-        if (correctTitle.length > 80) {
-            correctTitle = correctTitle.substring(0, 77) + '...';
-        }
-        
+let correctTitle = cleanTitle(article.title);
+if (correctTitle.length > 50) {
+    correctTitle = correctTitle.substring(0, 67) + '...';
+}
         // Mezclar opciones
         const options = [correctTitle, ...incorrectOptions];
         shuffleArray(options);
@@ -1277,6 +1283,19 @@ function nextQuestion() {
         }
     }, 1500);
 }
+    // Mostrar resultados
+function showResults() {
+    if (quizScreen) quizScreen.classList.remove('active');
+    if (resultScreen) resultScreen.classList.add('active');
+    
+    if (scoreValue) scoreValue.textContent = score;
+    if (scoreText) scoreText.textContent = `${score} de ${questions.length} correctas`;
+    
+    // MOSTRAR LAS NOTICIAS
+    showNewsResults();
+    
+    console.log(`🎯 v4.4 - Quiz completado con noticias reales. Puntuación: ${score}/${questions.length}`);
+}
     // Mostrar lista de noticias con opción de leer artículos completos
 // Mostrar lista de noticias con opción de leer artículos completos
 function showNewsResults() {
@@ -1299,8 +1318,8 @@ function showNewsResults() {
         
         newsItem.innerHTML = `
             <div class="news-content">
-                <div class="news-title">${question.fullTitle}</div>
-            </div>
+<div class="news-title">${question.fullTitle.length > 50 ? question.fullTitle.substring(0, 47) + '...' : question.fullTitle}</div>
+</div>
             <div class="news-actions">
                 <span class="news-status ${statusClass}">${status}</span>
                 ${hasValidUrl ? `
@@ -1313,34 +1332,8 @@ function showNewsResults() {
         
         newsList.appendChild(newsItem);
     });
-}
-
-    // Mostrar resultados
-// Mostrar resultados
-function showResults() {
-    if (quizScreen) quizScreen.classList.remove('active');
-    if (resultScreen) resultScreen.classList.add('active');
+} 
     
-    if (scoreValue) scoreValue.textContent = score;
-    if (scoreText) scoreText.textContent = `${score} de ${questions.length} correctas`;
-    
-    // Mensaje personalizado
-    if (resultMessage) {
-        if (score >= 8) {
-            resultMessage.textContent = "¡Excelente! Estás muy informado sobre las noticias actuales.";
-        } else if (score >= 5) {
-            resultMessage.textContent = "Buen trabajo. Mantente leyendo noticias para mejorar.";
-        } else {
-            resultMessage.textContent = "Sigue informándote. Las noticias cambian rápidamente.";
-        }
-    }
-    
-    // MOSTRAR LAS NOTICIAS
-    showNewsResults();
-    
-    console.log(`🎯 v4.4 - Quiz completado con noticias reales. Puntuación: ${score}/${questions.length}`);
-}
-
 // Función para debug de la API
 function debugApiResponse(data) {
     console.log('🔍 DEBUG - Fuentes de noticias encontradas:');
