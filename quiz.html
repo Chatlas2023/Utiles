@@ -1261,32 +1261,49 @@ function showNewsResults() {
     });
 }
     // Función para abrir artículos dentro de la aplicación
+// Función para abrir artículos dentro de la aplicación
 function openArticleInApp(articleUrl) {
-    // Crear pantalla de artículo
+    // Ocultar el contenedor principal temporalmente
+    document.querySelector('.container').style.display = 'none';
+    
+    // Crear pantalla de artículo que ocupa toda la pantalla
     const articleScreen = document.createElement('div');
     articleScreen.id = 'article-screen';
-    articleScreen.className = 'screen active';
-    articleScreen.innerHTML = `
-        <div style="display: flex; flex-direction: column; height: 100%;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #eee;">
-                <button id="back-to-results-btn" class="button" style="width: auto; padding: 8px 16px; background: #3498db;">← Volver</button>
-                <h3 style="margin: 0; color: #2c3e50;">Leyendo noticia</h3>
-                <div style="width: 80px;"></div> <!-- Espacio para balancear -->
-            </div>
-            <iframe 
-                src="${articleUrl}" 
-                style="width: 100%; height: 100%; border: none; border-radius: 10px;"
-                sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
-            ></iframe>
-        </div>
+    articleScreen.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: white;
+        z-index: 1000;
+        display: flex;
+        flex-direction: column;
+        padding: 15px;
     `;
     
-    // Agregar al contenedor principal
-    document.querySelector('.container').appendChild(articleScreen);
+    articleScreen.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #eee;">
+            <button id="back-to-results-btn" class="button" style="width: auto; padding: 10px 20px; background: #3498db; font-size: 14px;">
+                ← Volver a resultados
+            </button>
+            <h3 style="margin: 0; color: #2c3e50; font-size: 18px;">Leyendo noticia</h3>
+            <div style="width: 140px;"></div> <!-- Espacio para balancear -->
+        </div>
+        <iframe 
+            src="${articleUrl}" 
+            style="width: 100%; flex: 1; border: none; border-radius: 10px;"
+            sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
+        ></iframe>
+    `;
+    
+    // Agregar al body
+    document.body.appendChild(articleScreen);
     
     // Event listener para el botón volver
     document.getElementById('back-to-results-btn').addEventListener('click', function() {
         document.getElementById('article-screen').remove();
+        document.querySelector('.container').style.display = 'flex';
         document.getElementById('result-screen').classList.add('active');
     });
 }
