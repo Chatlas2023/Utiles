@@ -242,16 +242,6 @@
         .button.restart:hover {
             background: #2980b9;
         }
-
-        .button.share {
-            background: #9b59b6;
-            margin-top: 10px;
-        }
-
-        .button.share:hover {
-            background: #8e44ad;
-        }
-
         /* PANTALLA RESULTADOS COMPACTA */
         #result-screen {
             text-align: center;
@@ -274,9 +264,17 @@
 }
         .result-actions .button {
     flex: 1;
-    margin-top: 0;
+    margin-top: 0;            
 }
-
+.button.restart {
+    background: #3498db;
+    font-size: 16px;
+    padding: 16px;
+}
+        .button.restart:hover {
+    background: #2980b9;
+    transform: translateY(-2px);
+}
         /* PANTALLA CARGA COMPACTA */
         .loading {
             text-align: center;
@@ -549,8 +547,7 @@
         
         <div class="result-actions">
             <button id="restart-btn" class="button restart">🔄 Jugar</button>
-            <button id="share-btn" class="button share">📤 Compartir</button>
-        </div>
+            </div>
     </div>
 </div>
     </div>
@@ -568,7 +565,7 @@
 
     // Elementos del DOM
     let startScreen, loadingScreen, quizScreen, resultScreen;
-    let startBtn, nextBtn, restartBtn, shareBtn;
+    let startBtn, nextBtn, restartBtn;
     let questionImage, questionText, optionsContainer;
     let progressBar, currentQuestionElement, scoreValue, scoreText, resultMessage, setupLink;
 
@@ -653,11 +650,6 @@ function setupEventListeners() {
     if (restartBtn) {
         restartBtn.addEventListener('click', restartQuiz);
         console.log('✅ Listener agregado: restartBtn');
-    }
-    
-    if (shareBtn) {
-        shareBtn.addEventListener('click', shareResults);
-        console.log('✅ Listener agregado: shareBtn');
     }
     
     if (setupLink) {
@@ -1340,26 +1332,6 @@ function debugApiResponse(data) {
         if (resultScreen) resultScreen.classList.remove('active');
         if (startScreen) startScreen.classList.add('active');
     }
-
-    // Compartir resultados
-    function shareResults() {
-        const shareText = `¡Acabo de completar el Quiz de Actualidad con noticias reales y obtuve ${score}/10! ¿Puedes superar mi puntuación?`;
-        
-        if (navigator.share) {
-            navigator.share({
-                title: 'Quiz de Actualidad - Noticias Reales',
-                text: shareText,
-                url: window.location.href
-            });
-        } else {
-            navigator.clipboard.writeText(shareText).then(() => {
-                alert('Resultado copiado. ¡Compártelo!');
-            });
-        }
-    }
-
-    // Mostrar información de la API
-// Mostrar información de la API
 // Mostrar información de la API
 function showSetupGuide(e) {
     if (e) e.preventDefault();
