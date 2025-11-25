@@ -1209,6 +1209,7 @@ function showResults() {
 }
     // Mostrar lista de noticias con opción de leer artículos completos
 // Mostrar lista de noticias con opción de leer artículos completos
+// Modifica la función showNewsResults para usar el proxy
 function showNewsResults() {
     const newsList = document.getElementById('news-list');
     if (!newsList) return;
@@ -1229,20 +1230,21 @@ function showNewsResults() {
         
         newsItem.innerHTML = `
             <div class="news-content">
-                <div class="news-title">${question.fullTitle.length > 50 ? question.fullTitle.substring(0, 47) + '...' : question.fullTitle}</div>
+                <div class="news-title">${question.fullTitle}</div>
             </div>
             <div class="news-actions">
                 <span class="news-status ${statusClass}">${status}</span>
                 ${hasValidUrl ? `
-                    <button class="read-article-btn" data-url="${question.articleUrl}">
+                    <a href="${getProxyUrl(question.articleUrl)}" target="_blank" class="read-article-btn" onclick="trackArticleClick('${question.source}')">
                         Leer
-                    </button>
+                    </a>
                 ` : '<small style="color: #e74c3c; font-size: 10px;">⚠️</small>'}
             </div>
         `;
         
         newsList.appendChild(newsItem);
     });
+}
     
     // Agregar event listeners a los botones "Leer"
     document.querySelectorAll('.read-article-btn').forEach(button => {
