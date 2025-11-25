@@ -300,9 +300,15 @@
             line-height: 1.4;
         }
 
-        .result-actions {
-            margin: 20px 0;
-        }
+.result-actions {
+    margin: 20px 0;
+    display: flex;
+    gap: 10px;
+}
+        .result-actions .button {
+    flex: 1;
+    margin-top: 0;
+}
 
         .news-source {
             margin-top: 15px;
@@ -585,10 +591,12 @@
         
         <!-- Pantalla de resultados -->
         <!-- Pantalla de resultados -->
+<!-- Pantalla de resultados -->
 <div id="result-screen" class="screen">
     <h1>🎉 Resultados</h1>
     <div class="result">
-        <p>Has completado el quiz de actualidad</p>
+        <!-- ELIMINAR ESTAS LÍNEAS -->
+        <!-- <p>Has completado el quiz de actualidad</p> -->
         <div class="score-display">
             <div class="score-circle" id="score-circle">
                 <span id="score-value">0</span>
@@ -596,19 +604,20 @@
             </div>
         </div>
         <div id="score-text" class="score-text"></div>
-        <p id="result-message" class="result-message"></p>
+        <!-- <p id="result-message" class="result-message"></p> -->
         
         <!-- NUEVA SECCIÓN: NOTICIAS COMPLETAS -->
         <div class="news-results">
-            <h3>📰 Resumen de Noticias</h3>
+            <!-- ELIMINAR ESTE TÍTULO -->
+            <!-- <h3>📰 Resumen de Noticias</h3> -->
             <div id="news-list" class="news-list">
                 <!-- Las noticias se cargarán aquí dinámicamente -->
             </div>
         </div>
         
         <div class="result-actions">
-            <button id="restart-btn" class="button restart">🔄 Jugar de nuevo</button>
-            <button id="share-btn" class="button share">📤 Compartir resultado</button>
+            <button id="restart-btn" class="button restart">🔄 Jugar</button>
+            <button id="share-btn" class="button share">📤 Compartir</button>
         </div>
         <div class="news-source">
             <small>Fuente: Noticias reales - <a href="#" id="setup-link">Información</a></small>
@@ -1310,34 +1319,7 @@ function showNewsResults() {
         
         newsList.appendChild(newsItem);
     });
-}
-
-    // Mostrar resultados
-// Mostrar resultados
-function showResults() {
-    if (quizScreen) quizScreen.classList.remove('active');
-    if (resultScreen) resultScreen.classList.add('active');
-    
-    if (scoreValue) scoreValue.textContent = score;
-    if (scoreText) scoreText.textContent = `${score} de ${questions.length} correctas`;
-    
-    // Mensaje personalizado
-    if (resultMessage) {
-        if (score >= 8) {
-            resultMessage.textContent = "¡Excelente! Estás muy informado sobre las noticias actuales.";
-        } else if (score >= 5) {
-            resultMessage.textContent = "Buen trabajo. Mantente leyendo noticias para mejorar.";
-        } else {
-            resultMessage.textContent = "Sigue informándote. Las noticias cambian rápidamente.";
-        }
-    }
-    
-    // MOSTRAR LAS NOTICIAS
-    showNewsResults();
-    
-    console.log(`🎯 v4.4 - Quiz completado con noticias reales. Puntuación: ${score}/${questions.length}`);
-}
-
+} 
 // Función para debug de la API
 function debugApiResponse(data) {
     console.log('🔍 DEBUG - Fuentes de noticias encontradas:');
