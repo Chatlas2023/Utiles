@@ -1283,6 +1283,19 @@ function nextQuestion() {
         }
     }, 1500);
 }
+    // Mostrar resultados
+function showResults() {
+    if (quizScreen) quizScreen.classList.remove('active');
+    if (resultScreen) resultScreen.classList.add('active');
+    
+    if (scoreValue) scoreValue.textContent = score;
+    if (scoreText) scoreText.textContent = `${score} de ${questions.length} correctas`;
+    
+    // MOSTRAR LAS NOTICIAS
+    showNewsResults();
+    
+    console.log(`🎯 v4.4 - Quiz completado con noticias reales. Puntuación: ${score}/${questions.length}`);
+}
     // Mostrar lista de noticias con opción de leer artículos completos
 // Mostrar lista de noticias con opción de leer artículos completos
 function showNewsResults() {
@@ -1320,6 +1333,7 @@ function showNewsResults() {
         newsList.appendChild(newsItem);
     });
 } 
+    
 // Función para debug de la API
 function debugApiResponse(data) {
     console.log('🔍 DEBUG - Fuentes de noticias encontradas:');
