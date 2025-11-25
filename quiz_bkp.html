@@ -259,39 +259,6 @@
             gap: 15px;
         }
 
-        .score-display {
-            margin: 20px 0;
-        }
-
-        .score-circle {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #3498db, #2ecc71);
-            color: white;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 20px;
-            font-size: 28px;
-            font-weight: bold;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-            border: 4px solid white;
-        }
-
-        .score-circle small {
-            font-size: 14px;
-            font-weight: normal;
-            margin-top: 2px;
-        }
-
-        .score-text {
-            font-size: 18px;
-            font-weight: 600;
-            margin: 15px 0;
-            color: #2c3e50;
-        }
 
         .result-message {
             font-size: 15px;
@@ -309,14 +276,6 @@
     flex: 1;
     margin-top: 0;
 }
-
-        .news-source {
-            margin-top: 15px;
-            padding: 12px;
-            background: #f8f9fa;
-            border-radius: 8px;
-            font-size: 12px;
-        }
 
         /* PANTALLA CARGA COMPACTA */
         .loading {
@@ -445,23 +404,7 @@
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
-
-        /* FOOTER COMPACTO */
-        footer {
-            text-align: center;
-            color: white;
-            margin-top: 10px;
-            font-size: 12px;
-            opacity: 0.8;
-        }
-
-        /* RESPONSIVE ADICIONAL */
-        @media (max-height: 650px) {
-            .container {
-                height: auto;
-                min-height: 100vh;
-            }
-            
+        
             .question-image {
                 height: 169px;
             }
@@ -590,22 +533,9 @@
         </div>
         
         <!-- Pantalla de resultados -->
-        <!-- Pantalla de resultados -->
-<!-- Pantalla de resultados -->
 <div id="result-screen" class="screen">
-    <h1>🎉 Resultados</h1>
-    <div class="result">
-        <!-- ELIMINAR ESTAS LÍNEAS -->
-        <!-- <p>Has completado el quiz de actualidad</p> -->
-        <div class="score-display">
-            <div class="score-circle" id="score-circle">
-                <span id="score-value">0</span>
-                <small>/10</small>
-            </div>
-        </div>
-        <div id="score-text" class="score-text"></div>
-        <!-- <p id="result-message" class="result-message"></p> -->
-        
+    
+    <div class="result">      
         <!-- NUEVA SECCIÓN: NOTICIAS COMPLETAS -->
         <div class="news-results">
             <!-- ELIMINAR ESTE TÍTULO -->
@@ -619,18 +549,9 @@
             <button id="restart-btn" class="button restart">🔄 Jugar</button>
             <button id="share-btn" class="button share">📤 Compartir</button>
         </div>
-        <div class="news-source">
-            <small>Fuente: Noticias reales - <a href="#" id="setup-link">Información</a></small>
-        </div>
     </div>
 </div>
     </div>
-
-    <footer>
-        <p>Quiz de Actualidad &copy; 2023 - v4.4 - Noticias Reales</p>
-        <p id="version-info" style="font-size: 12px; opacity: 0.7;"></p>
-    </footer>
-
 <script>
     // =============================================
     // QUIZ DE ACTUALIDAD - v4.4 - IMÁGENES GARANTIZADAS
@@ -1288,12 +1209,8 @@ function showResults() {
     if (quizScreen) quizScreen.classList.remove('active');
     if (resultScreen) resultScreen.classList.add('active');
     
-    if (scoreValue) scoreValue.textContent = score;
-    if (scoreText) scoreText.textContent = `${score} de ${questions.length} correctas`;
-    
     // MOSTRAR LAS NOTICIAS
     showNewsResults();
-    
     console.log(`🎯 v4.4 - Quiz completado con noticias reales. Puntuación: ${score}/${questions.length}`);
 }
     // Mostrar lista de noticias con opción de leer artículos completos
