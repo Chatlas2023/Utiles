@@ -365,6 +365,7 @@
     color: #e74c3c;
 }
 
+/* Estilos para el botón Leer como botón real */
 .read-article-btn {
     display: inline-block;
     padding: 4px 10px;
@@ -378,6 +379,7 @@
     border: none;
     cursor: pointer;
     white-space: nowrap;
+    font-family: inherit;
 }
 
 .read-article-btn:hover {
@@ -1235,21 +1237,59 @@ function showNewsResults() {
         
         newsItem.innerHTML = `
             <div class="news-content">
-<div class="news-title">${question.fullTitle.length > 50 ? question.fullTitle.substring(0, 47) + '...' : question.fullTitle}</div>
-</div>
+                <div class="news-title">${question.fullTitle.length > 50 ? question.fullTitle.substring(0, 47) + '...' : question.fullTitle}</div>
+            </div>
             <div class="news-actions">
                 <span class="news-status ${statusClass}">${status}</span>
                 ${hasValidUrl ? `
-                    <a href="${question.articleUrl}" target="_blank" class="read-article-btn">
+                    <button class="read-article-btn" data-url="${question.articleUrl}">
                         Leer
-                    </a>
+                    </button>
                 ` : '<small style="color: #e74c3c; font-size: 10px;">⚠️</small>'}
             </div>
         `;
         
         newsList.appendChild(newsItem);
     });
-} 
+    
+    // Agregar event listeners a los botones "Leer"
+    document.querySelectorAll('.read-article-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const articleUrl = this.getAttribute('data-url');
+            openArticleInApp(articleUrl);
+        });
+    });
+}
+    // Función para abrir artículos dentro de la aplicación
+function openArticleInApp(articleUrl) {
+    // Crear pantalla de artículo
+    const articleScreen = document.createElement('div');
+    articleScreen.id = 'article-screen';
+    articleScreen.className = 'screen active';
+    articleScreen.innerHTML = `
+        <div style="display: flex; flex-direction: column; height: 100%;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #eee;">
+                <button id="back-to-results-btn" class="button" style="width: auto; padding: 8px 16px; background: #3498db;">← Volver</button>
+                <h3 style="margin: 0; color: #2c3e50;">Leyendo noticia</h3>
+                <div style="width: 80px;"></div> <!-- Espacio para balancear -->
+            </div>
+            <iframe 
+                src="${articleUrl}" 
+                style="width: 100%; height: 100%; border: none; border-radius: 10px;"
+                sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
+            ></iframe>
+        </div>
+    `;
+    
+    // Agregar al contenedor principal
+    document.querySelector('.container').appendChild(articleScreen);
+    
+    // Event listener para el botón volver
+    document.getElementById('back-to-results-btn').addEventListener('click', function() {
+        document.getElementById('article-screen').remove();
+        document.getElementById('result-screen').classList.add('active');
+    });
+}
     
 // Función para debug de la API
 function debugApiResponse(data) {
