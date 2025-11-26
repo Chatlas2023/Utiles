@@ -765,24 +765,32 @@ function filterByCountryAndSource(articles) {
 async function loadRealNews() {
     const apiKey = 'cd358617b03acad6467b57dfe9cbdb81';
     
-    console.log('🔄 v4.4 - Cargando noticias EXCLUSIVAS de Argentina y Estados Unidos (sin deportes)...');
+    console.log('🔄 v4.4 - Cargando noticias VARIADAS de Argentina y Estados Unidos...');
     
     try {
-        // VARIAR LAS CATEGORÍAS - EXCLUYENDO DEPORTES
-        const categories = ['general', 'world', 'business', 'technology', 'science', 'health', 'entertainment'];
-        const randomCategory = categories[Math.floor(Math.random() * categories.length)];
+        // CATEGORÍAS VARIADAS - EXCLUYENDO DEPORTES Y ENTERTAINMENT
+        const categories = ['general', 'world', 'business', 'technology', 'science', 'health'];
         
         // SOLO ARGENTINA Y ESTADOS UNIDOS
         const countries = ['ar', 'us'];
+        
+        // MEZCLAR CATEGORÍAS para obtener noticias variadas
+        const shuffledCategories = [...categories];
+        for (let i = shuffledCategories.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffledCategories[i], shuffledCategories[j]] = [shuffledCategories[j], shuffledCategories[i]];
+        }
+        
         const randomCountry = countries[Math.floor(Math.random() * countries.length)];
         
         const proxyUrl = 'https://api.allorigins.win/raw?url=';
-        const targetUrl = `https://gnews.io/api/v4/top-headlines?token=${apiKey}&lang=es&max=40&category=${randomCategory}&country=${randomCountry}`;
+        
+        // USAR CATEGORÍA "GENERAL" para obtener noticias variadas
+        const targetUrl = `https://gnews.io/api/v4/top-headlines?token=${apiKey}&lang=es&max=40&category=general&country=${randomCountry}`;
         
         console.log('🔗 URL completa:', proxyUrl + encodeURIComponent(targetUrl));
-        console.log(`🎯 Categoría: ${randomCategory}, País: ${randomCountry}`);
-        console.log(`🚫 FILTRO: Excluyendo deportes`);
-        console.log(`🌎 FILTRO: Solo medios de Argentina y EE.UU.`);
+        console.log(`🎯 Categoría: general (noticias variadas), País: ${randomCountry}`);
+        console.log(`🚫 FILTRO: Excluyendo deportes y espectáculos`);
         
         const response = await fetch(proxyUrl + encodeURIComponent(targetUrl), {
             method: 'GET',
@@ -797,7 +805,6 @@ async function loadRealNews() {
         
         const data = await response.json();
         
-        // NUEVO: Debug de la respuesta
         debugApiResponse(data);
         
         console.log('✅ v4.4 - Noticias recibidas correctamente');
@@ -807,22 +814,34 @@ async function loadRealNews() {
             // 🔥 NUEVO: FILTRAR PARA EXCLUIR NOTICIAS DE DEPORTES
             const nonSportsArticles = filterOutSports(data.articles);
             
-            // LUEGO FILTRAR POR PAÍS/MEDIO
-            const countryFilteredArticles = filterByCountryAndSource(nonSportsArticles);
-                        // 🎭 NUEVO: APLICAR FILTRO DE ESPECTÁCULOS
-    const nonEntertainmentArticles = filterOutEntertainment(nonSportsArticles);
+            // 🎭 NUEVO: APLICAR FILTRO DE ESPECTÁCULOS
+            const nonEntertainmentArticles = filterOutEntertainment(nonSportsArticles);
             
-            // LUEGO FILTRADO RIGUROSO por imágenes y títulos
-const articlesWithImages = countryFilteredArticles.filter(article => 
-    article.title && 
-    article.title.length > 15
-);
+            // LUEGO FILTRAR POR PAÍS/MEDIO
+            const countryFilteredArticles = filterByCountryAndSource(nonEntertainmentArticles);
+            
+            // VERIFICAR que tenemos suficientes artículos variados
+            const articlesWithImages = countryFilteredArticles.filter(article => 
+                article.title && 
+                article.title.length > 15
+            );
             
             console.log(`📊 Artículos después de todos los filtros: ${articlesWithImages.length}`);
             
-            if (articlesWithImages.length >= 3) {
+            if (articlesWithImages.length >= 10) {
+                // MEZCLAR LOS ARTÍCULOS para mayor variedad
+                const shuffledArticles = [...articlesWithImages];
+                for (let i = shuffledArticles.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [shuffledArticles[i], shuffledArticles[j]] = [shuffledArticles[j], shuffledArticles[i]];
+                }
+                
+                const generatedQuestions = generateQuestionsFromArticles(shuffledArticles.slice(0, 10));
+                console.log(`✅ v4.4 - Preguntas generadas (variadas): ${generatedQuestions.length}`);
+                return generatedQuestions;
+            } else if (articlesWithImages.length >= 3) {
                 const generatedQuestions = generateQuestionsFromArticles(articlesWithImages);
-                console.log(`✅ v4.4 - Preguntas generadas (sin deportes): ${generatedQuestions.length}`);
+                console.log(`✅ v4.4 - Preguntas generadas (con pocos artículos): ${generatedQuestions.length}`);
                 return generatedQuestions;
             } else {
                 console.log('🔄 No hay suficientes artículos filtrados, intentando con el otro país...');
@@ -833,7 +852,7 @@ const articlesWithImages = countryFilteredArticles.filter(article =>
         }
     } catch (error) {
         console.error('❌ v4.4 - Error cargando noticias:', error);
-        throw new Error('No se pudieron cargar noticias (sin deportes) de Argentina y Estados Unidos. Intenta más tarde.');
+        throw new Error('No se pudieron cargar noticias variadas. Intenta más tarde.');
     }
 }
     // 🔍 FUNCIÓN PARA EXCLUIR NOTICIAS DE DEPORTES
@@ -922,44 +941,43 @@ function filterOutEntertainment(articles) {
 }
 // Función para cargar noticias del país alternativo
 async function loadAlternativeCountryNews(apiKey, excludedCountry) {
-    console.log('🔄 Intentando con el país alternativo (sin deportes)...');
+    console.log('🔄 Intentando con el país alternativo...');
     
-    // Determinar el país alternativo
     const countries = ['ar', 'us'];
     const alternativeCountry = countries.find(country => country !== excludedCountry);
     
-    // CATEGORÍAS SIN DEPORTES
-    const categories = ['general', 'world', 'business', 'technology', 'science', 'health'];
-    const randomCategory = categories[Math.floor(Math.random() * categories.length)];
-    
     const proxyUrl = 'https://api.allorigins.win/raw?url=';
-    const targetUrl = `https://gnews.io/api/v4/top-headlines?token=${apiKey}&lang=es&max=40&category=${randomCategory}&country=${alternativeCountry}`;
+    // USAR CATEGORÍA GENERAL para variedad
+    const targetUrl = `https://gnews.io/api/v4/top-headlines?token=${apiKey}&lang=es&max=40&category=general&country=${alternativeCountry}`;
     
-    console.log(`🔄 País alternativo: ${alternativeCountry}, Categoría: ${randomCategory} (sin deportes)`);
+    console.log(`🔄 País alternativo: ${alternativeCountry}, Categoría: general (variada)`);
     
     const response = await fetch(proxyUrl + encodeURIComponent(targetUrl));
     const data = await response.json();
     
     if (data.articles && data.articles.length > 0) {
-        // APLICAR FILTRO DE DEPORTES
         const nonSportsArticles = filterOutSports(data.articles);
-            // 🎭 NUEVO: FILTRAR PARA EXCLUIR NOTICIAS DE ESPECTÁCULOS
-    const nonEntertainmentArticles = filterOutEntertainment(nonSportsArticles);
-
+        const nonEntertainmentArticles = filterOutEntertainment(nonSportsArticles);
         
-const articlesWithImages = nonSportsArticles.filter(article => 
-    article.title && 
-    article.title.length > 15
-);
+        const articlesWithImages = nonEntertainmentArticles.filter(article => 
+            article.title && 
+            article.title.length > 15
+        );
         
-        console.log(`📊 Artículos con imágenes válidas (${alternativeCountry}, sin deportes): ${articlesWithImages.length}`);
+        console.log(`📊 Artículos alternativos variados: ${articlesWithImages.length}`);
         
         if (articlesWithImages.length >= 3) {
-            return generateQuestionsFromArticles(articlesWithImages);
+            // MEZCLAR para variedad
+            const shuffledArticles = [...articlesWithImages];
+            for (let i = shuffledArticles.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffledArticles[i], shuffledArticles[j]] = [shuffledArticles[j], shuffledArticles[i]];
+            }
+            return generateQuestionsFromArticles(shuffledArticles.slice(0, 10));
         }
     }
     
-    throw new Error('No se pudieron cargar noticias con imágenes válidas (sin deportes) de Argentina ni Estados Unidos');
+    throw new Error('No se pudieron cargar noticias variadas alternativas');
 }
 
     // Generar preguntas a partir de artículos reales
