@@ -1183,17 +1183,28 @@ async function startQuiz() {
 }
 
     // Cargar preguntas
-    async function loadQuestions() {
-        console.log('📡 v4.4 - Conectando con API de noticias...');
-        questions = await loadRealNews();
-        
-        if (questions.length === 0) {
-            throw new Error('No se pudieron generar preguntas desde la API');
-        }
-        
-        shuffleArray(questions);
-        console.log(`✅ v4.4 - ${questions.length} preguntas reales cargadas exitosamente`);
+// Y modifica la función loadQuestions para incluir la verificación:
+async function loadQuestions() {
+    console.log('📡 v4.4 - Conectando con API de noticias...');
+    questions = await loadRealNews();
+    
+    if (questions.length === 0) {
+        throw new Error('No se pudieron generar preguntas desde la API');
     }
+    
+    // 🔥 VERIFICACIÓN CRÍTICA
+    if (questions.length !== 10) {
+        console.error(`❌ ERROR: Se generaron ${questions.length} preguntas en lugar de 10`);
+        throw new Error(`Error interno: Se esperaban 10 preguntas pero se generaron ${questions.length}`);
+    }
+    
+    shuffleArray(questions);
+    
+    // Ejecutar verificación
+    verifyQuestionsIntegrity();
+    
+    console.log(`✅ v4.4 - ${questions.length} preguntas reales cargadas exitosamente`);
+}
 
     // Mostrar la pregunta actual
     function showQuestion() {
@@ -1483,28 +1494,6 @@ function verifyQuestionsIntegrity() {
     return questions.length === 10 && validQuestions;
 }
 
-// Y modifica la función loadQuestions para incluir la verificación:
-async function loadQuestions() {
-    console.log('📡 v4.4 - Conectando con API de noticias...');
-    questions = await loadRealNews();
-    
-    if (questions.length === 0) {
-        throw new Error('No se pudieron generar preguntas desde la API');
-    }
-    
-    // 🔥 VERIFICACIÓN CRÍTICA
-    if (questions.length !== 10) {
-        console.error(`❌ ERROR: Se generaron ${questions.length} preguntas en lugar de 10`);
-        throw new Error(`Error interno: Se esperaban 10 preguntas pero se generaron ${questions.length}`);
-    }
-    
-    shuffleArray(questions);
-    
-    // Ejecutar verificación
-    verifyQuestionsIntegrity();
-    
-    console.log(`✅ v4.4 - ${questions.length} preguntas reales cargadas exitosamente`);
-}
 </script>
 </body>
 </html>
