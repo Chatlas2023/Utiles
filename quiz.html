@@ -828,25 +828,26 @@ async function loadRealNews() {
             
             console.log(`📊 Artículos después de todos los filtros: ${articlesWithImages.length}`);
             
-            if (articlesWithImages.length >= 10) {
-                // MEZCLAR LOS ARTÍCULOS para mayor variedad
-                const shuffledArticles = [...articlesWithImages];
-                for (let i = shuffledArticles.length - 1; i > 0; i--) {
-                    const j = Math.floor(Math.random() * (i + 1));
-                    [shuffledArticles[i], shuffledArticles[j]] = [shuffledArticles[j], shuffledArticles[i]];
-                }
-                
-                const generatedQuestions = generateQuestionsFromArticles(shuffledArticles.slice(0, 10));
-                console.log(`✅ v4.4 - Preguntas generadas (variadas): ${generatedQuestions.length}`);
-                return generatedQuestions;
-            } else if (articlesWithImages.length >= 3) {
-                const generatedQuestions = generateQuestionsFromArticles(articlesWithImages);
-                console.log(`✅ v4.4 - Preguntas generadas (con pocos artículos): ${generatedQuestions.length}`);
-                return generatedQuestions;
-            } else {
-                console.log('🔄 No hay suficientes artículos filtrados, intentando con el otro país...');
-                return await loadAlternativeCountryNews(apiKey, randomCountry);
-            }
+// En la función loadRealNews, modifica esta parte:
+if (articlesWithImages.length >= 10) {
+    const shuffledArticles = [...articlesWithImages];
+    for (let i = shuffledArticles.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffledArticles[i], shuffledArticles[j]] = [shuffledArticles[j], shuffledArticles[i]];
+    }
+    
+    const generatedQuestions = generateQuestionsFromArticles(shuffledArticles.slice(0, 10));
+    console.log(`✅ v4.4 - Preguntas generadas (variadas): ${generatedQuestions.length}`);
+    return generatedQuestions;
+} else if (articlesWithImages.length >= 3) {
+    // 🔥 CORRECCIÓN: Usar generateQuestionsFromArticles que ahora maneja la repetición
+    const generatedQuestions = generateQuestionsFromArticles(articlesWithImages);
+    console.log(`✅ v4.4 - Preguntas generadas (con repetición): ${generatedQuestions.length}`);
+    return generatedQuestions;
+} else {
+    console.log('🔄 No hay suficientes artículos filtrados, intentando con el otro país...');
+    return await loadAlternativeCountryNews(apiKey, randomCountry);
+}
         } else {
             throw new Error('No se encontraron noticias en la respuesta de la API');
         }
@@ -983,6 +984,7 @@ async function loadAlternativeCountryNews(apiKey, excludedCountry) {
     // Generar preguntas a partir de artículos reales
 // Generar preguntas a partir de artículos reales - VERSIÓN MEJORADA PARA 10 PREGUNTAS
 // Generar preguntas a partir de artículos reales
+// Generar preguntas a partir de artículos reales - VERSIÓN CORREGIDA
 function generateQuestionsFromArticles(articles) {
     console.log('📝 v4.4 - Procesando artículos reales para 10 preguntas...');
     
@@ -993,41 +995,54 @@ function generateQuestionsFromArticles(articles) {
         [shuffledArticles[i], shuffledArticles[j]] = [shuffledArticles[j], shuffledArticles[i]];
     }
     
-    // VERIFICACIÓN RIGUROSA de imágenes y títulos - TOMAR HASTA 10 ARTÍCULOS
+    // VERIFICACIÓN RIGUROSA de imágenes y títulos
     const validArticles = [];
     
     for (const article of shuffledArticles) {
-        if (validArticles.length >= 10) break;
+        const imageCheck = article.image && article.image.startsWith('http');
+        const titleCheck = article.title && 
+                          article.title.length > 15 &&
+                          !article.title.includes('undefined');
         
-const imageCheck = article.image && article.image.startsWith('http');
-const titleCheck = article.title && 
-                  article.title.length > 15 &&
-                  !article.title.includes('undefined');
-        
-        // NUEVO: Verificar que tenga URL
         const urlCheck = article.url && article.url.startsWith('http');
         
-if (titleCheck && urlCheck) {
+        if (titleCheck && urlCheck) {
             console.log(`✅ Artículo válido: "${article.title.substring(0, 50)}..."`);
             console.log(`   🖼️ Imagen: ${article.image}`);
             console.log(`   🔗 URL: ${article.url}`);
             validArticles.push(article);
         } else {
             console.log(`❌ Artículo descartado: "${article.title?.substring(0, 50)}..."`);
-            console.log(`   📊 Estado - Imagen: ${imageCheck ? '✅' : '❌'}, Título: ${titleCheck ? '✅' : '❌'}, URL: ${urlCheck ? '✅' : '❌'}`);
         }
     }
     
     console.log(`✅ v4.4 - Artículos válidos encontrados: ${validArticles.length}`);
     
-    // Si no hay suficientes artículos, lanzar error
-    if (validArticles.length < 3) {
-        throw new Error(`Solo se encontraron ${validArticles.length} artículos con imágenes y URLs válidas`);
+    // 🔥 CORRECCIÓN CRÍTICA: SI NO HAY 10 ARTÍCULOS, REPETIR LOS DISPONIBLES
+    if (validArticles.length < 10) {
+        console.warn(`⚠️ Solo se encontraron ${validArticles.length} artículos válidos. Repitiendo para completar 10 preguntas...`);
+        
+        const repeatedArticles = [];
+        while (repeatedArticles.length < 10) {
+            for (const article of validArticles) {
+                if (repeatedArticles.length >= 10) break;
+                repeatedArticles.push(article);
+            }
+        }
+        
+        console.log(`🔄 Se completaron 10 preguntas usando ${validArticles.length} artículos únicos`);
+        return generateQuestionsFromValidArticles(repeatedArticles.slice(0, 10));
     }
     
-    return validArticles.slice(0, 10).map((article, index) => {
-        // Crear opciones incorrectas de otros artículos VERIFICADOS
-        const otherArticles = validArticles.filter((_, i) => i !== index);
+    // Si hay 10 o más artículos, usar los primeros 10
+    return generateQuestionsFromValidArticles(validArticles.slice(0, 10));
+}
+
+// 🔥 NUEVA FUNCIÓN: Generar preguntas desde artículos ya validados
+function generateQuestionsFromValidArticles(articles) {
+    return articles.map((article, index) => {
+        // Crear opciones incorrectas de otros artículos
+        const otherArticles = articles.filter((_, i) => i !== index);
         
         // MEZCLAR LOS ARTÍCULOS PARA OPCIONES INCORRECTAS
         const shuffledOthers = [...otherArticles];
@@ -1041,11 +1056,11 @@ if (titleCheck && urlCheck) {
 
         // Tomar 2 títulos de otros artículos como opciones incorrectas
         for (let i = 0; i < shuffledOthers.length && incorrectOptions.length < 2; i++) {
-let wrongTitle = shuffledOthers[i].title;
-wrongTitle = cleanTitle(wrongTitle);
-if (wrongTitle.length > 50) {
-    wrongTitle = wrongTitle.substring(0, 67) + '...';
-}
+            let wrongTitle = shuffledOthers[i].title;
+            wrongTitle = cleanTitle(wrongTitle);
+            if (wrongTitle.length > 50) {
+                wrongTitle = wrongTitle.substring(0, 67) + '...';
+            }
             
             if (!usedTitles.has(wrongTitle)) {
                 incorrectOptions.push(wrongTitle);
@@ -1053,11 +1068,28 @@ if (wrongTitle.length > 50) {
             }
         }
         
+        // Si no hay suficientes opciones incorrectas, crear algunas genéricas
+        while (incorrectOptions.length < 2) {
+            const genericTitles = [
+                "Importante acuerdo económico internacional",
+                "Avance científico revolucionario en medicina",
+                "Nueva ley aprobada por el congreso nacional",
+                "Descubrimiento histórico en investigación arqueológica",
+                "Innovación tecnológica cambiará la industria"
+            ];
+            
+            const randomTitle = genericTitles[Math.floor(Math.random() * genericTitles.length)];
+            if (!incorrectOptions.includes(randomTitle)) {
+                incorrectOptions.push(randomTitle);
+            }
+        }
+        
         // Preparar título correcto
-let correctTitle = cleanTitle(article.title);
-if (correctTitle.length > 50) {
-    correctTitle = correctTitle.substring(0, 67) + '...';
-}
+        let correctTitle = cleanTitle(article.title);
+        if (correctTitle.length > 50) {
+            correctTitle = correctTitle.substring(0, 67) + '...';
+        }
+        
         // Mezclar opciones
         const options = [correctTitle, ...incorrectOptions];
         shuffleArray(options);
@@ -1075,7 +1107,6 @@ if (correctTitle.length > 50) {
             correctAnswer: correctAnswerIndex,
             source: article.source?.name || "Medios Internacionales",
             hasValidImage: true,
-            // NUEVO: Guardar información completa del artículo
             articleUrl: article.url,
             fullTitle: cleanTitle(article.title),
             userAnswer: null,
