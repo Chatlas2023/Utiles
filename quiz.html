@@ -1008,17 +1008,17 @@ function generateQuestionsFromArticles(articles) {
         
         if (titleCheck && urlCheck) {
             console.log(`✅ Artículo válido: "${article.title.substring(0, 50)}..."`);
-            console.log(`   🖼️ Imagen: ${article.image}`);
-            console.log(`   🔗 URL: ${article.url}`);
             validArticles.push(article);
-        } else {
-            console.log(`❌ Artículo descartado: "${article.title?.substring(0, 50)}..."`);
         }
     }
     
     console.log(`✅ v4.4 - Artículos válidos encontrados: ${validArticles.length}`);
     
-    // 🔥 CORRECCIÓN CRÍTICA: SI NO HAY 10 ARTÍCULOS, REPETIR LOS DISPONIBLES
+    // 🔥 CORRECCIÓN CRÍTICA: GARANTIZAR 10 PREGUNTAS SIEMPRE
+    if (validArticles.length === 0) {
+        throw new Error('No se encontraron artículos válidos para generar preguntas');
+    }
+    
     if (validArticles.length < 10) {
         console.warn(`⚠️ Solo se encontraron ${validArticles.length} artículos válidos. Repitiendo para completar 10 preguntas...`);
         
@@ -1026,7 +1026,9 @@ function generateQuestionsFromArticles(articles) {
         while (repeatedArticles.length < 10) {
             for (const article of validArticles) {
                 if (repeatedArticles.length >= 10) break;
-                repeatedArticles.push(article);
+                // 🔥 CORRECCIÓN: Crear COPIA PROFUNDA del artículo
+                const articleCopy = JSON.parse(JSON.stringify(article));
+                repeatedArticles.push(articleCopy);
             }
         }
         
@@ -1040,6 +1042,24 @@ function generateQuestionsFromArticles(articles) {
 
 // 🔥 NUEVA FUNCIÓN: Generar preguntas desde artículos ya validados
 function generateQuestionsFromValidArticles(articles) {
+    console.log(`🎯 Generando exactamente ${articles.length} preguntas...`);
+    
+    // VERIFICACIÓN FINAL: Asegurar que tenemos 10 artículos
+    if (articles.length !== 10) {
+        console.error(`❌ ERROR CRÍTICO: Se esperaban 10 artículos pero se recibieron ${articles.length}`);
+        // Forzar 10 artículos si es necesario
+        while (articles.length < 10) {
+            const defaultArticle = {
+                title: "Noticia de actualidad importante",
+                image: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjIyMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjhmOGY4Ii8+PGNpcmNsZSBjeD0iMjAwIiBjeT0iODAiIHI9IjMwIiBmaWxsPSIjZGRkIi8+PHJlY3QgeD0iMTUwIiB5PSIxMjAiIHdpZHRoPSIxMDAiIGhlaWdodD0iMTUiIHJ4PSI3IiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iMjAwIiB5PSIxODAiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+Tm90aWNpYSByZWFsPC90ZXh0Pjwvc3ZnPg==",
+                url: "https://example.com",
+                source: { name: "Medios Internacionales" }
+            };
+            articles.push(JSON.parse(JSON.stringify(defaultArticle)));
+        }
+        articles = articles.slice(0, 10);
+    }
+    
     return articles.map((article, index) => {
         // Crear opciones incorrectas de otros artículos
         const otherArticles = articles.filter((_, i) => i !== index);
@@ -1074,7 +1094,7 @@ function generateQuestionsFromValidArticles(articles) {
                 "Importante acuerdo económico internacional",
                 "Avance científico revolucionario en medicina",
                 "Nueva ley aprobada por el congreso nacional",
-                "Descubrimiento histórico en investigación arqueológica",
+                "Descubrimiento histórico en investigación",
                 "Innovación tecnológica cambiará la industria"
             ];
             
@@ -1096,9 +1116,7 @@ function generateQuestionsFromValidArticles(articles) {
         
         const correctAnswerIndex = options.indexOf(correctTitle);
         
-        console.log(`❓ v4.4 - Pregunta ${index + 1}: "${correctTitle.substring(0, 50)}..."`);
-        console.log(`   🖼️ Imagen: ${article.image}`);
-        console.log(`   🔗 URL: ${article.url}`);
+        console.log(`❓ Pregunta ${index + 1}/10: "${correctTitle.substring(0, 50)}..."`);
         
         return {
             question: "¿Cuál es el titular correcto para esta noticia?",
@@ -1433,6 +1451,60 @@ function showVersionInfo() {
         console.log('📄 DOM cargado, iniciando aplicación...');
         initializeApp();
     });
+    // Función para verificar la integridad de las preguntas
+function verifyQuestionsIntegrity() {
+    console.log('🔍 Verificando integridad de las preguntas...');
+    console.log(`📊 Total de preguntas: ${questions.length}`);
+    
+    if (questions.length !== 10) {
+        console.error(`❌ ERROR: Se esperaban 10 preguntas pero hay ${questions.length}`);
+        return false;
+    }
+    
+    // Verificar que todas las preguntas sean únicas
+    const titles = questions.map(q => q.fullTitle);
+    const uniqueTitles = new Set(titles);
+    
+    console.log(`📰 Títulos únicos: ${uniqueTitles.size} de 10`);
+    
+    if (uniqueTitles.size < questions.length) {
+        console.warn('⚠️ Hay preguntas duplicadas');
+    }
+    
+    // Verificar que todas tengan opciones válidas
+    const validQuestions = questions.every(q => 
+        q.options && 
+        q.options.length === 3 && 
+        q.correctAnswer >= 0 && 
+        q.correctAnswer < 3
+    );
+    
+    console.log(`✅ Todas las preguntas tienen opciones válidas: ${validQuestions}`);
+    return questions.length === 10 && validQuestions;
+}
+
+// Y modifica la función loadQuestions para incluir la verificación:
+async function loadQuestions() {
+    console.log('📡 v4.4 - Conectando con API de noticias...');
+    questions = await loadRealNews();
+    
+    if (questions.length === 0) {
+        throw new Error('No se pudieron generar preguntas desde la API');
+    }
+    
+    // 🔥 VERIFICACIÓN CRÍTICA
+    if (questions.length !== 10) {
+        console.error(`❌ ERROR: Se generaron ${questions.length} preguntas en lugar de 10`);
+        throw new Error(`Error interno: Se esperaban 10 preguntas pero se generaron ${questions.length}`);
+    }
+    
+    shuffleArray(questions);
+    
+    // Ejecutar verificación
+    verifyQuestionsIntegrity();
+    
+    console.log(`✅ v4.4 - ${questions.length} preguntas reales cargadas exitosamente`);
+}
 </script>
 </body>
 </html>
