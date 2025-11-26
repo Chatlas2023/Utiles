@@ -831,8 +831,8 @@
                     const incorrectOptions = [];
                     for (let i = 0; i < Math.min(2, shuffledOthers.length); i++) {
                         let wrongTitle = cleanTitle(shuffledOthers[i].title);
-                        if (wrongTitle.length > 50) {
-                            wrongTitle = wrongTitle.substring(0, 47) + '...';
+                        if (wrongTitle.length > 70) {
+                            wrongTitle = wrongTitle.substring(0, 67) + '...';
                         }
                         incorrectOptions.push(wrongTitle);
                     }
@@ -946,7 +946,7 @@
                 const incorrectOptions = [];
                 const otherTitles = backupData.filter((_, i) => i !== index).map(b => {
                     let title = cleanTitle(b.title);
-                    return title.length > 50 ? title.substring(0, 47) + '...' : title;
+                    return title.length > 70 ? title.substring(0, 67) + '...' : title;
                 });
                 
                 for (let i = 0; i < 2 && i < otherTitles.length; i++) {
