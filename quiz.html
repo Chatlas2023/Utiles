@@ -839,8 +839,8 @@
                     
                     // Preparar título correcto
                     let correctTitle = cleanTitleText;
-                    if (correctTitle.length > 50) {
-                        correctTitle = correctTitle.substring(0, 47) + '...';
+                    if (correctTitle.length > 70) {
+                        correctTitle = correctTitle.substring(0, 67) + '...';
                     }
                     
                     // Mezclar opciones
@@ -954,8 +954,8 @@
                 }
                 
                 let correctTitle = cleanTitle(item.title);
-                if (correctTitle.length > 50) {
-                    correctTitle = correctTitle.substring(0, 47) + '...';
+                if (correctTitle.length > 70) {
+                    correctTitle = correctTitle.substring(0, 67) + '...';
                 }
                 
                 const options = [correctTitle, ...incorrectOptions];
