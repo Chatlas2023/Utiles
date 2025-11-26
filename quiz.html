@@ -1043,34 +1043,34 @@ if (correctTitle.length > 50) {
     }
 
     // Iniciar el quiz
-    async function startQuiz() {
-        console.log('🚀 v4.4 - Iniciando quiz con noticias reales...');
-        
-        if (!startScreen || !loadingScreen || !quizScreen) {
-            console.error('❌ v4.4 - Error: Pantallas no inicializadas');
-            return;
-        }
-        
-        startScreen.classList.remove('active');
-        loadingScreen.classList.add('active');
-        
-        // Reiniciar variables
-        currentQuestionIndex = 0;
-        score = 0;
-        selectedOption = null;
-        
-        try {
-            await loadQuestions();
-            loadingScreen.classList.remove('active');
-            quizScreen.classList.add('active');
-            showQuestion();
-        } catch (error) {
-            console.error('❌ v4.4 - Error crítico:', error);
-            if (loadingScreen) loadingScreen.classList.remove('active');
-            if (startScreen) startScreen.classList.add('active');
-            alert('❌ No se pudieron cargar noticias reales en este momento. El servicio puede estar temporalmente no disponible. Intenta más tarde.');
-        }
+async function startQuiz() {
+    console.log('🚀 v4.4 - Iniciando quiz con noticias reales...');
+    
+    if (!startScreen || !loadingScreen || !quizScreen) {
+        console.error('❌ v4.4 - Error: Pantallas no inicializadas');
+        return;
     }
+    
+    startScreen.classList.remove('active');
+    loadingScreen.classList.add('active');
+    
+    // Reiniciar variables
+    currentQuestionIndex = 0;
+    score = 0;
+    selectedOption = null;
+    
+    try {
+        await loadQuestions();
+        loadingScreen.classList.remove('active');
+        quizScreen.classList.add('active');
+        showQuestion();
+    } catch (error) {
+        console.error('❌ v4.4 - Error crítico:', error);
+        if (loadingScreen) loadingScreen.classList.remove('active');
+        if (startScreen) startScreen.classList.add('active');
+        alert('❌ No se pudieron cargar noticias reales en este momento. El servicio puede estar temporalmente no disponible. Intenta más tarde.');
+    }
+}
 
     // Cargar preguntas
     async function loadQuestions() {
@@ -1269,13 +1269,28 @@ function debugApiResponse(data) {
 }
 
     // Reiniciar el quiz
-    function restartQuiz() {
-        currentQuestionIndex = 0;
-        score = 0;
-        selectedOption = null;
-        if (resultScreen) resultScreen.classList.remove('active');
-        if (startScreen) startScreen.classList.add('active');
-    }
+function restartQuiz() {
+    currentQuestionIndex = 0;
+    score = 0;
+    selectedOption = null;
+    
+    if (resultScreen) resultScreen.classList.remove('active');
+    if (loadingScreen) loadingScreen.classList.add('active');
+    
+    // Cargar nuevas preguntas directamente
+    loadQuestions()
+        .then(() => {
+            loadingScreen.classList.remove('active');
+            quizScreen.classList.add('active');
+            showQuestion();
+        })
+        .catch(error => {
+            console.error('❌ Error al reiniciar:', error);
+            loadingScreen.classList.remove('active');
+            resultScreen.classList.add('active');
+            alert('Error al cargar nuevas noticias. Intenta más tarde.');
+        });
+}
 // Mostrar información de la API
 function showSetupGuide(e) {
     if (e) e.preventDefault();
