@@ -761,10 +761,6 @@ function filterByCountryAndSource(articles) {
     console.log(`📊 Después del filtro por país: ${filteredArticles.length} artículos`);
     return filteredArticles;
 }
-
-    // Función principal para cargar noticias reales
-// Función principal para cargar noticias reales
-// Función principal para cargar noticias reales
 // Función principal para cargar noticias reales
 async function loadRealNews() {
     const apiKey = 'cd358617b03acad6467b57dfe9cbdb81';
@@ -813,6 +809,8 @@ async function loadRealNews() {
             
             // LUEGO FILTRAR POR PAÍS/MEDIO
             const countryFilteredArticles = filterByCountryAndSource(nonSportsArticles);
+                        // 🎭 NUEVO: APLICAR FILTRO DE ESPECTÁCULOS
+    const nonEntertainmentArticles = filterOutEntertainment(nonSportsArticles);
             
             // LUEGO FILTRADO RIGUROSO por imágenes y títulos
 const articlesWithImages = countryFilteredArticles.filter(article => 
@@ -879,7 +877,49 @@ function filterOutSports(articles) {
     console.log(`📊 Después de excluir deportes: ${filteredArticles.length} artículos`);
     return filteredArticles;
 }
-    // Función para cargar noticias del país alternativo
+    
+// 🔍 FUNCIÓN PARA EXCLUIR NOTICIAS DE ESPECTÁCULOS
+function filterOutEntertainment(articles) {
+    console.log('🎭 Filtrando y excluyendo noticias de espectáculos...');
+    
+    const entertainmentKeywords = [
+        // Espectáculos y entretenimiento
+        'espectáculo', 'espectaculo', 'entretenimiento', 'celebridad', 'celebridades',
+        'famoso', 'famosos', 'fama', 'celebrity', 'celebridades', 'show', 'shows',
+        'actor', 'actriz', 'actores', 'actrices', 'película', 'pelicula', 'cine',
+        'hollywood', 'bollywood', 'premios', 'oscar', 'grammy', 'emmy', 'festival',
+        'cantante', 'cantantes', 'músico', 'musico', 'banda', 'concierto', 'gira',
+        'red carpet', 'alfombra roja', 'gossip', 'chisme', 'revista', 'farándula',
+        'farandula', 'televisión', 'television', 'tv', 'serie', 'series', 'netflix',
+        'disney', 'hbo', 'streaming', 'youtube', 'influencer', 'influencers',
+        'tiktok', 'instagram', 'social media', 'redes sociales',
+        // Nombres comunes de famosos (puedes agregar más)
+        'beyoncé', 'beyonce', 'taylor swift', 'bad bunny', 'shakira', 'madonna',
+        'leonardo dicaprio', 'brad pitt', 'angelina jolie', 'jennifer lopez'
+    ];
+    
+    const filteredArticles = articles.filter(article => {
+        if (!article.title) return true;
+        
+        const title = article.title.toLowerCase();
+        const description = article.description ? article.description.toLowerCase() : '';
+        
+        // Verificar si el título contiene palabras clave de espectáculos
+        const isEntertainmentRelated = entertainmentKeywords.some(keyword => 
+            title.includes(keyword) || description.includes(keyword)
+        );
+        
+        if (isEntertainmentRelated) {
+            console.log(`🎭 Excluido por espectáculos: "${article.title.substring(0, 60)}..."`);
+            return false;
+        }
+        
+        return true;
+    });
+    
+    console.log(`📊 Después de excluir espectáculos: ${filteredArticles.length} artículos`);
+    return filteredArticles;
+}
 // Función para cargar noticias del país alternativo
 async function loadAlternativeCountryNews(apiKey, excludedCountry) {
     console.log('🔄 Intentando con el país alternativo (sin deportes)...');
@@ -903,6 +943,9 @@ async function loadAlternativeCountryNews(apiKey, excludedCountry) {
     if (data.articles && data.articles.length > 0) {
         // APLICAR FILTRO DE DEPORTES
         const nonSportsArticles = filterOutSports(data.articles);
+            // 🎭 NUEVO: FILTRAR PARA EXCLUIR NOTICIAS DE ESPECTÁCULOS
+    const nonEntertainmentArticles = filterOutEntertainment(nonSportsArticles);
+
         
 const articlesWithImages = nonSportsArticles.filter(article => 
     article.title && 
