@@ -235,21 +235,15 @@
             box-shadow: none;
         }
 
-        .button.restart {
-            background: #3498db;
-        }
+.button.restart {
+    background: #3498db;
+    font-size: 18px;
+    padding: 18px;
+    font-weight: 700;
+}
 
         .button.restart:hover {
             background: #2980b9;
-        }
-
-        .button.share {
-            background: #9b59b6;
-            margin-top: 10px;
-        }
-
-        .button.share:hover {
-            background: #8e44ad;
         }
 
         /* PANTALLA RESULTADOS COMPACTA */
@@ -546,8 +540,7 @@
         </div>
         
         <div class="result-actions">
-            <button id="restart-btn" class="button restart">🔄 Jugar</button>
-            <button id="share-btn" class="button share">📤 Compartir</button>
+            <button id="restart-btn" class="button restart">🔄 Jugar de Nuevo</button>
         </div>
     </div>
 </div>
@@ -1283,26 +1276,6 @@ function debugApiResponse(data) {
         if (resultScreen) resultScreen.classList.remove('active');
         if (startScreen) startScreen.classList.add('active');
     }
-
-    // Compartir resultados
-    function shareResults() {
-        const shareText = `¡Acabo de completar el Quiz de Actualidad con noticias reales y obtuve ${score}/10! ¿Puedes superar mi puntuación?`;
-        
-        if (navigator.share) {
-            navigator.share({
-                title: 'Quiz de Actualidad - Noticias Reales',
-                text: shareText,
-                url: window.location.href
-            });
-        } else {
-            navigator.clipboard.writeText(shareText).then(() => {
-                alert('Resultado copiado. ¡Compártelo!');
-            });
-        }
-    }
-
-    // Mostrar información de la API
-// Mostrar información de la API
 // Mostrar información de la API
 function showSetupGuide(e) {
     if (e) e.preventDefault();
