@@ -831,16 +831,16 @@
                     const incorrectOptions = [];
                     for (let i = 0; i < Math.min(2, shuffledOthers.length); i++) {
                         let wrongTitle = cleanTitle(shuffledOthers[i].title);
-                        if (wrongTitle.length > 80) {
-                            wrongTitle = wrongTitle.substring(0, 77) + '...';
+                        if (wrongTitle.length > 91) {
+                            wrongTitle = wrongTitle.substring(0, 90) + '...';
                         }
                         incorrectOptions.push(wrongTitle);
                     }
                     
                     // Preparar título correcto
                     let correctTitle = cleanTitleText;
-                    if (correctTitle.length > 80) {
-                        correctTitle = correctTitle.substring(0, 77) + '...';
+                    if (correctTitle.length > 91) {
+                        correctTitle = correctTitle.substring(0, 91) + '...';
                     }
                     
                     // Mezclar opciones
@@ -946,7 +946,7 @@
                 const incorrectOptions = [];
                 const otherTitles = backupData.filter((_, i) => i !== index).map(b => {
                     let title = cleanTitle(b.title);
-                    return title.length > 80 ? title.substring(0, 77) + '...' : title;
+                    return title.length > 91 ? title.substring(0, 90) + '...' : title;
                 });
                 
                 for (let i = 0; i < 2 && i < otherTitles.length; i++) {
@@ -954,8 +954,8 @@
                 }
                 
                 let correctTitle = cleanTitle(item.title);
-                if (correctTitle.length > 80) {
-                    correctTitle = correctTitle.substring(0, 77) + '...';
+                if (correctTitle.length > 91) {
+                    correctTitle = correctTitle.substring(0, 90) + '...';
                 }
                 
                 const options = [correctTitle, ...incorrectOptions];
