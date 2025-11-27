@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -573,7 +574,7 @@
 
     <script>
         // =============================================
-        // QUIZ DE ACTUALIDAD - v4.6 - IMÁGENES MEJORADAS
+        // QUIZ DE ACTUALIDAD - v4.7 - NOTICIAS NUEVAS AL REINICIAR
         // Última actualización: 2024-01-15
         // =============================================
 
@@ -591,7 +592,7 @@
 
         // Inicializar elementos DOM
         function initializeDOMElements() {
-            console.log('🔍 v4.6 - Inicializando elementos DOM...');
+            console.log('🔍 v4.7 - Inicializando elementos DOM...');
             
             // Pantallas
             startScreen = document.getElementById('start-screen');
@@ -615,18 +616,18 @@
             progressBar = document.getElementById('progress-bar');
             currentQuestionElement = document.getElementById('current-question');
             
-            console.log('✅ v4.6 - Todos los elementos DOM inicializados correctamente');
+            console.log('✅ v4.7 - Todos los elementos DOM inicializados correctamente');
         }
 
         // Configurar event listeners
         function setupEventListeners() {
-            console.log('🎯 v4.6 - Configurando event listeners...');
+            console.log('🎯 v4.7 - Configurando event listeners...');
             
             if (startBtn) startBtn.addEventListener('click', startQuiz);
             if (nextBtn) nextBtn.addEventListener('click', nextQuestion);
             if (restartBtn) restartBtn.addEventListener('click', restartQuiz);
             
-            console.log('✅ v4.6 - Todos los event listeners configurados');
+            console.log('✅ v4.7 - Todos los event listeners configurados');
         }
 
         // 🔥 FUNCIÓN MEJORADA: Verificación de imágenes
@@ -748,15 +749,17 @@
             return 'general';
         }
 
-        // Función principal para cargar noticias
+        // 🔥 FUNCIÓN MEJORADA: Cargar noticias con timestamp para evitar caché
         async function loadRealNews() {
             const apiKey = 'cd358617b03acad6467b57dfe9cbdb81';
             
-            console.log('🔄 v4.6 - Cargando noticias con imágenes mejoradas...');
+            console.log('🔄 v4.7 - Cargando noticias con imágenes mejoradas...');
             
             try {
+                // Agregar timestamp para evitar caché
+                const timestamp = new Date().getTime();
                 const proxyUrl = 'https://api.allorigins.win/raw?url=';
-                const targetUrl = `https://gnews.io/api/v4/top-headlines?token=${apiKey}&lang=es&max=40&country=ar`;
+                const targetUrl = `https://gnews.io/api/v4/top-headlines?token=${apiKey}&lang=es&max=40&country=ar&ts=${timestamp}`;
                 
                 console.log('🔗 URL completa:', proxyUrl + encodeURIComponent(targetUrl));
                 
@@ -773,7 +776,7 @@
                 
                 const data = await response.json();
                 
-                console.log('✅ v4.6 - Noticias recibidas correctamente');
+                console.log('✅ v4.7 - Noticias recibidas correctamente');
                 console.log('📊 Cantidad de artículos brutos:', data.articles ? data.articles.length : 0);
                 
                 if (data.articles && data.articles.length > 0) {
@@ -799,7 +802,7 @@
                     throw new Error('No se encontraron noticias en la respuesta');
                 }
             } catch (error) {
-                console.error('❌ v4.6 - Error cargando noticias:', error);
+                console.error('❌ v4.7 - Error cargando noticias:', error);
                 // Usar preguntas de respaldo con imágenes mejoradas
                 return generateBackupQuestions();
             }
@@ -807,7 +810,7 @@
 
         // 🔥 FUNCIÓN MEJORADA: Generar preguntas con imágenes garantizadas
         function generateQuestionsFromArticles(articles) {
-            console.log('📝 v4.6 - Generando preguntas con imágenes mejoradas...');
+            console.log('📝 v4.7 - Generando preguntas con imágenes mejoradas...');
             
             const questions = [];
             const usedTitles = new Set();
@@ -1183,7 +1186,7 @@
         }
 
         async function startQuiz() {
-            console.log('🚀 v4.6 - Iniciando quiz...');
+            console.log('🚀 v4.7 - Iniciando quiz...');
             
             if (!startScreen || !loadingScreen || !quizScreen) return;
             
@@ -1207,7 +1210,10 @@
             }
         }
 
-        function restartQuiz() {
+        // 🔥 FUNCIÓN CORREGIDA: Reiniciar el juego con nuevas noticias
+        async function restartQuiz() {
+            console.log('🔄 v4.7 - Reiniciando juego con nuevas noticias...');
+            
             currentQuestionIndex = 0;
             score = 0;
             selectedOption = null;
@@ -1215,26 +1221,27 @@
             if (resultScreen) resultScreen.classList.remove('active');
             if (loadingScreen) loadingScreen.classList.add('active');
             
-            loadRealNews()
-                .then(newQuestions => {
-                    questions = newQuestions;
-                    loadingScreen.classList.remove('active');
-                    quizScreen.classList.add('active');
-                    showQuestion();
-                })
-                .catch(error => {
-                    console.error('❌ Error al reiniciar:', error);
-                    loadingScreen.classList.remove('active');
-                    resultScreen.classList.add('active');
-                });
+            try {
+                // 🔥 CORRECCIÓN: Siempre cargar nuevas noticias
+                questions = await loadRealNews();
+                loadingScreen.classList.remove('active');
+                quizScreen.classList.add('active');
+                showQuestion();
+                console.log('✅ v4.7 - Nuevas noticias cargadas correctamente');
+            } catch (error) {
+                console.error('❌ Error al reiniciar:', error);
+                loadingScreen.classList.remove('active');
+                resultScreen.classList.add('active');
+                alert('❌ No se pudieron cargar nuevas noticias. Intenta más tarde.');
+            }
         }
 
         // Inicializar aplicación
         function initializeApp() {
-            console.log('🚀 v4.6 - Inicializando aplicación...');
+            console.log('🚀 v4.7 - Inicializando aplicación...');
             initializeDOMElements();
             setupEventListeners();
-            console.log('✅ v4.6 - Aplicación inicializada correctamente');
+            console.log('✅ v4.7 - Aplicación inicializada correctamente');
         }
 
         document.addEventListener('DOMContentLoaded', initializeApp);
