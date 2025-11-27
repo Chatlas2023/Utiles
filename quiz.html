@@ -1237,6 +1237,39 @@
                 newsList.appendChild(newsItem);
             });
         }
+        function restartQuiz() {
+    console.log('🔄 Reiniciando quiz...');
+    
+    currentQuestionIndex = 0;
+    score = 0;
+    selectedOption = null;
+    
+    resultScreen.classList.remove('active');
+    loadingScreen.classList.add('active');
+    
+    try {
+        questions = generateEmergencyQuestions(); // Usar preguntas locales directamente
+        
+        if (questions && questions.length > 0) {
+            console.log(`✅ Nuevo quiz con ${questions.length} preguntas`);
+            loadingScreen.classList.remove('active');
+            quizScreen.classList.add('active');
+            showQuestion();
+        } else {
+            throw new Error('No se pudieron generar preguntas');
+        }
+    } catch (error) {
+        console.error('❌ Error al reiniciar:', error);
+        loadingScreen.classList.remove('active');
+        resultScreen.classList.add('active');
+    }
+}
+        function initializeApp() {
+    console.log('🚀 Inicializando aplicación...');
+    initializeDOMElements();
+    setupEventListeners();
+    console.log('✅ Aplicación lista');
+}
 
     async function startQuiz() {
     console.log('🚀 Iniciando quiz...');
