@@ -573,7 +573,7 @@
 
     <script>
         // =============================================
-        // QUIZ DE ACTUALIDAD - v7.0 - CORRECCIONES COMPLETAS
+        // QUIZ DE ACTUALIDAD - v8.0 - PROBLEMA DE CARGA SOLUCIONADO
         // Última actualización: 2024-01-15
         // =============================================
 
@@ -592,7 +592,7 @@
 
         // Inicializar elementos DOM
         function initializeDOMElements() {
-            console.log('🔍 v7.0 - Inicializando elementos DOM...');
+            console.log('🔍 v8.0 - Inicializando elementos DOM...');
             
             startScreen = document.getElementById('start-screen');
             loadingScreen = document.getElementById('loading-screen');
@@ -614,28 +614,28 @@
             
             loadingText = document.getElementById('loading-text');
             
-            console.log('✅ v7.0 - Todos los elementos DOM inicializados correctamente');
+            console.log('✅ v8.0 - Todos los elementos DOM inicializados correctamente');
         }
 
         // Configurar event listeners
         function setupEventListeners() {
-            console.log('🎯 v7.0 - Configurando event listeners...');
+            console.log('🎯 v8.0 - Configurando event listeners...');
             
             if (startBtn) startBtn.addEventListener('click', startQuiz);
             if (nextBtn) nextBtn.addEventListener('click', nextQuestion);
             if (restartBtn) restartBtn.addEventListener('click', restartQuiz);
             
-            console.log('✅ v7.0 - Todos los event listeners configurados');
+            console.log('✅ v8.0 - Todos los event listeners configurados');
         }
 
-        // 🔥 CORRECCIÓN: Actualizar texto de carga
+        // Actualizar texto de carga
         function updateLoadingText(text) {
             if (loadingText) {
                 loadingText.textContent = text;
             }
         }
 
-        // 🔥 CORRECCIÓN MEJORADA: Filtrar noticias no deseadas
+        // Filtrar noticias no deseadas
         function filterUnwantedNews(articles) {
             if (!articles || !Array.isArray(articles)) return [];
             
@@ -664,7 +664,7 @@
                 const descriptionLower = (article.description || '').toLowerCase();
                 const contentLower = (article.content || '').toLowerCase();
                 
-                // Verificar si contiene palabras no deseadas en título, descripción o contenido
+                // Verificar si contiene palabras no deseadas
                 const hasUnwanted = unwantedKeywords.some(keyword => 
                     titleLower.includes(keyword) || 
                     descriptionLower.includes(keyword) ||
@@ -689,93 +689,81 @@
             });
         }
 
-        // 🔥 CORRECCIÓN COMPLETA: Cargar noticias con manejo robusto de errores
+        // 🔥 CORRECCIÓN PRINCIPAL: Cargar noticias con fallback garantizado
         async function loadRealNews() {
-            console.log('🔄 v7.0 - Cargando noticias con fuentes alternativas...');
+            console.log('🔄 v8.0 - Iniciando carga de noticias...');
             
-            // Fuentes en orden de prioridad
-            const sources = [
-                { name: "GNews API", func: loadFromGNews },
-                { name: "Noticias predefinidas", func: loadLocalNews }
-            ];
-            
-            let lastError = null;
-            
-            for (let i = 0; i < sources.length; i++) {
-                const source = sources[i];
-                updateLoadingText(`Cargando desde ${source.name}...`);
-                console.log(`🔄 Intentando fuente ${i + 1}/${sources.length}: ${source.name}`);
+            try {
+                updateLoadingText("Intentando cargar noticias en tiempo real...");
+                console.log('🔄 Intentando GNews API...');
                 
-                try {
-                    const questions = await source.func();
-                    if (questions && questions.length >= 3) {
-                        console.log(`✅ Éxito con ${source.name}. Preguntas: ${questions.length}`);
-                        return questions;
-                    } else {
-                        throw new Error(`No hay suficientes preguntas: ${questions ? questions.length : 0}`);
-                    }
-                } catch (error) {
-                    console.warn(`❌ Falló ${source.name}:`, error.message);
-                    lastError = error;
-                    
-                    // Continuar con la siguiente fuente si hay más
-                    if (i < sources.length - 1) {
-                        console.log(`🔄 Continuando con siguiente fuente...`);
-                        continue;
-                    }
+                const gnewsQuestions = await loadFromGNews();
+                if (gnewsQuestions && gnewsQuestions.length >= 5) {
+                    console.log(`✅ GNews exitoso: ${gnewsQuestions.length} preguntas`);
+                    return gnewsQuestions;
+                } else {
+                    throw new Error('GNews no devolvió suficientes preguntas');
+                }
+            } catch (error) {
+                console.warn('❌ GNews falló:', error.message);
+                console.log('🔄 Cambiando a noticias locales...');
+                
+                // 🔥 GARANTIZADO: Siempre cargar noticias locales como respaldo
+                updateLoadingText("Cargando noticias de actualidad...");
+                const localQuestions = await loadLocalNews();
+                
+                if (localQuestions && localQuestions.length >= 5) {
+                    console.log(`✅ Noticias locales cargadas: ${localQuestions.length} preguntas`);
+                    return localQuestions;
+                } else {
+                    // 🔥 ULTIMO RESORTE: Generar preguntas básicas
+                    console.log('🔄 Generando preguntas de emergencia...');
+                    return generateEmergencyQuestions();
                 }
             }
-            
-            // Si todas las fuentes fallaron
-            throw new Error(`Todas las fuentes fallaron. Último error: ${lastError ? lastError.message : 'Desconocido'}`);
         }
 
-        // 🔥 CORRECCIÓN: Cargar desde GNews con timeout y mejor manejo de errores
+        // Cargar desde GNews
         async function loadFromGNews() {
-            return new Promise(async (resolve, reject) => {
+            return new Promise((resolve, reject) => {
                 const timeout = setTimeout(() => {
-                    reject(new Error('Timeout: GNews no respondió en 10 segundos'));
-                }, 10000);
+                    reject(new Error('Timeout GNews'));
+                }, 8000);
 
                 try {
                     const apiKey = 'cd358617b03acad6467b57dfe9cbdb81';
-                    const timestamp = new Date().getTime();
+                    const timestamp = Date.now();
                     const proxyUrl = 'https://api.allorigins.win/raw?url=';
-                    
-                    // 🔥 MEJORA: Usar categorías específicas para evitar deportes/espéctaculos
                     const targetUrl = `https://gnews.io/api/v4/top-headlines?token=${apiKey}&lang=es&country=ar&max=30&ts=${timestamp}`;
                     
-                    console.log('🌐 Solicitando noticias a GNews...');
+                    console.log('🌐 Haciendo request a GNews...');
                     
-                    const response = await fetch(proxyUrl + encodeURIComponent(targetUrl), {
-                        method: 'GET',
-                        headers: {
-                            'Accept': 'application/json',
-                        }
-                    });
-                    
-                    if (!response.ok) {
-                        throw new Error(`Error HTTP: ${response.status}`);
-                    }
-                    
-                    const data = await response.json();
-                    console.log('📰 Respuesta de GNews recibida');
-                    
-                    if (data.articles && data.articles.length > 0) {
-                        // 🔥 FILTRO MEJORADO: Aplicar filtro más estricto
-                        const filteredArticles = filterUnwantedNews(data.articles);
-                        console.log(`📊 Filtro aplicado: ${filteredArticles.length} de ${data.articles.length} noticias aprobadas`);
-                        
-                        if (filteredArticles.length >= 5) {
-                            const questions = generateQuestionsFromArticles(filteredArticles);
+                    fetch(proxyUrl + encodeURIComponent(targetUrl))
+                        .then(response => {
+                            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                            return response.json();
+                        })
+                        .then(data => {
                             clearTimeout(timeout);
-                            resolve(questions);
-                        } else {
-                            throw new Error(`Solo ${filteredArticles.length} noticias pasaron el filtro (mínimo 5 requeridas)`);
-                        }
-                    } else {
-                        throw new Error('No se encontraron noticias en la respuesta de GNews');
-                    }
+                            
+                            if (data.articles && data.articles.length > 0) {
+                                const filtered = filterUnwantedNews(data.articles);
+                                console.log(`📰 GNews: ${filtered.length}/${data.articles.length} noticias aprobadas`);
+                                
+                                if (filtered.length >= 5) {
+                                    const questions = generateQuestionsFromArticles(filtered);
+                                    resolve(questions);
+                                } else {
+                                    reject(new Error('Filtro muy restrictivo'));
+                                }
+                            } else {
+                                reject(new Error('Sin artículos en respuesta'));
+                            }
+                        })
+                        .catch(error => {
+                            clearTimeout(timeout);
+                            reject(error);
+                        });
                 } catch (error) {
                     clearTimeout(timeout);
                     reject(error);
@@ -783,11 +771,11 @@
             });
         }
 
-        // 🔥 CORRECCIÓN: Cargar noticias locales predefinidas (GARANTIZADO sin deportes/espéctaculos)
+        // 🔥 CORRECCIÓN CRÍTICA: Cargar noticias locales - SIMPLIFICADO Y FUNCIONAL
         async function loadLocalNews() {
-            updateLoadingText("Cargando noticias de actualidad...");
+            console.log('📰 Cargando noticias locales...');
             
-            // 🔥 GARANTIZADO: Noticias 100% sin deportes/espéctaculos
+            // Noticias 100% sin deportes/espéctaculos
             const localNews = [
                 {
                     title: "Avance en inteligencia artificial revoluciona diagnóstico médico",
@@ -858,106 +846,89 @@
                     image: "",
                     source: { name: "Medicina Avanzada" },
                     category: "health"
-                },
-                {
-                    title: "Economía global muestra signos de recuperación en el primer trimestre",
-                    url: "https://www.eleconomista.es/economia/noticias/1234567/recuperacion-economica-global.html",
-                    image: "",
-                    source: { name: "Economía Mundial" },
-                    category: "business"
-                },
-                {
-                    title: "Innovación en agricultura sostenible aumenta producción de alimentos",
-                    url: "https://www.agroinformacion.com/nuevas-tecnologias-agricolas-sostenibles/",
-                    image: "",
-                    source: { name: "Agricultura Sostenible" },
-                    category: "technology"
-                },
-                {
-                    title: "Descubrimiento de exoplaneta similar a la Tierra genera expectación",
-                    url: "https://www.astrofisica.com/descubrimiento-exoplaneta-habitable/",
-                    image: "",
-                    source: { name: "Astronomía Hoy" },
-                    category: "science"
-                },
-                {
-                    title: "Nuevo protocolo de seguridad en internet protege datos personales",
-                    url: "https://www.ciberseguridad.com/nuevo-protocolo-seguridad-digital/",
-                    image: "",
-                    source: { name: "Seguridad Digital" },
-                    category: "technology"
-                },
-                {
-                    title: "Estudio confirma relación entre contaminación y enfermedades respiratorias",
-                    url: "https://www.saludpublica.com/contaminacion-enfermedades-respiratorias/",
-                    image: "",
-                    source: { name: "Salud Pública" },
-                    category: "health"
-                },
-                {
-                    title: "Reforma educativa implementa nuevas tecnologías en aulas públicas",
-                    url: "https://www.educacionfutura.com/reforma-educativa-tecnologia-aulas/",
-                    image: "",
-                    source: { name: "Educación Futura" },
-                    category: "education"
-                },
-                {
-                    title: "Investigación sobre energía nuclear busca alternativas más seguras",
-                    url: "https://www.energianuclear.com/investigacion-alternativas-seguras/",
-                    image: "",
-                    source: { name: "Energía Nuclear" },
-                    category: "science"
-                },
-                {
-                    title: "Nuevo tratamiento para Alzheimer muestra resultados prometedores",
-                    url: "https://www.neurologia.com/tratamiento-alzheimer-resultados/",
-                    image: "",
-                    source: { name: "Neurología Avanzada" },
-                    category: "health"
-                },
-                {
-                    title: "Avances en computación cuántica revolucionan procesamiento de datos",
-                    url: "https://www.computacioncuantica.com/avances-procesamiento-datos/",
-                    image: "",
-                    source: { name: "Computación Cuántica" },
-                    category: "technology"
-                },
-                {
-                    title: "Estudio revela impacto positivo de áreas verdes en salud urbana",
-                    url: "https://www.urbanismoecologico.com/areas-verdes-salud-urbana/",
-                    image: "",
-                    source: { name: "Urbanismo Ecológico" },
-                    category: "science"
                 }
             ];
             
-            return new Promise((resolve) => {
-                setTimeout(() => {
-                    const questions = generateQuestionsFromArticles(localNews);
-                    console.log(`✅ Noticias locales cargadas: ${questions.length} preguntas`);
-                    resolve(questions);
-                }, 1000);
-            });
+            // 🔥 CORRECCIÓN: Retornar directamente las preguntas generadas
+            return generateQuestionsFromArticles(localNews);
         }
 
-        // 🔥 CORRECCIÓN: Generar preguntas evitando repeticiones
+        // 🔥 NUEVA FUNCIÓN: Preguntas de emergencia como último recurso
+        function generateEmergencyQuestions() {
+            console.log('🆘 Generando preguntas de emergencia...');
+            
+            const emergencyNews = [
+                {
+                    title: "Innovación tecnológica mejora eficiencia energética mundial",
+                    category: "technology"
+                },
+                {
+                    title: "Descubrimiento científico abre nuevas posibilidades médicas",
+                    category: "science"
+                },
+                {
+                    title: "Avances en inteligencia artificial transforman industrias",
+                    category: "technology"
+                },
+                {
+                    title: "Investigación médica encuentra tratamiento innovador",
+                    category: "health"
+                },
+                {
+                    title: "Desarrollo sostenible gana importancia global",
+                    category: "science"
+                },
+                {
+                    title: "Tecnología renovable bate récords de producción",
+                    category: "technology"
+                },
+                {
+                    title: "Estudio revela beneficios de dieta equilibrada",
+                    category: "health"
+                },
+                {
+                    title: "Innovación en educación digital revoluciona aprendizaje",
+                    category: "education"
+                },
+                {
+                    title: "Investigación espacial descubre nuevos fenómenos",
+                    category: "science"
+                },
+                {
+                    title: "Avances en ciberseguridad protegen datos globales",
+                    category: "technology"
+                }
+            ];
+            
+            const articles = emergencyNews.map((item, index) => ({
+                title: item.title,
+                url: `https://example.com/noticia-${index + 1}`,
+                image: "",
+                source: { name: "Actualidad Científica" },
+                category: item.category
+            }));
+            
+            return generateQuestionsFromArticles(articles);
+        }
+
+        // Generar preguntas desde artículos
         function generateQuestionsFromArticles(articles) {
-            console.log('📝 Generando preguntas sin repeticiones...');
+            console.log('📝 Generando preguntas desde artículos...');
             
             const questions = [];
             const usedTitlesLocal = new Set();
             
-            // Filtrar artículos que ya se usaron globalmente
+            // Filtrar artículos no usados globalmente
             const availableArticles = articles.filter(article => {
                 const cleanTitleText = cleanTitle(article.title);
                 return !usedTitlesGlobal.has(cleanTitleText);
             });
             
-            console.log(`📊 Artículos disponibles sin repetición: ${availableArticles.length} de ${articles.length}`);
+            console.log(`📊 Artículos disponibles: ${availableArticles.length}`);
             
-            // Si no hay suficientes artículos nuevos, limpiar el historial global
+            // Si pocos artículos nuevos, limpiar historial
             if (availableArticles.length < 5) {
-                console.log('🔄 Pocos artículos nuevos, reiniciando historial global...');
+                console.log('🔄 Limpiando historial global...');
                 usedTitlesGlobal.clear();
             }
             
@@ -967,35 +938,30 @@
                 const cleanTitleText = cleanTitle(article.title);
                 
                 if (!usedTitlesLocal.has(cleanTitleText)) {
-                    let finalImage = article.image;
-                    let imageCategory = article.category || detectNewsCategory(article.title);
+                    const imageCategory = article.category || detectNewsCategory(article.title);
+                    const finalImage = verifyImageUrl(article.image) ? article.image : getBackupImage(imageCategory);
                     
-                    if (!verifyImageUrl(article.image)) {
-                        finalImage = getBackupImage(imageCategory);
-                    }
-                    
+                    // Obtener opciones incorrectas
                     const otherArticles = availableArticles.filter(a => a !== article);
-                    const shuffledOthers = [...otherArticles].sort(() => Math.random() - 0.5);
-                    
+                    const shuffledOthers = otherArticles.sort(() => Math.random() - 0.5);
                     const incorrectOptions = [];
+                    
                     for (let i = 0; i < Math.min(2, shuffledOthers.length); i++) {
                         let wrongTitle = cleanTitle(shuffledOthers[i].title);
-                        if (wrongTitle.length > 121) {
-                            wrongTitle = wrongTitle.substring(0, 120) + '...';
-                        }
+                        if (wrongTitle.length > 121) wrongTitle = wrongTitle.substring(0, 120) + '...';
                         incorrectOptions.push(wrongTitle);
                     }
                     
+                    // Preparar título correcto
                     let correctTitle = cleanTitleText;
-                    if (correctTitle.length > 121) {
-                        correctTitle = correctTitle.substring(0, 120) + '...';
-                    }
+                    if (correctTitle.length > 121) correctTitle = correctTitle.substring(0, 120) + '...';
                     
+                    // Mezclar opciones
                     const options = [correctTitle, ...incorrectOptions];
                     shuffleArray(options);
-                    
                     const correctAnswerIndex = options.indexOf(correctTitle);
                     
+                    // Crear pregunta
                     questions.push({
                         question: "¿Cuál es el titular correcto para esta noticia?",
                         image: finalImage,
@@ -1016,35 +982,16 @@
                 }
             }
             
-            console.log(`🎯 Total de preguntas generadas: ${questions.length}`);
-            return questions.slice(0, 10);
+            console.log(`✅ Preguntas generadas: ${questions.length}`);
+            return questions;
         }
 
         // Funciones auxiliares
         function verifyImageUrl(imageUrl) {
             if (!imageUrl || !imageUrl.startsWith('http')) return false;
-            
             const validExtensions = ['.jpg', '.jpeg', '.png', '.webp', '.gif'];
-            const hasValidExtension = validExtensions.some(ext => 
-                imageUrl.toLowerCase().includes(ext)
-            );
-            
-            const hasImagePatterns = 
-                imageUrl.includes('/images/') || 
-                imageUrl.includes('/img/') || 
-                imageUrl.includes('/fotos/') ||
-                imageUrl.includes('/photo/') ||
-                imageUrl.includes('/imagenes/') ||
-                imageUrl.includes('/foto/') ||
-                imageUrl.includes('/photogallery/');
-            
-            const isPlaceholder = 
-                imageUrl.includes('placeholder') ||
-                imageUrl.includes('default') ||
-                imageUrl.includes('dummyimage') ||
-                imageUrl.includes('placehold.co');
-            
-            return !isPlaceholder && (hasValidExtension || hasImagePatterns);
+            const hasValidExtension = validExtensions.some(ext => imageUrl.toLowerCase().includes(ext));
+            return hasValidExtension;
         }
 
         function getBackupImage(category = 'general') {
@@ -1059,7 +1006,6 @@
             };
             
             const selected = backupImages[category] || backupImages.general;
-            
             const svg = `
                 <svg width="400" height="200" xmlns="http://www.w3.org/2000/svg">
                     <defs>
@@ -1079,24 +1025,19 @@
 
         function detectNewsCategory(title) {
             if (!title) return 'general';
-            
             const titleLower = title.toLowerCase();
-            
             const categories = {
-                technology: ['tecnología', 'tecnologia', 'digital', 'internet', 'app', 'software', 'hardware', 'inteligencia artificial', 'ia', 'robot', 'innovación', 'computación', 'computacion'],
-                science: ['ciencia', 'investigación', 'descubrimiento', 'estudio', 'científico', 'investigador', 'laboratorio', 'investiga', 'descubre'],
-                health: ['salud', 'médico', 'hospital', 'enfermedad', 'tratamiento', 'vacuna', 'medicina', 'paciente', 'médica', 'medica'],
-                business: ['economía', 'economia', 'negocio', 'empresa', 'mercado', 'finanzas', 'bolsa', 'comercio', 'empresarial', 'económico', 'economico'],
-                politics: ['política', 'politica', 'gobierno', 'presidente', 'ministerio', 'ley', 'congreso', 'elección', 'elecciones', 'parlamento'],
-                education: ['educación', 'educacion', 'escuela', 'universidad', 'estudio', 'aprendizaje', 'profesor', 'maestro']
+                technology: ['tecnología', 'tecnologia', 'digital', 'internet', 'app', 'software', 'hardware', 'inteligencia artificial', 'ia', 'robot', 'innovación'],
+                science: ['ciencia', 'investigación', 'descubrimiento', 'estudio', 'científico', 'investigador', 'laboratorio'],
+                health: ['salud', 'médico', 'hospital', 'enfermedad', 'tratamiento', 'vacuna', 'medicina', 'paciente'],
+                business: ['economía', 'economia', 'negocio', 'empresa', 'mercado', 'finanzas', 'bolsa', 'comercio'],
+                politics: ['política', 'politica', 'gobierno', 'presidente', 'ministerio', 'ley', 'congreso'],
+                education: ['educación', 'educacion', 'escuela', 'universidad', 'estudio', 'aprendizaje']
             };
             
             for (const [category, keywords] of Object.entries(categories)) {
-                if (keywords.some(keyword => titleLower.includes(keyword))) {
-                    return category;
-                }
+                if (keywords.some(keyword => titleLower.includes(keyword))) return category;
             }
-            
             return 'general';
         }
 
@@ -1115,18 +1056,13 @@
                     imageSource.style.display = 'block';
                 }
                 
-                questionImage.onerror = function() {
-                    showBackupImage(question);
-                };
+                questionImage.onerror = () => showBackupImage(question);
             } else {
                 showBackupImage(question);
             }
         }
 
         function showBackupImage(question) {
-            questionImage.style.display = 'none';
-            imageSource.style.display = 'none';
-            
             const categoryInfo = {
                 technology: { gradient: '#667eea', icon: '💻', text: 'Tecnología' },
                 science: { gradient: '#f093fb', icon: '🔬', text: 'Ciencia' },
@@ -1138,7 +1074,6 @@
             };
             
             const info = categoryInfo[question.imageCategory] || categoryInfo.general;
-            
             imagePlaceholder.style.background = `linear-gradient(135deg, ${info.gradient} 0%, #2ecc71 100%)`;
             imagePlaceholder.querySelector('.icon').textContent = info.icon;
             imagePlaceholder.querySelector('.text').textContent = info.text;
@@ -1162,49 +1097,38 @@
             return array;
         }
 
-        // Resto de funciones del quiz
+        // Funciones del quiz
         function showQuestion() {
             if (!questions[currentQuestionIndex]) return;
             
             const question = questions[currentQuestionIndex];
             displayQuestionImage(question);
+            questionText.textContent = question.question;
             
-            if (questionText) questionText.textContent = question.question;
+            optionsContainer.innerHTML = '';
+            question.options.forEach((option, index) => {
+                const optionElement = document.createElement('div');
+                optionElement.className = 'option';
+                optionElement.textContent = option;
+                optionElement.dataset.index = index;
+                optionElement.addEventListener('click', selectOption);
+                optionsContainer.appendChild(optionElement);
+            });
             
-            if (optionsContainer) {
-                optionsContainer.innerHTML = '';
-                question.options.forEach((option, index) => {
-                    const optionElement = document.createElement('div');
-                    optionElement.className = 'option';
-                    optionElement.textContent = option;
-                    optionElement.dataset.index = index;
-                    optionElement.addEventListener('click', selectOption);
-                    optionsContainer.appendChild(optionElement);
-                });
-            }
-            
-            if (progressBar) {
-                const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
-                progressBar.style.width = `${progress}%`;
-            }
-            
-            if (currentQuestionElement) {
-                currentQuestionElement.textContent = currentQuestionIndex + 1;
-            }
+            const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
+            progressBar.style.width = `${progress}%`;
+            currentQuestionElement.textContent = currentQuestionIndex + 1;
             
             selectedOption = null;
-            if (nextBtn) {
-                nextBtn.disabled = true;
-                nextBtn.textContent = currentQuestionIndex < questions.length - 1 ? "Siguiente" : "Ver resultados";
-            }
+            nextBtn.disabled = true;
+            nextBtn.textContent = currentQuestionIndex < questions.length - 1 ? "Siguiente" : "Ver resultados";
         }
 
         function selectOption(e) {
-            const options = document.querySelectorAll('.option');
-            options.forEach(option => option.classList.remove('selected'));
+            document.querySelectorAll('.option').forEach(option => option.classList.remove('selected'));
             e.target.classList.add('selected');
             selectedOption = parseInt(e.target.dataset.index);
-            if (nextBtn) nextBtn.disabled = false;
+            nextBtn.disabled = false;
         }
 
         function nextQuestion() {
@@ -1222,7 +1146,7 @@
             }
             
             options.forEach(option => option.style.pointerEvents = 'none');
-            if (nextBtn) nextBtn.disabled = true;
+            nextBtn.disabled = true;
             
             setTimeout(() => {
                 currentQuestionIndex++;
@@ -1235,8 +1159,8 @@
         }
 
         function showResults() {
-            if (quizScreen) quizScreen.classList.remove('active');
-            if (resultScreen) resultScreen.classList.add('active');
+            quizScreen.classList.remove('active');
+            resultScreen.classList.add('active');
             showNewsResults();
         }
 
@@ -1245,14 +1169,12 @@
             if (!newsList) return;
             
             newsList.innerHTML = '';
-            
             questions.forEach((question, index) => {
                 const newsItem = document.createElement('div');
                 newsItem.className = `news-item ${question.isCorrect ? 'correct' : 'incorrect'}`;
                 
                 const status = question.isCorrect ? '✅ OK' : '❌ Incorrecta';
                 const statusClass = question.isCorrect ? 'correct' : 'incorrect';
-                
                 const hasValidUrl = question.articleUrl && question.articleUrl.startsWith('http');
                 
                 newsItem.innerHTML = `
@@ -1274,9 +1196,7 @@
         }
 
         async function startQuiz() {
-            console.log('🚀 v7.0 - Iniciando quiz...');
-            
-            if (!startScreen || !loadingScreen || !quizScreen) return;
+            console.log('🚀 Iniciando quiz...');
             
             startScreen.classList.remove('active');
             loadingScreen.classList.add('active');
@@ -1287,47 +1207,48 @@
             
             try {
                 questions = await loadRealNews();
+                console.log(`✅ Quiz listo con ${questions.length} preguntas`);
                 loadingScreen.classList.remove('active');
                 quizScreen.classList.add('active');
                 showQuestion();
             } catch (error) {
-                console.error('❌ Error final:', error);
+                console.error('❌ Error crítico:', error);
                 loadingScreen.classList.remove('active');
                 startScreen.classList.add('active');
-                alert('❌ No se pudieron cargar noticias. Intenta más tarde.');
+                alert('❌ Error al cargar noticias. Recarga la página e intenta nuevamente.');
             }
         }
 
         async function restartQuiz() {
-            console.log('🔄 v7.0 - Reiniciando juego...');
+            console.log('🔄 Reiniciando quiz...');
             
             currentQuestionIndex = 0;
             score = 0;
             selectedOption = null;
             
-            if (resultScreen) resultScreen.classList.remove('active');
-            if (loadingScreen) loadingScreen.classList.add('active');
+            resultScreen.classList.remove('active');
+            loadingScreen.classList.add('active');
             
             try {
                 questions = await loadRealNews();
+                console.log(`✅ Nuevo quiz con ${questions.length} preguntas`);
                 loadingScreen.classList.remove('active');
                 quizScreen.classList.add('active');
                 showQuestion();
-                console.log('✅ v7.0 - Nuevas noticias cargadas correctamente');
             } catch (error) {
                 console.error('❌ Error al reiniciar:', error);
                 loadingScreen.classList.remove('active');
                 resultScreen.classList.add('active');
-                alert('❌ No se pudieron cargar nuevas noticias. Intenta más tarde.');
+                alert('❌ Error al cargar nuevas noticias. Intenta nuevamente.');
             }
         }
 
         // Inicializar aplicación
         function initializeApp() {
-            console.log('🚀 v7.0 - Inicializando aplicación...');
+            console.log('🚀 Inicializando aplicación...');
             initializeDOMElements();
             setupEventListeners();
-            console.log('✅ v7.0 - Aplicación inicializada correctamente');
+            console.log('✅ Aplicación lista');
         }
 
         document.addEventListener('DOMContentLoaded', initializeApp);
