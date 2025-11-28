@@ -431,6 +431,16 @@ update() {
     this.x += this.vx;
     this.y += this.vy;
     
+    // Velocidad mínima para evitar que sea demasiado lenta
+    const minSpeed = 3.5;
+    const currentSpeed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+    
+    if (currentSpeed < minSpeed && currentSpeed > 0) {
+        const ratio = minSpeed / currentSpeed;
+        this.vx *= ratio;
+        this.vy *= ratio;
+    }
+    
     // Rebotar en las paredes laterales con factor aleatorio
     if (this.x - this.radius <= 0 || this.x + this.radius >= canvas.width) {
         this.vx = -this.vx;
@@ -470,6 +480,14 @@ update() {
         // Cambiar dirección con ángulo basado en el punto de impacto
         this.vy = -Math.abs(this.vy);
         this.vx = hitPos * 4; // Ajustar dirección horizontal basada en el punto de impacto
+        
+        // Asegurar velocidad mínima después del rebote en la paleta
+        const speedAfterBounce = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+        if (speedAfterBounce < minSpeed) {
+            const ratio = minSpeed / speedAfterBounce;
+            this.vx *= ratio;
+            this.vy *= ratio;
+        }
         
         score++;
         scoreElement.textContent = score;
