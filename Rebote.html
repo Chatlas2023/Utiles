@@ -20,7 +20,7 @@
             align-items: center;
             justify-content: center;
             min-height: 100vh;
-            padding: 20px;
+            padding: 10px;
             overflow-x: hidden;
         }
         
@@ -30,21 +30,15 @@
             text-align: center;
         }
         
-        h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            color: #e94560;
-            text-shadow: 0 0 10px rgba(233, 69, 96, 0.5);
-        }
-        
         .game-info {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
             background: rgba(0, 0, 0, 0.3);
-            padding: 10px 15px;
+            padding: 8px 12px;
             border-radius: 10px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            font-size: 14px;
         }
         
         .info-item {
@@ -54,13 +48,13 @@
         }
         
         .info-label {
-            font-size: 0.8rem;
+            font-size: 0.7rem;
             color: #a9a9a9;
-            margin-bottom: 5px;
+            margin-bottom: 3px;
         }
         
         .info-value {
-            font-size: 1.5rem;
+            font-size: 1.2rem;
             font-weight: bold;
             color: #fff;
         }
@@ -84,10 +78,13 @@
             display: block;
             margin: 0 auto;
             touch-action: none;
+            width: 100%;
+            max-width: 400px;
+            height: 400px; /* Altura reducida para móviles */
         }
         
         .controls {
-            margin-top: 20px;
+            margin-top: 15px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -96,18 +93,18 @@
         
         .angle-control {
             width: 100%;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
         }
         
         .angle-label {
-            margin-bottom: 8px;
-            font-size: 1rem;
+            margin-bottom: 6px;
+            font-size: 0.9rem;
             color: #a9a9a9;
         }
         
         .angle-slider {
             width: 100%;
-            height: 30px;
+            height: 25px;
             -webkit-appearance: none;
             appearance: none;
             background: rgba(255, 255, 255, 0.1);
@@ -118,8 +115,8 @@
         .angle-slider::-webkit-slider-thumb {
             -webkit-appearance: none;
             appearance: none;
-            width: 25px;
-            height: 25px;
+            width: 22px;
+            height: 22px;
             border-radius: 50%;
             background: #e94560;
             cursor: pointer;
@@ -131,12 +128,12 @@
             color: white;
             border: none;
             padding: 12px 30px;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             border-radius: 50px;
             cursor: pointer;
             transition: all 0.3s ease;
             box-shadow: 0 5px 15px rgba(233, 69, 96, 0.4);
-            margin-bottom: 15px;
+            margin-bottom: 12px;
             width: 100%;
             max-width: 200px;
         }
@@ -147,28 +144,29 @@
         }
         
         .instructions {
-            margin-top: 20px;
+            margin-top: 15px;
             background: rgba(0, 0, 0, 0.3);
-            padding: 15px;
+            padding: 12px;
             border-radius: 10px;
-            font-size: 0.9rem;
-            line-height: 1.5;
+            font-size: 0.8rem;
+            line-height: 1.4;
             color: #a9a9a9;
             text-align: left;
         }
         
         .instructions h3 {
             color: #e94560;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             text-align: center;
+            font-size: 0.9rem;
         }
         
         .instructions ul {
-            padding-left: 20px;
+            padding-left: 18px;
         }
         
         .instructions li {
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
         
         .game-over {
@@ -177,25 +175,25 @@
             left: 50%;
             transform: translate(-50%, -50%);
             background: rgba(0, 0, 0, 0.9);
-            padding: 30px;
+            padding: 25px;
             border-radius: 15px;
             text-align: center;
             box-shadow: 0 0 30px rgba(233, 69, 96, 0.5);
             display: none;
             z-index: 10;
             width: 80%;
-            max-width: 400px;
+            max-width: 350px;
         }
         
         .game-over h2 {
             color: #e94560;
-            font-size: 2rem;
-            margin-bottom: 15px;
+            font-size: 1.7rem;
+            margin-bottom: 12px;
         }
         
         .game-over p {
-            margin-bottom: 20px;
-            font-size: 1.2rem;
+            margin-bottom: 18px;
+            font-size: 1.1rem;
         }
         
         .restart-btn {
@@ -203,7 +201,7 @@
             color: white;
             border: none;
             padding: 12px 25px;
-            font-size: 1.1rem;
+            font-size: 1rem;
             border-radius: 50px;
             cursor: pointer;
             transition: all 0.3s ease;
@@ -215,27 +213,43 @@
         }
         
         @media (max-width: 500px) {
-            h1 {
-                font-size: 2rem;
-            }
-            
             .game-info {
-                flex-direction: column;
-                gap: 10px;
+                flex-direction: row;
+                gap: 5px;
+                font-size: 12px;
             }
             
             .info-item {
-                flex-direction: row;
-                justify-content: space-between;
-                width: 100%;
+                flex-direction: column;
+                width: auto;
+            }
+            
+            .info-label {
+                font-size: 0.65rem;
+            }
+            
+            .info-value {
+                font-size: 1rem;
+            }
+            
+            canvas {
+                height: 350px; /* Aún más reducido en móviles muy pequeños */
+            }
+        }
+        
+        @media (max-height: 700px) {
+            canvas {
+                height: 320px;
+            }
+            
+            .instructions {
+                display: none; /* Ocultar instrucciones en pantallas muy pequeñas */
             }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Rebote Extremo</h1>
-        
         <div class="game-info">
             <div class="info-item">
                 <span class="info-label">VIDAS</span>
@@ -251,11 +265,11 @@
             </div>
         </div>
         
-        <canvas id="gameCanvas" width="400" height="600"></canvas>
+        <canvas id="gameCanvas" width="400" height="400"></canvas>
         
         <div class="controls">
             <div class="angle-control">
-                <div class="angle-label">Ángulo de disparo: <span id="angleValue">45°</span></div>
+                <div class="angle-label">Ángulo: <span id="angleValue">45°</span></div>
                 <input type="range" min="1" max="179" value="45" class="angle-slider" id="angleSlider">
             </div>
             <button class="fire-btn" id="fireBtn">DISPARAR</button>
@@ -308,6 +322,19 @@
         // Configuración inicial
         bestElement.textContent = bestScore;
 
+        // Ajustar tamaño del canvas para móviles
+        function resizeCanvas() {
+            const containerWidth = canvas.parentElement.clientWidth;
+            const maxWidth = Math.min(400, containerWidth);
+            canvas.width = maxWidth;
+            canvas.height = 400; // Altura fija reducida
+            
+            // Si el juego ya estaba iniciado, redibujar los círculos
+            if (circles.length > 0) {
+                initCircles();
+            }
+        }
+
         // Clase para los círculos
         class Circle {
             constructor(x, y, diameter) {
@@ -334,7 +361,7 @@
                 
                 // Dibujar el número del diámetro
                 ctx.fillStyle = '#fff';
-                ctx.font = `${Math.max(12, this.radius / 2)}px Arial`;
+                ctx.font = `${Math.max(10, this.radius / 2)}px Arial`;
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
                 ctx.fillText(this.diameter.toString(), this.x, this.y);
@@ -421,6 +448,20 @@
             }
         }
 
+        // Inicializar círculos
+        function initCircles() {
+            circles = [];
+            
+            // Crear 4 círculos en la parte superior
+            for (let i = 0; i < 4; i++) {
+                const diameter = Math.floor(Math.random() * 25) + 15; // Diámetro entre 15 y 40
+                const x = Math.random() * (canvas.width - diameter * 2) + diameter;
+                const y = Math.random() * (canvas.height * 0.4) + diameter;
+                
+                circles.push(new Circle(x, y, diameter));
+            }
+        }
+
         // Inicializar el juego
         function initGame() {
             circles = [];
@@ -432,14 +473,8 @@
             livesElement.textContent = lives;
             scoreElement.textContent = score;
             
-            // Crear 4 círculos en la parte superior
-            for (let i = 0; i < 4; i++) {
-                const diameter = Math.floor(Math.random() * 30) + 20; // Diámetro entre 20 y 50
-                const x = Math.random() * (canvas.width - diameter) + diameter/2;
-                const y = Math.random() * (canvas.height * 0.4) + diameter/2;
-                
-                circles.push(new Circle(x, y, diameter));
-            }
+            // Crear círculos
+            initCircles();
             
             // Ocultar pantalla de fin de juego
             gameOverElement.style.display = 'none';
@@ -508,7 +543,13 @@
         restartBtn.addEventListener('click', initGame);
 
         // Iniciar el juego al cargar la página
-        window.addEventListener('load', initGame);
+        window.addEventListener('load', function() {
+            resizeCanvas();
+            initGame();
+        });
+        
+        // Redimensionar canvas cuando cambie el tamaño de la ventana
+        window.addEventListener('resize', resizeCanvas);
     </script>
 </body>
 </html>
