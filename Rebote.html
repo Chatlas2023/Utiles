@@ -425,6 +425,8 @@
         
   // En la clase Projectile, modifica el método update:
 
+// En la clase Projectile, modifica el método update:
+
 update() {
     this.x += this.vx;
     this.y += this.vy;
@@ -492,11 +494,6 @@ update() {
             const overlap = this.radius + circle.radius - distance;
             this.x += overlap * Math.cos(angle);
             this.y += overlap * Math.sin(angle);
-            
-            // Agregar pequeño factor aleatorio en colisiones con círculos
-            const randomFactor = (Math.random() * 0.3) - 0.15; // Entre -0.15 y +0.15
-            this.vx += randomFactor;
-            this.vy += randomFactor;
             
             // Agrandar el círculo significativamente
             circle.grow();
@@ -643,7 +640,7 @@ update() {
         
         // Dibujar la línea de trayectoria principal
         ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 4;
         ctx.stroke();
         
         // Dibujar línea punteada secundaria para mejor visibilidad
@@ -669,7 +666,7 @@ update() {
         }
         
         ctx.strokeStyle = 'rgba(255, 215, 102, 0.5)';
-        ctx.lineWidth = 1;
+        ctx.lineWidth = 2;
         ctx.stroke();
         ctx.setLineDash([]);
     }
