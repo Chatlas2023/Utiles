@@ -18,7 +18,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            justify-content: flex-start;
             min-height: 100vh;
             padding: 10px;
             overflow-x: hidden;
@@ -28,6 +28,7 @@
             width: 100%;
             max-width: 500px;
             text-align: center;
+            margin-top: 10px;
         }
         
         .game-info {
@@ -71,6 +72,11 @@
             color: #ffd166;
         }
         
+        .game-area {
+            position: relative;
+            margin-bottom: 60px;
+        }
+        
         canvas {
             background-color: #000;
             border-radius: 10px;
@@ -80,16 +86,16 @@
             touch-action: none;
             width: 100%;
             max-width: 400px;
-            height: 400px;
+            height: 380px;
         }
         
-        .controls {
-            margin-top: 15px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 100%;
-        }
+.controls {
+    margin-top: 70px; /* Cambia de 15px a 25px */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
         
         .angle-control {
             width: 100%;
@@ -229,12 +235,14 @@
             </div>
         </div>
         
-        <canvas id="gameCanvas" width="400" height="400"></canvas>
+        <div class="game-area">
+            <canvas id="gameCanvas" width="400" height="380"></canvas>
+        </div>
         
         <div class="controls">
             <div class="angle-control">
                 <div class="angle-label">Ángulo: <span id="angleValue">45°</span></div>
-                <input type="range" min="1" max="179" value="45" class="angle-slider" id="angleSlider">
+                <input type="range" min="0" max="180" value="135" class="angle-slider" id="angleSlider">
             </div>
             <button class="fire-btn" id="fireBtn">DISPARAR</button>
         </div>
@@ -270,7 +278,7 @@
         let bestScore = localStorage.getItem('bestScore') || 0;
         let gameActive = true;
         let animationId = null;
-        let currentAngle = 45;
+        let currentAngle = 135;
 
         // Configuración inicial
         bestElement.textContent = bestScore;
@@ -280,7 +288,7 @@
             const containerWidth = canvas.parentElement.clientWidth;
             const maxWidth = Math.min(400, containerWidth);
             canvas.width = maxWidth;
-            canvas.height = 400;
+            canvas.height = 380;
             
             if (circles.length > 0) {
                 initCircles();
@@ -292,7 +300,7 @@
             const dx = circle1.x - circle2.x;
             const dy = circle1.y - circle2.y;
             const distance = Math.sqrt(dx * dx + dy * dy);
-            return distance < (circle1.radius + circle2.radius + 10); // +10 para margen
+            return distance < (circle1.radius + circle2.radius + 10);
         }
 
         // Verificar si un círculo se superpone con cualquier otro
@@ -343,6 +351,9 @@
                 this.diameter += growth;
                 this.radius = this.diameter / 2;
             }
+            shouldDisappear() {
+    return this.diameter >= 300;
+}
         }
 
         // Clase para el proyectil
@@ -352,7 +363,7 @@
                 this.y = y;
                 this.radius = 5;
                 this.speed = 5;
-                this.angle = angle * Math.PI / 180;
+                this.angle = (180 - angle) * Math.PI / 180;
                 this.vx = this.speed * Math.cos(this.angle);
                 this.vy = -this.speed * Math.sin(this.angle);
                 this.active = true;
@@ -369,36 +380,55 @@
                     scoreElement.textContent = score;
                 }
                 
-                // Verificar colisión con círculos
-                for (let circle of circles) {
-                    const dx = this.x - circle.x;
-                    const dy = this.y - circle.y;
-                    const distance = Math.sqrt(dx * dx + dy * dy);
-                    
-                    if (distance < this.radius + circle.radius) {
-                        // Calcular el ángulo de reflexión
-                        const angle = Math.atan2(dy, dx);
-                        
-                        // Actualizar velocidad del proyectil
-                        const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
-                        this.vx = speed * Math.cos(angle);
-                        this.vy = speed * Math.sin(angle);
-                        
-                        // Mover el proyectil fuera del círculo
-                        const overlap = this.radius + circle.radius - distance;
-                        this.x += overlap * Math.cos(angle);
-                        this.y += overlap * Math.sin(angle);
-                        
-                        // Agrandar el círculo significativamente
-                        circle.grow();
-                        score += 5;
-                        scoreElement.textContent = score;
-                        break;
-                    }
+                // Rebotar en la parte superior
+                if (this.y - this.radius <= 0) {
+                    this.vy = -this.vy;
+                    score++;
+                    scoreElement.textContent = score;
                 }
                 
-                // Verificar si el proyectil toca el techo o el suelo
-                if (this.y - this.radius <= 0 || this.y + this.radius >= canvas.height) {
+                // Verificar colisión con círculos
+                // Verificar colisión con círculos
+for (let circle of circles) {
+    const dx = this.x - circle.x;
+    const dy = this.y - circle.y;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+    
+    if (distance < this.radius + circle.radius) {
+        // Calcular el ángulo de reflexión
+        const angle = Math.atan2(dy, dx);
+        
+        // Actualizar velocidad del proyectil
+        const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+        this.vx = speed * Math.cos(angle);
+        this.vy = speed * Math.sin(angle);
+        
+        // Mover el proyectil fuera del círculo
+        const overlap = this.radius + circle.radius - distance;
+        this.x += overlap * Math.cos(angle);
+        this.y += overlap * Math.sin(angle);
+        
+        // Agrandar el círculo significativamente
+        circle.grow();
+        score += 5;
+        scoreElement.textContent = score;
+        
+        // Verificar si el círculo debe desaparecer (DESPUÉS del break)
+        if (circle.shouldDisappear()) {
+            const index = circles.indexOf(circle);
+            if (index > -1) {
+                circles.splice(index, 1);
+                score += 20; // Bonus por eliminar círculo
+                scoreElement.textContent = score;
+                  this.active = false;
+            }
+        }
+        break;
+    }
+}
+                
+                // Verificar si el proyectil toca el suelo (pierde vida)
+                if (this.y + this.radius >= canvas.height) {
                     this.active = false;
                     lives--;
                     livesElement.textContent = lives;
@@ -420,7 +450,7 @@
             }
         }
 
-        // Dibujar trayectoria previa
+        // Dibujar trayectoria previa más visible
         function drawTrajectory(angle) {
             if (projectile && projectile.active) return;
             
@@ -428,30 +458,51 @@
             const startY = canvas.height - 20;
             const radius = 5;
             const speed = 5;
-            const angleRad = angle * Math.PI / 180;
+            const angleRad = (180 - angle) * Math.PI / 180;
             
             let x = startX;
             let y = startY;
             let vx = speed * Math.cos(angleRad);
             let vy = -speed * Math.sin(angleRad);
             
-            ctx.setLineDash([5, 5]);
+            // Dibujar línea principal más gruesa y visible
+            ctx.setLineDash([]);
             ctx.beginPath();
             ctx.moveTo(x, y);
             
-            // Simular hasta 20 rebotes o hasta salir del canvas
-            for (let i = 0; i < 20; i++) {
+            // Simular hasta 15 rebotes o hasta salir por abajo
+            for (let i = 0; i < 15; i++) {
                 x += vx * 10;
                 y += vy * 10;
                 
                 // Rebotar en paredes laterales
                 if (x - radius <= 0 || x + radius >= canvas.width) {
                     vx = -vx;
+                    // Dibujar punto de rebote
+                    ctx.fillStyle = '#ffd166';
+                    ctx.beginPath();
+                    ctx.arc(x, y, 3, 0, Math.PI * 2);
+                    ctx.fill();
                 }
                 
-                // Detener si toca techo o suelo
-                if (y - radius <= 0 || y + radius >= canvas.height) {
+                // Rebotar en techo
+                if (y - radius <= 0) {
+                    vy = -vy;
+                    // Dibujar punto de rebote
+                    ctx.fillStyle = '#ffd166';
+                    ctx.beginPath();
+                    ctx.arc(x, y, 3, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                
+                // Detener si toca el suelo (pierde vida)
+                if (y + radius >= canvas.height) {
                     ctx.lineTo(x, y);
+                    // Marcar punto de pérdida de vida
+                    ctx.fillStyle = '#e94560';
+                    ctx.beginPath();
+                    ctx.arc(x, y, 4, 0, Math.PI * 2);
+                    ctx.fill();
                     break;
                 }
                 
@@ -463,7 +514,34 @@
                 }
             }
             
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+            // Dibujar la línea de trayectoria principal
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            // Dibujar línea punteada secundaria para mejor visibilidad
+            ctx.setLineDash([5, 3]);
+            ctx.beginPath();
+            ctx.moveTo(startX, startY);
+            
+            x = startX;
+            y = startY;
+            vx = speed * Math.cos(angleRad);
+            vy = -speed * Math.sin(angleRad);
+            
+            for (let i = 0; i < 15; i++) {
+                x += vx * 10;
+                y += vy * 10;
+                
+                if (x - radius <= 0 || x + radius >= canvas.width) vx = -vx;
+                if (y - radius <= 0) vy = -vy;
+                if (y + radius >= canvas.height) break;
+                
+                ctx.lineTo(x, y);
+                if (x < 0 || x > canvas.width || y < 0 || y > canvas.height) break;
+            }
+            
+            ctx.strokeStyle = 'rgba(255, 215, 102, 0.5)';
             ctx.lineWidth = 1;
             ctx.stroke();
             ctx.setLineDash([]);
@@ -480,9 +558,9 @@
                 let newCircle;
                 
                 while (!validPosition && attempts < maxAttempts) {
-                    const diameter = Math.floor(Math.random() * 25) + 15;
+                    const diameter = Math.floor(Math.random() * 25) + 30;
                     const x = Math.random() * (canvas.width - diameter * 2) + diameter;
-                    const y = Math.random() * (canvas.height * 0.4) + diameter;
+                    const y = Math.random() * (canvas.height * 0.4) + 40; // Más abajo para dejar espacio
                     
                     newCircle = new Circle(x, y, diameter);
                     
@@ -496,9 +574,9 @@
                 
                 // Si no se encontró posición válida, forzar una posición
                 if (!validPosition) {
-                    const diameter = 20;
+                    const diameter = 30;
                     const x = (i % 2) * (canvas.width / 2) + canvas.width / 4;
-                    const y = Math.floor(i / 2) * (canvas.height / 4) + canvas.height / 8;
+                    const y = Math.floor(i / 2) * (canvas.height / 4) + canvas.height / 6;
                     circles.push(new Circle(x, y, diameter));
                 }
             }
@@ -548,6 +626,10 @@
                 projectile.update();
                 projectile.draw();
             }
+                // Verificar si quedan círculos, si no, crear nuevos
+    if (circles.length === 0) {
+        initCircles();
+    }
             
             // Continuar animación si el juego está activo
             if (gameActive) {
