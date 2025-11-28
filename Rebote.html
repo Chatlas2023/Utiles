@@ -74,7 +74,7 @@
         
         .game-area {
             position: relative;
-            margin-bottom: 40px;
+            margin-bottom: 60px;
         }
         
         canvas {
@@ -90,7 +90,7 @@
         }
         
 .controls {
-    margin-top: 50px; /* Cambia de 15px a 25px */
+    margin-top: 70px; /* Cambia de 15px a 25px */
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -458,7 +458,7 @@ for (let circle of circles) {
             const startY = canvas.height - 20;
             const radius = 5;
             const speed = 5;
-            const angleRad = angle * Math.PI / 180;
+            const angleRad = (180 - angle) * Math.PI / 180;
             
             let x = startX;
             let y = startY;
