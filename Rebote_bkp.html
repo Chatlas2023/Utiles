@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Juego de Rebotes</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 10px;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+        }
+        
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 8px 12px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            font-size: 14px;
+        }
+        
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .info-label {
+            font-size: 0.7rem;
+            color: #a9a9a9;
+            margin-bottom: 3px;
+        }
+        
+        .info-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #fff;
+        }
+        
+        .lives {
+            color: #e94560;
+        }
+        
+        .score {
+            color: #0fce7c;
+        }
+        
+        .best {
+            color: #ffd166;
+        }
+        
+        canvas {
+            background-color: #000;
+            border-radius: 10px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+            display: block;
+            margin: 0 auto;
+            touch-action: none;
+            width: 100%;
+            max-width: 400px;
+            height: 400px;
+        }
+        
+        .controls {
+            margin-top: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+        
+        .angle-control {
+            width: 100%;
+            margin-bottom: 12px;
+        }
+        
+        .angle-label {
+            margin-bottom: 6px;
+            font-size: 0.9rem;
+            color: #a9a9a9;
+        }
+        
+        .angle-slider {
+            width: 100%;
+            height: 25px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            outline: none;
+        }
+        
+        .angle-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: #e94560;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(233, 69, 96, 0.7);
+        }
+        
+        .fire-btn {
+            background: linear-gradient(to right, #e94560, #ff7b9c);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1.1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(233, 69, 96, 0.4);
+            margin-bottom: 12px;
+            width: 100%;
+            max-width: 200px;
+        }
+        
+        .fire-btn:active {
+            transform: scale(0.95);
+            box-shadow: 0 2px 10px rgba(233, 69, 96, 0.6);
+        }
+        
+        .game-over {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 0 30px rgba(233, 69, 96, 0.5);
+            display: none;
+            z-index: 10;
+            width: 80%;
+            max-width: 350px;
+        }
+        
+        .game-over h2 {
+            color: #e94560;
+            font-size: 1.7rem;
+            margin-bottom: 12px;
+        }
+        
+        .game-over p {
+            margin-bottom: 18px;
+            font-size: 1.1rem;
+        }
+        
+        .restart-btn {
+            background: linear-gradient(to right, #0fce7c, #4cd9a1);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(15, 206, 124, 0.4);
+        }
+        
+        .restart-btn:active {
+            transform: scale(0.95);
+        }
+        
+        @media (max-width: 500px) {
+            .game-info {
+                flex-direction: row;
+                gap: 5px;
+                font-size: 12px;
+            }
+            
+            .info-item {
+                flex-direction: column;
+                width: auto;
+            }
+            
+            .info-label {
+                font-size: 0.65rem;
+            }
+            
+            .info-value {
+                font-size: 1rem;
+            }
+            
+            canvas {
+                height: 350px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="game-info">
+            <div class="info-item">
+                <span class="info-label">VIDAS</span>
+                <span class="info-value lives" id="lives">10</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">PUNTUACIÓN</span>
+                <span class="info-value score" id="score">0</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">MEJOR</span>
+                <span class="info-value best" id="best">0</span>
+            </div>
+        </div>
+        
+        <canvas id="gameCanvas" width="400" height="400"></canvas>
+        
+        <div class="controls">
+            <div class="angle-control">
+                <div class="angle-label">Ángulo: <span id="angleValue">45°</span></div>
+                <input type="range" min="1" max="179" value="45" class="angle-slider" id="angleSlider">
+            </div>
+            <button class="fire-btn" id="fireBtn">DISPARAR</button>
+        </div>
+    </div>
+    
+    <div class="game-over" id="gameOver">
+        <h2>¡Juego Terminado!</h2>
+        <p>Tu puntuación: <span id="finalScore">0</span></p>
+        <p>Mejor puntuación: <span id="finalBest">0</span></p>
+        <button class="restart-btn" id="restartBtn">JUGAR DE NUEVO</button>
+    </div>
+
+    <script>
+        // Obtener elementos del DOM
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const angleSlider = document.getElementById('angleSlider');
+        const angleValue = document.getElementById('angleValue');
+        const fireBtn = document.getElementById('fireBtn');
+        const livesElement = document.getElementById('lives');
+        const scoreElement = document.getElementById('score');
+        const bestElement = document.getElementById('best');
+        const gameOverElement = document.getElementById('gameOver');
+        const finalScoreElement = document.getElementById('finalScore');
+        const finalBestElement = document.getElementById('finalBest');
+        const restartBtn = document.getElementById('restartBtn');
+
+        // Variables del juego
+        let circles = [];
+        let projectile = null;
+        let lives = 10;
+        let score = 0;
+        let bestScore = localStorage.getItem('bestScore') || 0;
+        let gameActive = true;
+        let animationId = null;
+        let currentAngle = 45;
+
+        // Configuración inicial
+        bestElement.textContent = bestScore;
+
+        // Ajustar tamaño del canvas para móviles
+        function resizeCanvas() {
+            const containerWidth = canvas.parentElement.clientWidth;
+            const maxWidth = Math.min(400, containerWidth);
+            canvas.width = maxWidth;
+            canvas.height = 400;
+            
+            if (circles.length > 0) {
+                initCircles();
+            }
+        }
+
+        // Verificar si dos círculos se superponen
+        function circlesOverlap(circle1, circle2) {
+            const dx = circle1.x - circle2.x;
+            const dy = circle1.y - circle2.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            return distance < (circle1.radius + circle2.radius + 10); // +10 para margen
+        }
+
+        // Verificar si un círculo se superpone con cualquier otro
+        function isValidPosition(newCircle, existingCircles) {
+            for (let circle of existingCircles) {
+                if (circlesOverlap(newCircle, circle)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        // Clase para los círculos
+        class Circle {
+            constructor(x, y, diameter) {
+                this.x = x;
+                this.y = y;
+                this.diameter = diameter;
+                this.radius = diameter / 2;
+                this.color = this.getRandomColor();
+            }
+            
+            getRandomColor() {
+                const colors = ['#e94560', '#0fce7c', '#ffd166', '#118ab2', '#9b5de5'];
+                return colors[Math.floor(Math.random() * colors.length)];
+            }
+            
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                // Dibujar el número del diámetro
+                ctx.fillStyle = '#fff';
+                ctx.font = `${Math.max(10, this.radius / 2)}px Arial`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(this.diameter.toString(), this.x, this.y);
+            }
+            
+            grow() {
+                // Crecimiento más significativo: entre 3 y 5 unidades
+                const growth = Math.floor(Math.random() * 3) + 3;
+                this.diameter += growth;
+                this.radius = this.diameter / 2;
+            }
+        }
+
+        // Clase para el proyectil
+        class Projectile {
+            constructor(x, y, angle) {
+                this.x = x;
+                this.y = y;
+                this.radius = 5;
+                this.speed = 5;
+                this.angle = angle * Math.PI / 180;
+                this.vx = this.speed * Math.cos(this.angle);
+                this.vy = -this.speed * Math.sin(this.angle);
+                this.active = true;
+            }
+            
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                
+                // Rebotar en las paredes laterales
+                if (this.x - this.radius <= 0 || this.x + this.radius >= canvas.width) {
+                    this.vx = -this.vx;
+                    score++;
+                    scoreElement.textContent = score;
+                }
+                
+                // Verificar colisión con círculos
+                for (let circle of circles) {
+                    const dx = this.x - circle.x;
+                    const dy = this.y - circle.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (distance < this.radius + circle.radius) {
+                        // Calcular el ángulo de reflexión
+                        const angle = Math.atan2(dy, dx);
+                        
+                        // Actualizar velocidad del proyectil
+                        const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+                        this.vx = speed * Math.cos(angle);
+                        this.vy = speed * Math.sin(angle);
+                        
+                        // Mover el proyectil fuera del círculo
+                        const overlap = this.radius + circle.radius - distance;
+                        this.x += overlap * Math.cos(angle);
+                        this.y += overlap * Math.sin(angle);
+                        
+                        // Agrandar el círculo significativamente
+                        circle.grow();
+                        score += 5;
+                        scoreElement.textContent = score;
+                        break;
+                    }
+                }
+                
+                // Verificar si el proyectil toca el techo o el suelo
+                if (this.y - this.radius <= 0 || this.y + this.radius >= canvas.height) {
+                    this.active = false;
+                    lives--;
+                    livesElement.textContent = lives;
+                    
+                    if (lives <= 0) {
+                        endGame();
+                    }
+                }
+            }
+            
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = '#fff';
+                ctx.fill();
+                ctx.strokeStyle = '#e94560';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
+        }
+
+        // Dibujar trayectoria previa
+        function drawTrajectory(angle) {
+            if (projectile && projectile.active) return;
+            
+            const startX = canvas.width / 2;
+            const startY = canvas.height - 20;
+            const radius = 5;
+            const speed = 5;
+            const angleRad = angle * Math.PI / 180;
+            
+            let x = startX;
+            let y = startY;
+            let vx = speed * Math.cos(angleRad);
+            let vy = -speed * Math.sin(angleRad);
+            
+            ctx.setLineDash([5, 5]);
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            
+            // Simular hasta 20 rebotes o hasta salir del canvas
+            for (let i = 0; i < 20; i++) {
+                x += vx * 10;
+                y += vy * 10;
+                
+                // Rebotar en paredes laterales
+                if (x - radius <= 0 || x + radius >= canvas.width) {
+                    vx = -vx;
+                }
+                
+                // Detener si toca techo o suelo
+                if (y - radius <= 0 || y + radius >= canvas.height) {
+                    ctx.lineTo(x, y);
+                    break;
+                }
+                
+                ctx.lineTo(x, y);
+                
+                // Detener si sale del canvas
+                if (x < 0 || x > canvas.width || y < 0 || y > canvas.height) {
+                    break;
+                }
+            }
+            
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+            ctx.setLineDash([]);
+        }
+
+        // Inicializar círculos sin superposición
+        function initCircles() {
+            circles = [];
+            const maxAttempts = 100;
+            
+            for (let i = 0; i < 4; i++) {
+                let attempts = 0;
+                let validPosition = false;
+                let newCircle;
+                
+                while (!validPosition && attempts < maxAttempts) {
+                    const diameter = Math.floor(Math.random() * 25) + 15;
+                    const x = Math.random() * (canvas.width - diameter * 2) + diameter;
+                    const y = Math.random() * (canvas.height * 0.4) + diameter;
+                    
+                    newCircle = new Circle(x, y, diameter);
+                    
+                    if (isValidPosition(newCircle, circles)) {
+                        validPosition = true;
+                        circles.push(newCircle);
+                    }
+                    
+                    attempts++;
+                }
+                
+                // Si no se encontró posición válida, forzar una posición
+                if (!validPosition) {
+                    const diameter = 20;
+                    const x = (i % 2) * (canvas.width / 2) + canvas.width / 4;
+                    const y = Math.floor(i / 2) * (canvas.height / 4) + canvas.height / 8;
+                    circles.push(new Circle(x, y, diameter));
+                }
+            }
+        }
+
+        // Inicializar el juego
+        function initGame() {
+            circles = [];
+            projectile = null;
+            lives = 10;
+            score = 0;
+            gameActive = true;
+            
+            livesElement.textContent = lives;
+            scoreElement.textContent = score;
+            
+            initCircles();
+            
+            gameOverElement.style.display = 'none';
+            
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+            }
+            animate();
+        }
+
+        // Bucle de animación
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Dibujar fondo
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Dibujar trayectoria si no hay proyectil activo
+            if (!projectile || !projectile.active) {
+                drawTrajectory(currentAngle);
+            }
+            
+            // Dibujar círculos
+            for (let circle of circles) {
+                circle.draw();
+            }
+            
+            // Actualizar y dibujar proyectil si está activo
+            if (projectile && projectile.active) {
+                projectile.update();
+                projectile.draw();
+            }
+            
+            // Continuar animación si el juego está activo
+            if (gameActive) {
+                animationId = requestAnimationFrame(animate);
+            }
+        }
+
+        // Finalizar el juego
+        function endGame() {
+            gameActive = false;
+            
+            if (score > bestScore) {
+                bestScore = score;
+                localStorage.setItem('bestScore', bestScore);
+                bestElement.textContent = bestScore;
+            }
+            
+            finalScoreElement.textContent = score;
+            finalBestElement.textContent = bestScore;
+            gameOverElement.style.display = 'block';
+        }
+
+        // Event Listeners
+        angleSlider.addEventListener('input', function() {
+            currentAngle = parseInt(this.value);
+            angleValue.textContent = `${currentAngle}°`;
+        });
+
+        fireBtn.addEventListener('click', function() {
+            if (!projectile || !projectile.active) {
+                projectile = new Projectile(canvas.width / 2, canvas.height - 20, currentAngle);
+            }
+        });
+
+        restartBtn.addEventListener('click', initGame);
+
+        // Iniciar el juego al cargar la página
+        window.addEventListener('load', function() {
+            resizeCanvas();
+            initGame();
+        });
+        
+        // Redimensionar canvas cuando cambie el tamaño de la ventana
+        window.addEventListener('resize', resizeCanvas);
+    </script>
+</body>
+</html>
