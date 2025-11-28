@@ -917,6 +917,12 @@ function showVictoryMessage() {
     if (projectile) {
         projectile.active = false;
     }
+        // Actualizar mejor puntuación si es necesario
+    if (score > bestScore) {
+        bestScore = score;
+        localStorage.setItem('bestScore', bestScore);
+        bestElement.textContent = bestScore;
+    }
     
     // Mostrar mensaje de victoria
     const victoryMessage = document.createElement('div');
@@ -937,6 +943,7 @@ function showVictoryMessage() {
         <h2 style="margin-bottom: 15px; font-size: 1.8rem;">¡Felicidades!</h2>
         <p style="margin-bottom: 10px; font-size: 1.2rem;">¡Eliminaste todos los círculos!</p>
         <p style="margin-bottom: 20px; font-size: 1.1rem;">Puntuación final: <strong>${score}</strong></p>
+        <p style="margin-bottom: 20px; font-size: 1.1rem;">Mejor puntuación: <strong>${bestScore}</strong></p>
         <button id="playAgainBtn" style="
             background: linear-gradient(to right, #0fce7c, #4cd9a1);
             color: white;
