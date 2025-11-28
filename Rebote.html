@@ -423,95 +423,113 @@
             this.active = true;
         }
         
-        update() {
-            this.x += this.vx;
-            this.y += this.vy;
-            
-            // Rebotar en las paredes laterales
-            if (this.x - this.radius <= 0 || this.x + this.radius >= canvas.width) {
-                this.vx = -this.vx;
-                score++;
-                scoreElement.textContent = score;
-            }
-            
-            // Rebotar en la parte superior
-            if (this.y - this.radius <= 0) {
-                this.vy = -this.vy;
-                score++;
-                scoreElement.textContent = score;
-            }
-            
-            // Rebotar en la paleta
-            if (this.y + this.radius >= paddle.y && 
-                this.y - this.radius <= paddle.y + paddle.height &&
-                this.x + this.radius >= paddle.x && 
-                this.x - this.radius <= paddle.x + paddle.width) {
-                
-                // Calcular el punto de impacto en la paleta (de -1 a 1)
-                const hitPos = (this.x - (paddle.x + paddle.width / 2)) / (paddle.width / 2);
-                
-                // Cambiar dirección con ángulo basado en el punto de impacto
-                this.vy = -Math.abs(this.vy);
-                this.vx = hitPos * 4; // Ajustar dirección horizontal basada en el punto de impacto
-                
-                score++;
-                scoreElement.textContent = score;
-            }
-            
-            // Verificar colisión con círculos
-            for (let circle of circles) {
-                const dx = this.x - circle.x;
-                const dy = this.y - circle.y;
-                const distance = Math.sqrt(dx * dx + dy * dy);
-                
-                if (distance < this.radius + circle.radius) {
-                    // Calcular el ángulo de reflexión
-                    const angle = Math.atan2(dy, dx);
-                    
-                    // Actualizar velocidad del proyectil
-                    const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
-                    this.vx = speed * Math.cos(angle);
-                    this.vy = speed * Math.sin(angle);
-                    
-                    // Mover el proyectil fuera del círculo
-                    const overlap = this.radius + circle.radius - distance;
-                    this.x += overlap * Math.cos(angle);
-                    this.y += overlap * Math.sin(angle);
-                    
-                    // Agrandar el círculo significativamente
-                    circle.grow();
-                    score += 5;
-                    scoreElement.textContent = score;
-                    
-                    // Verificar si el círculo debe desaparecer
-if (circle.shouldDisappear()) {
-    const index = circles.indexOf(circle);
-    if (index > -1) {
-        circles.splice(index, 1);
-        score += 20; // Bonus por eliminar círculo
+  // En la clase Projectile, modifica el método update:
+
+update() {
+    this.x += this.vx;
+    this.y += this.vy;
+    
+    // Rebotar en las paredes laterales con factor aleatorio
+    if (this.x - this.radius <= 0 || this.x + this.radius >= canvas.width) {
+        this.vx = -this.vx;
+        
+        // Agregar pequeño factor aleatorio para evitar rebotes infinitos horizontales
+        const randomFactor = (Math.random() * 0.4) - 0.2; // Entre -0.2 y +0.2
+        this.vy += randomFactor;
+        
+        score++;
         scoreElement.textContent = score;
-        // ¡IMPORTANTE! Eliminamos esta línea para que el proyectil continúe.
-        // this.active = false; 
+    }
+    
+    // Rebotar en la parte superior con factor aleatorio
+    if (this.y - this.radius <= 0) {
+        this.vy = -this.vy;
+        
+        // Agregar pequeño factor aleatorio para evitar que se quede atrapada
+        const randomFactor = (Math.random() * 0.4) - 0.2; // Entre -0.2 y +0.2
+        this.vx += randomFactor;
+        
+        // Asegurar que la pelota no se quede atrapada en el borde superior
+        this.y = this.radius + 1;
+        
+        score++;
+        scoreElement.textContent = score;
+    }
+    
+    // Rebotar en la paleta
+    if (this.y + this.radius >= paddle.y && 
+        this.y - this.radius <= paddle.y + paddle.height &&
+        this.x + this.radius >= paddle.x && 
+        this.x - this.radius <= paddle.x + paddle.width) {
+        
+        // Calcular el punto de impacto en la paleta (de -1 a 1)
+        const hitPos = (this.x - (paddle.x + paddle.width / 2)) / (paddle.width / 2);
+        
+        // Cambiar dirección con ángulo basado en el punto de impacto
+        this.vy = -Math.abs(this.vy);
+        this.vx = hitPos * 4; // Ajustar dirección horizontal basada en el punto de impacto
+        
+        score++;
+        scoreElement.textContent = score;
+    }
+    
+    // Verificar colisión con círculos
+    for (let circle of circles) {
+        const dx = this.x - circle.x;
+        const dy = this.y - circle.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        
+        if (distance < this.radius + circle.radius) {
+            // Calcular el ángulo de reflexión
+            const angle = Math.atan2(dy, dx);
+            
+            // Actualizar velocidad del proyectil
+            const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+            this.vx = speed * Math.cos(angle);
+            this.vy = speed * Math.sin(angle);
+            
+            // Mover el proyectil fuera del círculo
+            const overlap = this.radius + circle.radius - distance;
+            this.x += overlap * Math.cos(angle);
+            this.y += overlap * Math.sin(angle);
+            
+            // Agregar pequeño factor aleatorio en colisiones con círculos
+            const randomFactor = (Math.random() * 0.3) - 0.15; // Entre -0.15 y +0.15
+            this.vx += randomFactor;
+            this.vy += randomFactor;
+            
+            // Agrandar el círculo significativamente
+            circle.grow();
+            score += 5;
+            scoreElement.textContent = score;
+            
+            // Verificar si el círculo debe desaparecer
+            if (circle.shouldDisappear()) {
+                const index = circles.indexOf(circle);
+                if (index > -1) {
+                    circles.splice(index, 1);
+                    score += 20; // Bonus por eliminar círculo
+                    scoreElement.textContent = score;
+                }
+            }
+            break;
+        }
+    }
+    
+    // Verificar si el proyectil toca el suelo (pierde vida)
+    if (this.y + this.radius >= canvas.height) {
+        this.active = false;
+        lives--;
+        livesElement.textContent = lives;
+        
+        // RESTAURAR el modo de control a 'angle'
+        setControlsMode('angle');
+        
+        if (lives <= 0) {
+            endGame();
+        }
     }
 }
-                    break;
-                }
-            }
-            
-            // Verificar si el proyectil toca el suelo (pierde vida)
-            if (this.y + this.radius >= canvas.height) {
-                this.active = false;
-                lives--;
-                livesElement.textContent = lives;
-                
-                // RESTAURAR el modo de control a 'angle'
-                setControlsMode('angle');
-                
-                if (lives <= 0) {
-                    endGame();
-                }
-            }
-        }
         
         draw() {
             ctx.beginPath();
