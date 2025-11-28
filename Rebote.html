@@ -707,24 +707,25 @@ update() {
     }
 
     // FUNCIÓN PARA CAMBIAR EL MODO DE CONTROL
-    function setControlsMode(mode) {
-        controlsMode = mode;
-        if (mode === 'angle') {
-            angleSlider.min = 0;
-            angleSlider.max = 180;
-            angleSlider.value = currentAngle; // Usar el último ángulo
-            angleLabel.innerHTML = `Ángulo: <span id="angleValue">${currentAngle}°</span>`;
-            fireBtn.textContent = 'DISPARAR';
-            fireBtn.disabled = false;
-        } else if (mode === 'paddle') {
-            angleSlider.min = 0;
-            angleSlider.max = canvas.width - paddle.width;
-            angleSlider.value = paddle.x; // Sincronizar con la posición actual de la paleta
-            angleLabel.innerHTML = 'Paleta: <span id="angleValue">Mover</span>'; // Cambiar la etiqueta
-            fireBtn.textContent = 'ESPERANDO';
-            fireBtn.disabled = true;
-        }
+// En la función setControlsMode, modifica esta línea:
+function setControlsMode(mode) {
+    controlsMode = mode;
+    if (mode === 'angle') {
+        angleSlider.min = 0;
+        angleSlider.max = 180;
+        angleSlider.value = currentAngle; // Usar el último ángulo
+        angleLabel.innerHTML = `<span id="angleValue">${currentAngle}°</span>`; // Quitado "Ángulo: "
+        fireBtn.textContent = 'DISPARAR';
+        fireBtn.disabled = false;
+    } else if (mode === 'paddle') {
+        angleSlider.min = 0;
+        angleSlider.max = canvas.width - paddle.width;
+        angleSlider.value = paddle.x; // Sincronizar con la posición actual de la paleta
+        angleLabel.innerHTML = '<span id="angleValue">Mover</span>'; // Cambiar la etiqueta
+        fireBtn.textContent = 'ESPERANDO';
+        fireBtn.disabled = true;
     }
+}
 
 
     // Inicializar el juego
