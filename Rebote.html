@@ -89,13 +89,13 @@
             height: 380px;
         }
         
-.controls {
-    margin-top: 90px; /* Cambia de 15px a 25px */
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
-}
+        .controls {
+            margin-top: 90px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
         
         .angle-control {
             width: 100%;
@@ -142,7 +142,7 @@
             margin-bottom: 12px;
             width: 100%;
             max-width: 200px;
-             margin-top: 20px;
+            margin-top: 20px;
         }
         
         .fire-btn:active {
@@ -192,27 +192,28 @@
         .restart-btn:active {
             transform: scale(0.95);
         }
+        
         .game-over-buttons {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
 
-.continue-btn {
-    background: linear-gradient(to right, #ffd166, #ffed99);
-    color: #333;
-    border: none;
-    padding: 12px 25px;
-    font-size: 1rem;
-    border-radius: 50px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 5px 15px rgba(255, 209, 102, 0.4);
-}
+        .continue-btn {
+            background: linear-gradient(to right, #ffd166, #ffed99);
+            color: #333;
+            border: none;
+            padding: 12px 25px;
+            font-size: 1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(255, 209, 102, 0.4);
+        }
 
-.continue-btn:active {
-    transform: scale(0.95);
-}
+        .continue-btn:active {
+            transform: scale(0.95);
+        }
         
         @media (max-width: 500px) {
             .game-info {
@@ -270,15 +271,15 @@
         </div>
     </div>
     
-<div class="game-over" id="gameOver">
-    <h2>¡Juego Terminado!</h2>
-    <p>Tu puntuación: <span id="finalScore">0</span></p>
-    <p>Mejor puntuación: <span id="finalBest">0</span></p>
-    <div class="game-over-buttons">
-        <button class="restart-btn" id="restartBtn">JUGAR DE NUEVO</button>
-        <button class="continue-btn" id="continueBtn">CONTINUAR (+2 VIDAS)</button>
+    <div class="game-over" id="gameOver">
+        <h2>¡Juego Terminado!</h2>
+        <p>Tu puntuación: <span id="finalScore">0</span></p>
+        <p>Mejor puntuación: <span id="finalBest">0</span></p>
+        <div class="game-over-buttons">
+            <button class="restart-btn" id="restartBtn">JUGAR DE NUEVO</button>
+            <button class="continue-btn" id="continueBtn">CONTINUAR (+2 VIDAS)</button>
+        </div>
     </div>
-</div>
 
     <script>
         // Obtener elementos del DOM
@@ -305,6 +306,22 @@
         let gameActive = true;
         let animationId = null;
         let currentAngle = 135;
+        
+        // Variables para la paleta
+        let paddle = {
+            width: 50, // 1/8 del ancho del canvas (400/8 = 50)
+            height: 10,
+            x: 175, // Posición inicial centrada
+            y: 370, // Cerca del fondo
+            speed: 5,
+            color: '#e94560'
+        };
+        
+        // Control de la paleta
+        let keys = {
+            left: false,
+            right: false
+        };
 
         // Configuración inicial
         bestElement.textContent = bestScore;
@@ -315,6 +332,11 @@
             const maxWidth = Math.min(400, containerWidth);
             canvas.width = maxWidth;
             canvas.height = 380;
+            
+            // Ajustar tamaño de la paleta
+            paddle.width = canvas.width / 8;
+            paddle.x = (canvas.width - paddle.width) / 2;
+            paddle.y = canvas.height - 10;
             
             if (circles.length > 0) {
                 initCircles();
@@ -377,9 +399,10 @@
                 this.diameter += growth;
                 this.radius = this.diameter / 2;
             }
+            
             shouldDisappear() {
-    return this.diameter >= 300;
-}
+                return this.diameter >= 300;
+            }
         }
 
         // Clase para el proyectil
@@ -413,45 +436,61 @@
                     scoreElement.textContent = score;
                 }
                 
+                // Rebotar en la paleta
+                if (this.y + this.radius >= paddle.y && 
+                    this.y - this.radius <= paddle.y + paddle.height &&
+                    this.x + this.radius >= paddle.x && 
+                    this.x - this.radius <= paddle.x + paddle.width) {
+                    
+                    // Calcular el punto de impacto en la paleta (de -1 a 1)
+                    const hitPos = (this.x - (paddle.x + paddle.width / 2)) / (paddle.width / 2);
+                    
+                    // Cambiar dirección con ángulo basado en el punto de impacto
+                    this.vy = -Math.abs(this.vy);
+                    this.vx = hitPos * 4; // Ajustar dirección horizontal basada en el punto de impacto
+                    
+                    score++;
+                    scoreElement.textContent = score;
+                }
+                
                 // Verificar colisión con círculos
-                // Verificar colisión con círculos
-for (let circle of circles) {
-    const dx = this.x - circle.x;
-    const dy = this.y - circle.y;
-    const distance = Math.sqrt(dx * dx + dy * dy);
-    
-    if (distance < this.radius + circle.radius) {
-        // Calcular el ángulo de reflexión
-        const angle = Math.atan2(dy, dx);
-        
-        // Actualizar velocidad del proyectil
-        const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
-        this.vx = speed * Math.cos(angle);
-        this.vy = speed * Math.sin(angle);
-        
-        // Mover el proyectil fuera del círculo
-        const overlap = this.radius + circle.radius - distance;
-        this.x += overlap * Math.cos(angle);
-        this.y += overlap * Math.sin(angle);
-        
-        // Agrandar el círculo significativamente
-        circle.grow();
-        score += 5;
-        scoreElement.textContent = score;
-        
-        // Verificar si el círculo debe desaparecer (DESPUÉS del break)
-        if (circle.shouldDisappear()) {
-            const index = circles.indexOf(circle);
-            if (index > -1) {
-                circles.splice(index, 1);
-                score += 20; // Bonus por eliminar círculo
-                scoreElement.textContent = score;
-                  this.active = false;
-            }
-        }
-        break;
-    }
-}
+                for (let circle of circles) {
+                    const dx = this.x - circle.x;
+                    const dy = this.y - circle.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (distance < this.radius + circle.radius) {
+                        // Calcular el ángulo de reflexión
+                        const angle = Math.atan2(dy, dx);
+                        
+                        // Actualizar velocidad del proyectil
+                        const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+                        this.vx = speed * Math.cos(angle);
+                        this.vy = speed * Math.sin(angle);
+                        
+                        // Mover el proyectil fuera del círculo
+                        const overlap = this.radius + circle.radius - distance;
+                        this.x += overlap * Math.cos(angle);
+                        this.y += overlap * Math.sin(angle);
+                        
+                        // Agrandar el círculo significativamente
+                        circle.grow();
+                        score += 5;
+                        scoreElement.textContent = score;
+                        
+                        // Verificar si el círculo debe desaparecer
+                        if (circle.shouldDisappear()) {
+                            const index = circles.indexOf(circle);
+                            if (index > -1) {
+                                circles.splice(index, 1);
+                                score += 20; // Bonus por eliminar círculo
+                                scoreElement.textContent = score;
+                                this.active = false;
+                            }
+                        }
+                        break;
+                    }
+                }
                 
                 // Verificar si el proyectil toca el suelo (pierde vida)
                 if (this.y + this.radius >= canvas.height) {
@@ -473,6 +512,27 @@ for (let circle of circles) {
                 ctx.strokeStyle = '#e94560';
                 ctx.lineWidth = 2;
                 ctx.stroke();
+            }
+        }
+
+        // Dibujar la paleta
+        function drawPaddle() {
+            ctx.fillStyle = paddle.color;
+            ctx.fillRect(paddle.x, paddle.y, paddle.width, paddle.height);
+            
+            // Borde de la paleta
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(paddle.x, paddle.y, paddle.width, paddle.height);
+        }
+
+        // Actualizar posición de la paleta
+        function updatePaddle() {
+            if (keys.left && paddle.x > 0) {
+                paddle.x -= paddle.speed;
+            }
+            if (keys.right && paddle.x + paddle.width < canvas.width) {
+                paddle.x += paddle.speed;
             }
         }
 
@@ -519,6 +579,18 @@ for (let circle of circles) {
                     ctx.beginPath();
                     ctx.arc(x, y, 3, 0, Math.PI * 2);
                     ctx.fill();
+                }
+                
+                // Rebotar en paleta
+                if (y + radius >= paddle.y && 
+                    y - radius <= paddle.y + paddle.height &&
+                    x + radius >= paddle.x && 
+                    x - radius <= paddle.x + paddle.width) {
+                    
+                    // Simular rebote en paleta
+                    vy = -Math.abs(vy);
+                    const hitPos = (x - (paddle.x + paddle.width / 2)) / (paddle.width / 2);
+                    vx = hitPos * 4;
                 }
                 
                 // Detener si toca el suelo (pierde vida)
@@ -619,6 +691,9 @@ for (let circle of circles) {
             livesElement.textContent = lives;
             scoreElement.textContent = score;
             
+            // Reiniciar posición de la paleta
+            paddle.x = (canvas.width - paddle.width) / 2;
+            
             initCircles();
             
             gameOverElement.style.display = 'none';
@@ -647,15 +722,20 @@ for (let circle of circles) {
                 circle.draw();
             }
             
+            // Dibujar y actualizar paleta
+            updatePaddle();
+            drawPaddle();
+            
             // Actualizar y dibujar proyectil si está activo
             if (projectile && projectile.active) {
                 projectile.update();
                 projectile.draw();
             }
-                // Verificar si quedan círculos, si no, crear nuevos
-    if (circles.length === 0) {
-        initCircles();
-    }
+            
+            // Verificar si quedan círculos, si no, crear nuevos
+            if (circles.length === 0) {
+                initCircles();
+            }
             
             // Continuar animación si el juego está activo
             if (gameActive) {
@@ -676,13 +756,40 @@ for (let circle of circles) {
             finalBestElement.textContent = bestScore;
             gameOverElement.style.display = 'block';
         }
+        
         continueBtn.addEventListener('click', function() {
-    lives = 2; // Dar 2 vidas adicionales
-    livesElement.textContent = lives;
-    gameOverElement.style.display = 'none';
-    gameActive = true;
-    animate(); // Reanudar la animación
-});
+            lives = 2; // Dar 2 vidas adicionales
+            livesElement.textContent = lives;
+            gameOverElement.style.display = 'none';
+            gameActive = true;
+            animate(); // Reanudar la animación
+        });
+
+        // Event Listeners para el teclado
+        window.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowLeft') keys.left = true;
+            if (e.key === 'ArrowRight') keys.right = true;
+        });
+
+        window.addEventListener('keyup', function(e) {
+            if (e.key === 'ArrowLeft') keys.left = false;
+            if (e.key === 'ArrowRight') keys.right = false;
+        });
+
+        // Event Listeners para pantallas táctiles
+        canvas.addEventListener('touchmove', function(e) {
+            e.preventDefault();
+            const touch = e.touches[0];
+            const rect = canvas.getBoundingClientRect();
+            const touchX = touch.clientX - rect.left;
+            
+            // Mover la paleta a la posición del toque
+            paddle.x = touchX - paddle.width / 2;
+            
+            // Limitar la paleta dentro del canvas
+            if (paddle.x < 0) paddle.x = 0;
+            if (paddle.x + paddle.width > canvas.width) paddle.x = canvas.width - paddle.width;
+        });
 
         // Event Listeners
         angleSlider.addEventListener('input', function() {
