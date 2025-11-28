@@ -420,6 +420,7 @@ for (let circle of circles) {
                 circles.splice(index, 1);
                 score += 20; // Bonus por eliminar círculo
                 scoreElement.textContent = score;
+                  this.active = false;
             }
         }
         break;
