@@ -80,7 +80,7 @@
             touch-action: none;
             width: 100%;
             max-width: 400px;
-            height: 400px; /* Altura reducida para móviles */
+            height: 400px;
         }
         
         .controls {
@@ -141,32 +141,6 @@
         .fire-btn:active {
             transform: scale(0.95);
             box-shadow: 0 2px 10px rgba(233, 69, 96, 0.6);
-        }
-        
-        .instructions {
-            margin-top: 15px;
-            background: rgba(0, 0, 0, 0.3);
-            padding: 12px;
-            border-radius: 10px;
-            font-size: 0.8rem;
-            line-height: 1.4;
-            color: #a9a9a9;
-            text-align: left;
-        }
-        
-        .instructions h3 {
-            color: #e94560;
-            margin-bottom: 8px;
-            text-align: center;
-            font-size: 0.9rem;
-        }
-        
-        .instructions ul {
-            padding-left: 18px;
-        }
-        
-        .instructions li {
-            margin-bottom: 6px;
         }
         
         .game-over {
@@ -233,17 +207,7 @@
             }
             
             canvas {
-                height: 350px; /* Aún más reducido en móviles muy pequeños */
-            }
-        }
-        
-        @media (max-height: 700px) {
-            canvas {
-                height: 320px;
-            }
-            
-            .instructions {
-                display: none; /* Ocultar instrucciones en pantallas muy pequeñas */
+                height: 350px;
             }
         }
     </style>
@@ -273,18 +237,6 @@
                 <input type="range" min="1" max="179" value="45" class="angle-slider" id="angleSlider">
             </div>
             <button class="fire-btn" id="fireBtn">DISPARAR</button>
-        </div>
-        
-        <div class="instructions">
-            <h3>Cómo Jugar</h3>
-            <ul>
-                <li>Ajusta el ángulo con el control deslizante</li>
-                <li>Presiona DISPARAR para lanzar el proyectil</li>
-                <li>El proyectil rebota en las paredes y círculos</li>
-                <li>Cuando golpea un círculo, este crece y sumas puntos</li>
-                <li>Pierdes una vida cuando el proyectil toca el techo o el suelo</li>
-                <li>¡Consigue la mayor puntuación posible!</li>
-            </ul>
         </div>
     </div>
     
@@ -318,6 +270,7 @@
         let bestScore = localStorage.getItem('bestScore') || 0;
         let gameActive = true;
         let animationId = null;
+        let currentAngle = 45;
 
         // Configuración inicial
         bestElement.textContent = bestScore;
@@ -327,12 +280,29 @@
             const containerWidth = canvas.parentElement.clientWidth;
             const maxWidth = Math.min(400, containerWidth);
             canvas.width = maxWidth;
-            canvas.height = 400; // Altura fija reducida
+            canvas.height = 400;
             
-            // Si el juego ya estaba iniciado, redibujar los círculos
             if (circles.length > 0) {
                 initCircles();
             }
+        }
+
+        // Verificar si dos círculos se superponen
+        function circlesOverlap(circle1, circle2) {
+            const dx = circle1.x - circle2.x;
+            const dy = circle1.y - circle2.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            return distance < (circle1.radius + circle2.radius + 10); // +10 para margen
+        }
+
+        // Verificar si un círculo se superpone con cualquier otro
+        function isValidPosition(newCircle, existingCircles) {
+            for (let circle of existingCircles) {
+                if (circlesOverlap(newCircle, circle)) {
+                    return false;
+                }
+            }
+            return true;
         }
 
         // Clase para los círculos
@@ -368,7 +338,9 @@
             }
             
             grow() {
-                this.diameter += 1;
+                // Crecimiento más significativo: entre 3 y 5 unidades
+                const growth = Math.floor(Math.random() * 3) + 3;
+                this.diameter += growth;
                 this.radius = this.diameter / 2;
             }
         }
@@ -380,9 +352,9 @@
                 this.y = y;
                 this.radius = 5;
                 this.speed = 5;
-                this.angle = angle * Math.PI / 180; // Convertir a radianes
+                this.angle = angle * Math.PI / 180;
                 this.vx = this.speed * Math.cos(this.angle);
-                this.vy = -this.speed * Math.sin(this.angle); // Negativo porque Y crece hacia abajo
+                this.vy = -this.speed * Math.sin(this.angle);
                 this.active = true;
             }
             
@@ -412,12 +384,12 @@
                         this.vx = speed * Math.cos(angle);
                         this.vy = speed * Math.sin(angle);
                         
-                        // Mover el proyectil fuera del círculo para evitar colisiones múltiples
+                        // Mover el proyectil fuera del círculo
                         const overlap = this.radius + circle.radius - distance;
                         this.x += overlap * Math.cos(angle);
                         this.y += overlap * Math.sin(angle);
                         
-                        // Agrandar el círculo
+                        // Agrandar el círculo significativamente
                         circle.grow();
                         score += 5;
                         scoreElement.textContent = score;
@@ -448,17 +420,87 @@
             }
         }
 
-        // Inicializar círculos
+        // Dibujar trayectoria previa
+        function drawTrajectory(angle) {
+            if (projectile && projectile.active) return;
+            
+            const startX = canvas.width / 2;
+            const startY = canvas.height - 20;
+            const radius = 5;
+            const speed = 5;
+            const angleRad = angle * Math.PI / 180;
+            
+            let x = startX;
+            let y = startY;
+            let vx = speed * Math.cos(angleRad);
+            let vy = -speed * Math.sin(angleRad);
+            
+            ctx.setLineDash([5, 5]);
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            
+            // Simular hasta 20 rebotes o hasta salir del canvas
+            for (let i = 0; i < 20; i++) {
+                x += vx * 10;
+                y += vy * 10;
+                
+                // Rebotar en paredes laterales
+                if (x - radius <= 0 || x + radius >= canvas.width) {
+                    vx = -vx;
+                }
+                
+                // Detener si toca techo o suelo
+                if (y - radius <= 0 || y + radius >= canvas.height) {
+                    ctx.lineTo(x, y);
+                    break;
+                }
+                
+                ctx.lineTo(x, y);
+                
+                // Detener si sale del canvas
+                if (x < 0 || x > canvas.width || y < 0 || y > canvas.height) {
+                    break;
+                }
+            }
+            
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+            ctx.setLineDash([]);
+        }
+
+        // Inicializar círculos sin superposición
         function initCircles() {
             circles = [];
+            const maxAttempts = 100;
             
-            // Crear 4 círculos en la parte superior
             for (let i = 0; i < 4; i++) {
-                const diameter = Math.floor(Math.random() * 25) + 15; // Diámetro entre 15 y 40
-                const x = Math.random() * (canvas.width - diameter * 2) + diameter;
-                const y = Math.random() * (canvas.height * 0.4) + diameter;
+                let attempts = 0;
+                let validPosition = false;
+                let newCircle;
                 
-                circles.push(new Circle(x, y, diameter));
+                while (!validPosition && attempts < maxAttempts) {
+                    const diameter = Math.floor(Math.random() * 25) + 15;
+                    const x = Math.random() * (canvas.width - diameter * 2) + diameter;
+                    const y = Math.random() * (canvas.height * 0.4) + diameter;
+                    
+                    newCircle = new Circle(x, y, diameter);
+                    
+                    if (isValidPosition(newCircle, circles)) {
+                        validPosition = true;
+                        circles.push(newCircle);
+                    }
+                    
+                    attempts++;
+                }
+                
+                // Si no se encontró posición válida, forzar una posición
+                if (!validPosition) {
+                    const diameter = 20;
+                    const x = (i % 2) * (canvas.width / 2) + canvas.width / 4;
+                    const y = Math.floor(i / 2) * (canvas.height / 4) + canvas.height / 8;
+                    circles.push(new Circle(x, y, diameter));
+                }
             }
         }
 
@@ -473,13 +515,10 @@
             livesElement.textContent = lives;
             scoreElement.textContent = score;
             
-            // Crear círculos
             initCircles();
             
-            // Ocultar pantalla de fin de juego
             gameOverElement.style.display = 'none';
             
-            // Iniciar el bucle de animación
             if (animationId) {
                 cancelAnimationFrame(animationId);
             }
@@ -493,6 +532,11 @@
             // Dibujar fondo
             ctx.fillStyle = '#000';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Dibujar trayectoria si no hay proyectil activo
+            if (!projectile || !projectile.active) {
+                drawTrajectory(currentAngle);
+            }
             
             // Dibujar círculos
             for (let circle of circles) {
@@ -515,14 +559,12 @@
         function endGame() {
             gameActive = false;
             
-            // Actualizar mejor puntuación
             if (score > bestScore) {
                 bestScore = score;
                 localStorage.setItem('bestScore', bestScore);
                 bestElement.textContent = bestScore;
             }
             
-            // Mostrar pantalla de fin de juego
             finalScoreElement.textContent = score;
             finalBestElement.textContent = bestScore;
             gameOverElement.style.display = 'block';
@@ -530,13 +572,13 @@
 
         // Event Listeners
         angleSlider.addEventListener('input', function() {
-            angleValue.textContent = `${this.value}°`;
+            currentAngle = parseInt(this.value);
+            angleValue.textContent = `${currentAngle}°`;
         });
 
         fireBtn.addEventListener('click', function() {
             if (!projectile || !projectile.active) {
-                const angle = parseInt(angleSlider.value);
-                projectile = new Projectile(canvas.width / 2, canvas.height - 20, angle);
+                projectile = new Projectile(canvas.width / 2, canvas.height - 20, currentAngle);
             }
         });
 
