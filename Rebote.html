@@ -484,15 +484,16 @@
                     scoreElement.textContent = score;
                     
                     // Verificar si el círculo debe desaparecer
-                    if (circle.shouldDisappear()) {
-                        const index = circles.indexOf(circle);
-                        if (index > -1) {
-                            circles.splice(index, 1);
-                            score += 20; // Bonus por eliminar círculo
-                            scoreElement.textContent = score;
-                            this.active = false;
-                        }
-                    }
+if (circle.shouldDisappear()) {
+    const index = circles.indexOf(circle);
+    if (index > -1) {
+        circles.splice(index, 1);
+        score += 20; // Bonus por eliminar círculo
+        scoreElement.textContent = score;
+        // ¡IMPORTANTE! Eliminamos esta línea para que el proyectil continúe.
+        // this.active = false; 
+    }
+}
                     break;
                 }
             }
