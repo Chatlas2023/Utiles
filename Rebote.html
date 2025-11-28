@@ -74,7 +74,7 @@
         
         .game-area {
             position: relative;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
         }
         
         canvas {
@@ -90,7 +90,7 @@
         }
         
 .controls {
-    margin-top: 25px; /* Cambia de 15px a 25px */
+    margin-top: 35px; /* Cambia de 15px a 25px */
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -543,7 +543,7 @@
                 let newCircle;
                 
                 while (!validPosition && attempts < maxAttempts) {
-                    const diameter = Math.floor(Math.random() * 25) + 15;
+                    const diameter = Math.floor(Math.random() * 25) + 30;
                     const x = Math.random() * (canvas.width - diameter * 2) + diameter;
                     const y = Math.random() * (canvas.height * 0.4) + 40; // Más abajo para dejar espacio
                     
@@ -559,7 +559,7 @@
                 
                 // Si no se encontró posición válida, forzar una posición
                 if (!validPosition) {
-                    const diameter = 20;
+                    const diameter = 30;
                     const x = (i % 2) * (canvas.width / 2) + canvas.width / 4;
                     const y = Math.floor(i / 2) * (canvas.height / 4) + canvas.height / 6;
                     circles.push(new Circle(x, y, diameter));
