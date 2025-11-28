@@ -351,6 +351,9 @@
                 this.diameter += growth;
                 this.radius = this.diameter / 2;
             }
+            shouldDisappear() {
+    return this.diameter >= 300;
+}
         }
 
         // Clase para el proyectil
@@ -409,6 +412,14 @@
                         score += 5;
                         scoreElement.textContent = score;
                         break;
+                        if (circle.shouldDisappear()) {
+    const index = circles.indexOf(circle);
+    if (index > -1) {
+        circles.splice(index, 1);
+        score += 20; // Bonus por eliminar círculo
+        scoreElement.textContent = score;
+    }
+}
                     }
                 }
                 
@@ -611,6 +622,10 @@
                 projectile.update();
                 projectile.draw();
             }
+                // Verificar si quedan círculos, si no, crear nuevos
+    if (circles.length === 0) {
+        initCircles();
+    }
             
             // Continuar animación si el juego está activo
             if (gameActive) {
