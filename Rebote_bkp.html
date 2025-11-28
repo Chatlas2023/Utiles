@@ -74,7 +74,7 @@
         
         .game-area {
             position: relative;
-            margin-bottom: 60px;
+            margin-bottom: 80px;
         }
         
         canvas {
@@ -90,7 +90,7 @@
         }
         
 .controls {
-    margin-top: 70px; /* Cambia de 15px a 25px */
+    margin-top: 90px; /* Cambia de 15px a 25px */
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -191,6 +191,27 @@
         .restart-btn:active {
             transform: scale(0.95);
         }
+        .game-over-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.continue-btn {
+    background: linear-gradient(to right, #ffd166, #ffed99);
+    color: #333;
+    border: none;
+    padding: 12px 25px;
+    font-size: 1rem;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 5px 15px rgba(255, 209, 102, 0.4);
+}
+
+.continue-btn:active {
+    transform: scale(0.95);
+}
         
         @media (max-width: 500px) {
             .game-info {
@@ -248,12 +269,15 @@
         </div>
     </div>
     
-    <div class="game-over" id="gameOver">
-        <h2>¡Juego Terminado!</h2>
-        <p>Tu puntuación: <span id="finalScore">0</span></p>
-        <p>Mejor puntuación: <span id="finalBest">0</span></p>
+<div class="game-over" id="gameOver">
+    <h2>¡Juego Terminado!</h2>
+    <p>Tu puntuación: <span id="finalScore">0</span></p>
+    <p>Mejor puntuación: <span id="finalBest">0</span></p>
+    <div class="game-over-buttons">
         <button class="restart-btn" id="restartBtn">JUGAR DE NUEVO</button>
+        <button class="continue-btn" id="continueBtn">CONTINUAR (+2 VIDAS)</button>
     </div>
+</div>
 
     <script>
         // Obtener elementos del DOM
@@ -269,6 +293,7 @@
         const finalScoreElement = document.getElementById('finalScore');
         const finalBestElement = document.getElementById('finalBest');
         const restartBtn = document.getElementById('restartBtn');
+        const continueBtn = document.getElementById('continueBtn');
 
         // Variables del juego
         let circles = [];
@@ -639,8 +664,7 @@ for (let circle of circles) {
 
         // Finalizar el juego
         function endGame() {
-            gameActive = false;
-            
+                       
             if (score > bestScore) {
                 bestScore = score;
                 localStorage.setItem('bestScore', bestScore);
@@ -651,6 +675,13 @@ for (let circle of circles) {
             finalBestElement.textContent = bestScore;
             gameOverElement.style.display = 'block';
         }
+        continueBtn.addEventListener('click', function() {
+    lives = 2; // Dar 2 vidas adicionales
+    livesElement.textContent = lives;
+    gameOverElement.style.display = 'none';
+    gameActive = true;
+    animate(); // Reanudar la animación
+});
 
         // Event Listeners
         angleSlider.addEventListener('input', function() {
