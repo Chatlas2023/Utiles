@@ -142,6 +142,7 @@
             margin-bottom: 12px;
             width: 100%;
             max-width: 200px;
+             margin-top: 20px;
         }
         
         .fire-btn:active {
@@ -664,7 +665,7 @@ for (let circle of circles) {
 
         // Finalizar el juego
         function endGame() {
-                       
+            gameActive = false;            
             if (score > bestScore) {
                 bestScore = score;
                 localStorage.setItem('bestScore', bestScore);
