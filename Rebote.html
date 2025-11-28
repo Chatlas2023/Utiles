@@ -239,6 +239,13 @@
                 height: 350px;
             }
         }
+        .confetti {
+    position: fixed;
+    width: 10px;
+    height: 10px;
+    pointer-events: none;
+    z-index: 15;
+}
     </style>
 </head>
 <body>
@@ -309,6 +316,7 @@
     let currentAngle = 135;
     // NUEVA VARIABLE: 'angle' (ajustar ángulo) o 'paddle' (mover paleta)
     let controlsMode = 'angle';
+    let allCirclesCleared = false;
     
     // Variables para la paleta
     let paddle = {
@@ -747,70 +755,72 @@ function setControlsMode(mode) {
 
 
     // Inicializar el juego
-    function initGame() {
-        circles = [];
-        projectile = null;
-        lives = 10;
-        score = 0;
-        gameActive = true;
-        
-        livesElement.textContent = lives;
-        scoreElement.textContent = score;
-        
-        // Reiniciar posición de la paleta
-        paddle.x = (canvas.width - paddle.width) / 2;
-        
-        initCircles();
-        
-        gameOverElement.style.display = 'none';
+function initGame() {
+    circles = [];
+    projectile = null;
+    lives = 10;
+    score = 0;
+    gameActive = true;
+    allCirclesCleared = false; // Resetear esta variable
+    
+    livesElement.textContent = lives;
+    scoreElement.textContent = score;
+    
+    // Reiniciar posición de la paleta
+    paddle.x = (canvas.width - paddle.width) / 2;
+    
+    initCircles();
+    
+    gameOverElement.style.display = 'none';
 
-        // RESTABLECER el modo de control al inicio
-        setControlsMode('angle');
-        
-        if (animationId) {
-            cancelAnimationFrame(animationId);
-        }
-        animate();
+    // RESTABLECER el modo de control al inicio
+    setControlsMode('angle');
+    
+    if (animationId) {
+        cancelAnimationFrame(animationId);
     }
+    animate();
+}
 
     // Bucle de animación
-    function animate() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
-        // Dibujar fondo
-        ctx.fillStyle = '#000';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        
-        // Dibujar trayectoria si no hay proyectil activo Y estamos en modo ángulo
-        if ((!projectile || !projectile.active) && controlsMode === 'angle') {
-            drawTrajectory(currentAngle);
-        }
-        
-        // Dibujar círculos
-        for (let circle of circles) {
-            circle.draw();
-        }
-        
-        // Dibujar y actualizar paleta
-        updatePaddle();
-        drawPaddle();
-        
-        // Actualizar y dibujar proyectil si está activo
-        if (projectile && projectile.active) {
-            projectile.update();
-            projectile.draw();
-        }
-        
-        // Verificar si quedan círculos, si no, crear nuevos
-        if (circles.length === 0) {
-            initCircles();
-        }
-        
-        // Continuar animación si el juego está activo
-        if (gameActive) {
-            animationId = requestAnimationFrame(animate);
-        }
+function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // Dibujar fondo
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Dibujar trayectoria si no hay proyectil activo Y estamos en modo ángulo
+    if ((!projectile || !projectile.active) && controlsMode === 'angle' && !allCirclesCleared) {
+        drawTrajectory(currentAngle);
     }
+    
+    // Dibujar círculos
+    for (let circle of circles) {
+        circle.draw();
+    }
+    
+    // Dibujar y actualizar paleta
+    updatePaddle();
+    drawPaddle();
+    
+    // Actualizar y dibujar proyectil si está activo
+    if (projectile && projectile.active && !allCirclesCleared) {
+        projectile.update();
+        projectile.draw();
+    }
+    
+    // Verificar si quedan círculos, si no, mostrar mensaje de victoria
+    if (circles.length === 0 && !allCirclesCleared && gameActive) {
+        showVictoryMessage();
+        allCirclesCleared = true;
+    }
+    
+    // Continuar animación si el juego está activo
+    if (gameActive) {
+        animationId = requestAnimationFrame(animate);
+    }
+}
 
     // Finalizar el juego
     function endGame() {
@@ -827,7 +837,8 @@ function setControlsMode(mode) {
         gameOverElement.style.display = 'block';
     }
     
-    continueBtn.addEventListener('click', function() {
+continueBtn.addEventListener('click', function() {
+    if (!allCirclesCleared) {
         lives = 2; // Dar 2 vidas adicionales
         livesElement.textContent = lives;
         gameOverElement.style.display = 'none';
@@ -835,9 +846,9 @@ function setControlsMode(mode) {
         
         // Restaurar modo ángulo al continuar
         setControlsMode('angle'); 
-
         animate(); // Reanudar la animación
-    });
+    }
+});
 
     // Event Listeners para el teclado (sin cambios)
     window.addEventListener('keydown', function(e) {
@@ -900,6 +911,98 @@ function setControlsMode(mode) {
         // Inicializar el modo de control al cargar
         setControlsMode('angle');
     });
+    // Función para mostrar mensaje de victoria con confetti
+function showVictoryMessage() {
+    // Detener el proyectil
+    if (projectile) {
+        projectile.active = false;
+    }
+    
+    // Mostrar mensaje de victoria
+    const victoryMessage = document.createElement('div');
+    victoryMessage.style.position = 'absolute';
+    victoryMessage.style.top = '50%';
+    victoryMessage.style.left = '50%';
+    victoryMessage.style.transform = 'translate(-50%, -50%)';
+    victoryMessage.style.background = 'rgba(0, 0, 0, 0.9)';
+    victoryMessage.style.color = '#0fce7c';
+    victoryMessage.style.padding = '30px';
+    victoryMessage.style.borderRadius = '15px';
+    victoryMessage.style.textAlign = 'center';
+    victoryMessage.style.zIndex = '20';
+    victoryMessage.style.boxShadow = '0 0 30px rgba(15, 206, 124, 0.5)';
+    victoryMessage.style.border = '2px solid #0fce7c';
+    
+    victoryMessage.innerHTML = `
+        <h2 style="margin-bottom: 15px; font-size: 1.8rem;">¡Felicidades!</h2>
+        <p style="margin-bottom: 10px; font-size: 1.2rem;">¡Eliminaste todos los círculos!</p>
+        <p style="margin-bottom: 20px; font-size: 1.1rem;">Puntuación final: <strong>${score}</strong></p>
+        <button id="playAgainBtn" style="
+            background: linear-gradient(to right, #0fce7c, #4cd9a1);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(15, 206, 124, 0.4);
+        ">JUGAR DE NUEVO</button>
+    `;
+    
+    document.querySelector('.game-area').appendChild(victoryMessage);
+    
+    // Lanzar confetti
+    launchConfetti();
+    
+    // Event listener para el botón de jugar de nuevo
+    document.getElementById('playAgainBtn').addEventListener('click', function() {
+        victoryMessage.remove();
+        initGame();
+    });
+}
+
+// Función para lanzar confetti
+function launchConfetti() {
+    const confettiCount = 200;
+    const colors = ['#e94560', '#0fce7c', '#ffd166', '#118ab2', '#9b5de5', '#ffffff'];
+    
+    for (let i = 0; i < confettiCount; i++) {
+        const confetti = document.createElement('div');
+        confetti.style.position = 'absolute';
+        confetti.style.width = '10px';
+        confetti.style.height = '10px';
+        confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+        confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+        confetti.style.top = '-20px';
+        confetti.style.left = Math.random() * 100 + 'vw';
+        confetti.style.opacity = '0.8';
+        confetti.style.zIndex = '15';
+        confetti.style.pointerEvents = 'none';
+        
+        document.body.appendChild(confetti);
+        
+        // Animación del confetti
+        const animation = confetti.animate([
+            { 
+                transform: `translateY(0px) rotate(0deg)`,
+                opacity: 1 
+            },
+            { 
+                transform: `translateY(${window.innerHeight + 100}px) rotate(${Math.random() * 360}deg)`,
+                opacity: 0 
+            }
+        ], {
+            duration: Math.random() * 3000 + 2000,
+            easing: 'cubic-bezier(0.1, 0.8, 0.3, 1)'
+        });
+        
+        // Eliminar el confetti después de la animación
+        animation.onfinish = () => {
+            confetti.remove();
+        };
+    }
+}
     
     // Redimensionar canvas cuando cambie el tamaño de la ventana
     window.addEventListener('resize', resizeCanvas);
