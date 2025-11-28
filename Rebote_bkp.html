@@ -239,6 +239,13 @@
                 height: 350px;
             }
         }
+        .confetti {
+    position: fixed;
+    width: 10px;
+    height: 10px;
+    pointer-events: none;
+    z-index: 15;
+}
     </style>
 </head>
 <body>
@@ -281,538 +288,731 @@
         </div>
     </div>
 
-    <script>
-        // Obtener elementos del DOM
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-        const angleSlider = document.getElementById('angleSlider');
-        const angleValue = document.getElementById('angleValue');
-        const fireBtn = document.getElementById('fireBtn');
-        const livesElement = document.getElementById('lives');
-        const scoreElement = document.getElementById('score');
-        const bestElement = document.getElementById('best');
-        const gameOverElement = document.getElementById('gameOver');
-        const finalScoreElement = document.getElementById('finalScore');
-        const finalBestElement = document.getElementById('finalBest');
-        const restartBtn = document.getElementById('restartBtn');
-        const continueBtn = document.getElementById('continueBtn');
+<script>
+    // Obtener elementos del DOM
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const angleSlider = document.getElementById('angleSlider');
+    const angleLabel = document.querySelector('.angle-label'); // Seleccionamos la etiqueta completa
+    const angleValue = document.getElementById('angleValue');
+    const fireBtn = document.getElementById('fireBtn');
+    const livesElement = document.getElementById('lives');
+    const scoreElement = document.getElementById('score');
+    const bestElement = document.getElementById('best');
+    const gameOverElement = document.getElementById('gameOver');
+    const finalScoreElement = document.getElementById('finalScore');
+    const finalBestElement = document.getElementById('finalBest');
+    const restartBtn = document.getElementById('restartBtn');
+    const continueBtn = document.getElementById('continueBtn');
 
-        // Variables del juego
-        let circles = [];
-        let projectile = null;
-        let lives = 10;
-        let score = 0;
-        let bestScore = localStorage.getItem('bestScore') || 0;
-        let gameActive = true;
-        let animationId = null;
-        let currentAngle = 135;
+    // Variables del juego
+    let circles = [];
+    let projectile = null;
+    let lives = 10;
+    let score = 0;
+    let bestScore = localStorage.getItem('bestScore') || 0;
+    let gameActive = true;
+    let animationId = null;
+    let currentAngle = 135;
+    // NUEVA VARIABLE: 'angle' (ajustar ángulo) o 'paddle' (mover paleta)
+    let controlsMode = 'angle';
+    let allCirclesCleared = false;
+    
+    // Variables para la paleta
+    let paddle = {
+        width: 50, // 1/8 del ancho del canvas (400/8 = 50)
+        height: 10,
+        x: 175, // Posición inicial centrada
+        y: 370, // Cerca del fondo
+        speed: 5,
+        color: '#ffffff'
+    };
+    
+    // Control de la paleta
+    let keys = {
+        left: false,
+        right: false
+    };
+
+    // Configuración inicial
+    bestElement.textContent = bestScore;
+
+    // Ajustar tamaño del canvas para móviles
+    function resizeCanvas() {
+        const containerWidth = canvas.parentElement.clientWidth;
+        const maxWidth = Math.min(400, containerWidth);
+        canvas.width = maxWidth;
+        canvas.height = 380;
         
-        // Variables para la paleta
-        let paddle = {
-            width: 50, // 1/8 del ancho del canvas (400/8 = 50)
-            height: 10,
-            x: 175, // Posición inicial centrada
-            y: 370, // Cerca del fondo
-            speed: 5,
-            color: '#e94560'
-        };
+        // Ajustar tamaño de la paleta
+        paddle.width = canvas.width / 8;
+        paddle.x = (canvas.width - paddle.width) / 2;
+        paddle.y = canvas.height - 10;
         
-        // Control de la paleta
-        let keys = {
-            left: false,
-            right: false
-        };
+        if (circles.length > 0) {
+            // No llamar a initCircles si solo se está redimensionando y queremos mantener el estado actual de los círculos
+            // Si quieres que los círculos se reinicien al redimensionar, descomenta la siguiente línea:
+            // initCircles();
+        }
+    }
 
-        // Configuración inicial
-        bestElement.textContent = bestScore;
+    // Verificar si dos círculos se superponen
+    function circlesOverlap(circle1, circle2) {
+        const dx = circle1.x - circle2.x;
+        const dy = circle1.y - circle2.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        return distance < (circle1.radius + circle2.radius + 10);
+    }
 
-        // Ajustar tamaño del canvas para móviles
-        function resizeCanvas() {
-            const containerWidth = canvas.parentElement.clientWidth;
-            const maxWidth = Math.min(400, containerWidth);
-            canvas.width = maxWidth;
-            canvas.height = 380;
-            
-            // Ajustar tamaño de la paleta
-            paddle.width = canvas.width / 8;
-            paddle.x = (canvas.width - paddle.width) / 2;
-            paddle.y = canvas.height - 10;
-            
-            if (circles.length > 0) {
-                initCircles();
+    // Verificar si un círculo se superpone con cualquier otro
+    function isValidPosition(newCircle, existingCircles) {
+        for (let circle of existingCircles) {
+            if (circlesOverlap(newCircle, circle)) {
+                return false;
             }
         }
+        return true;
+    }
 
-        // Verificar si dos círculos se superponen
-        function circlesOverlap(circle1, circle2) {
-            const dx = circle1.x - circle2.x;
-            const dy = circle1.y - circle2.y;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-            return distance < (circle1.radius + circle2.radius + 10);
+    // Clase para los círculos
+    class Circle {
+        constructor(x, y, diameter) {
+            this.x = x;
+            this.y = y;
+            this.diameter = diameter;
+            this.radius = diameter / 2;
+            this.color = this.getRandomColor();
         }
-
-        // Verificar si un círculo se superpone con cualquier otro
-        function isValidPosition(newCircle, existingCircles) {
-            for (let circle of existingCircles) {
-                if (circlesOverlap(newCircle, circle)) {
-                    return false;
-                }
-            }
-            return true;
+        
+        getRandomColor() {
+            const colors = ['#e94560', '#0fce7c', '#ffd166', '#118ab2', '#9b5de5'];
+            return colors[Math.floor(Math.random() * colors.length)];
         }
-
-        // Clase para los círculos
-        class Circle {
-            constructor(x, y, diameter) {
-                this.x = x;
-                this.y = y;
-                this.diameter = diameter;
-                this.radius = diameter / 2;
-                this.color = this.getRandomColor();
-            }
-            
-            getRandomColor() {
-                const colors = ['#e94560', '#0fce7c', '#ffd166', '#118ab2', '#9b5de5'];
-                return colors[Math.floor(Math.random() * colors.length)];
-            }
-            
-            draw() {
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-                ctx.fillStyle = this.color;
-                ctx.fill();
-                ctx.strokeStyle = '#fff';
-                ctx.lineWidth = 2;
-                ctx.stroke();
-                
-                // Dibujar el número del diámetro
-                ctx.fillStyle = '#fff';
-                ctx.font = `${Math.max(10, this.radius / 2)}px Arial`;
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillText(this.diameter.toString(), this.x, this.y);
-            }
-            
-            grow() {
-                // Crecimiento más significativo: entre 3 y 5 unidades
-                const growth = Math.floor(Math.random() * 3) + 3;
-                this.diameter += growth;
-                this.radius = this.diameter / 2;
-            }
-            
-            shouldDisappear() {
-                return this.diameter >= 300;
-            }
-        }
-
-        // Clase para el proyectil
-        class Projectile {
-            constructor(x, y, angle) {
-                this.x = x;
-                this.y = y;
-                this.radius = 5;
-                this.speed = 5;
-                this.angle = (180 - angle) * Math.PI / 180;
-                this.vx = this.speed * Math.cos(this.angle);
-                this.vy = -this.speed * Math.sin(this.angle);
-                this.active = true;
-            }
-            
-            update() {
-                this.x += this.vx;
-                this.y += this.vy;
-                
-                // Rebotar en las paredes laterales
-                if (this.x - this.radius <= 0 || this.x + this.radius >= canvas.width) {
-                    this.vx = -this.vx;
-                    score++;
-                    scoreElement.textContent = score;
-                }
-                
-                // Rebotar en la parte superior
-                if (this.y - this.radius <= 0) {
-                    this.vy = -this.vy;
-                    score++;
-                    scoreElement.textContent = score;
-                }
-                
-                // Rebotar en la paleta
-                if (this.y + this.radius >= paddle.y && 
-                    this.y - this.radius <= paddle.y + paddle.height &&
-                    this.x + this.radius >= paddle.x && 
-                    this.x - this.radius <= paddle.x + paddle.width) {
-                    
-                    // Calcular el punto de impacto en la paleta (de -1 a 1)
-                    const hitPos = (this.x - (paddle.x + paddle.width / 2)) / (paddle.width / 2);
-                    
-                    // Cambiar dirección con ángulo basado en el punto de impacto
-                    this.vy = -Math.abs(this.vy);
-                    this.vx = hitPos * 4; // Ajustar dirección horizontal basada en el punto de impacto
-                    
-                    score++;
-                    scoreElement.textContent = score;
-                }
-                
-                // Verificar colisión con círculos
-                for (let circle of circles) {
-                    const dx = this.x - circle.x;
-                    const dy = this.y - circle.y;
-                    const distance = Math.sqrt(dx * dx + dy * dy);
-                    
-                    if (distance < this.radius + circle.radius) {
-                        // Calcular el ángulo de reflexión
-                        const angle = Math.atan2(dy, dx);
-                        
-                        // Actualizar velocidad del proyectil
-                        const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
-                        this.vx = speed * Math.cos(angle);
-                        this.vy = speed * Math.sin(angle);
-                        
-                        // Mover el proyectil fuera del círculo
-                        const overlap = this.radius + circle.radius - distance;
-                        this.x += overlap * Math.cos(angle);
-                        this.y += overlap * Math.sin(angle);
-                        
-                        // Agrandar el círculo significativamente
-                        circle.grow();
-                        score += 5;
-                        scoreElement.textContent = score;
-                        
-                        // Verificar si el círculo debe desaparecer
-                        if (circle.shouldDisappear()) {
-                            const index = circles.indexOf(circle);
-                            if (index > -1) {
-                                circles.splice(index, 1);
-                                score += 20; // Bonus por eliminar círculo
-                                scoreElement.textContent = score;
-                                this.active = false;
-                            }
-                        }
-                        break;
-                    }
-                }
-                
-                // Verificar si el proyectil toca el suelo (pierde vida)
-                if (this.y + this.radius >= canvas.height) {
-                    this.active = false;
-                    lives--;
-                    livesElement.textContent = lives;
-                    
-                    if (lives <= 0) {
-                        endGame();
-                    }
-                }
-            }
-            
-            draw() {
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-                ctx.fillStyle = '#fff';
-                ctx.fill();
-                ctx.strokeStyle = '#e94560';
-                ctx.lineWidth = 2;
-                ctx.stroke();
-            }
-        }
-
-        // Dibujar la paleta
-        function drawPaddle() {
-            ctx.fillStyle = paddle.color;
-            ctx.fillRect(paddle.x, paddle.y, paddle.width, paddle.height);
-            
-            // Borde de la paleta
+        
+        draw() {
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+            ctx.fillStyle = this.color;
+            ctx.fill();
             ctx.strokeStyle = '#fff';
             ctx.lineWidth = 2;
-            ctx.strokeRect(paddle.x, paddle.y, paddle.width, paddle.height);
-        }
-
-        // Actualizar posición de la paleta
-        function updatePaddle() {
-            if (keys.left && paddle.x > 0) {
-                paddle.x -= paddle.speed;
-            }
-            if (keys.right && paddle.x + paddle.width < canvas.width) {
-                paddle.x += paddle.speed;
-            }
-        }
-
-        // Dibujar trayectoria previa más visible
-        function drawTrajectory(angle) {
-            if (projectile && projectile.active) return;
-            
-            const startX = canvas.width / 2;
-            const startY = canvas.height - 20;
-            const radius = 5;
-            const speed = 5;
-            const angleRad = (180 - angle) * Math.PI / 180;
-            
-            let x = startX;
-            let y = startY;
-            let vx = speed * Math.cos(angleRad);
-            let vy = -speed * Math.sin(angleRad);
-            
-            // Dibujar línea principal más gruesa y visible
-            ctx.setLineDash([]);
-            ctx.beginPath();
-            ctx.moveTo(x, y);
-            
-            // Simular hasta 15 rebotes o hasta salir por abajo
-            for (let i = 0; i < 15; i++) {
-                x += vx * 10;
-                y += vy * 10;
-                
-                // Rebotar en paredes laterales
-                if (x - radius <= 0 || x + radius >= canvas.width) {
-                    vx = -vx;
-                    // Dibujar punto de rebote
-                    ctx.fillStyle = '#ffd166';
-                    ctx.beginPath();
-                    ctx.arc(x, y, 3, 0, Math.PI * 2);
-                    ctx.fill();
-                }
-                
-                // Rebotar en techo
-                if (y - radius <= 0) {
-                    vy = -vy;
-                    // Dibujar punto de rebote
-                    ctx.fillStyle = '#ffd166';
-                    ctx.beginPath();
-                    ctx.arc(x, y, 3, 0, Math.PI * 2);
-                    ctx.fill();
-                }
-                
-                // Rebotar en paleta
-                if (y + radius >= paddle.y && 
-                    y - radius <= paddle.y + paddle.height &&
-                    x + radius >= paddle.x && 
-                    x - radius <= paddle.x + paddle.width) {
-                    
-                    // Simular rebote en paleta
-                    vy = -Math.abs(vy);
-                    const hitPos = (x - (paddle.x + paddle.width / 2)) / (paddle.width / 2);
-                    vx = hitPos * 4;
-                }
-                
-                // Detener si toca el suelo (pierde vida)
-                if (y + radius >= canvas.height) {
-                    ctx.lineTo(x, y);
-                    // Marcar punto de pérdida de vida
-                    ctx.fillStyle = '#e94560';
-                    ctx.beginPath();
-                    ctx.arc(x, y, 4, 0, Math.PI * 2);
-                    ctx.fill();
-                    break;
-                }
-                
-                ctx.lineTo(x, y);
-                
-                // Detener si sale del canvas
-                if (x < 0 || x > canvas.width || y < 0 || y > canvas.height) {
-                    break;
-                }
-            }
-            
-            // Dibujar la línea de trayectoria principal
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
-            ctx.lineWidth = 2;
             ctx.stroke();
             
-            // Dibujar línea punteada secundaria para mejor visibilidad
-            ctx.setLineDash([5, 3]);
-            ctx.beginPath();
-            ctx.moveTo(startX, startY);
-            
-            x = startX;
-            y = startY;
-            vx = speed * Math.cos(angleRad);
-            vy = -speed * Math.sin(angleRad);
-            
-            for (let i = 0; i < 15; i++) {
-                x += vx * 10;
-                y += vy * 10;
-                
-                if (x - radius <= 0 || x + radius >= canvas.width) vx = -vx;
-                if (y - radius <= 0) vy = -vy;
-                if (y + radius >= canvas.height) break;
-                
-                ctx.lineTo(x, y);
-                if (x < 0 || x > canvas.width || y < 0 || y > canvas.height) break;
-            }
-            
-            ctx.strokeStyle = 'rgba(255, 215, 102, 0.5)';
-            ctx.lineWidth = 1;
-            ctx.stroke();
-            ctx.setLineDash([]);
+            // Dibujar el número del diámetro
+            ctx.fillStyle = '#fff';
+            ctx.font = `${Math.max(10, this.radius / 2)}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(this.diameter.toString(), this.x, this.y);
         }
-
-        // Inicializar círculos sin superposición
-        function initCircles() {
-            circles = [];
-            const maxAttempts = 100;
-            
-            for (let i = 0; i < 4; i++) {
-                let attempts = 0;
-                let validPosition = false;
-                let newCircle;
-                
-                while (!validPosition && attempts < maxAttempts) {
-                    const diameter = Math.floor(Math.random() * 25) + 30;
-                    const x = Math.random() * (canvas.width - diameter * 2) + diameter;
-                    const y = Math.random() * (canvas.height * 0.4) + 40; // Más abajo para dejar espacio
-                    
-                    newCircle = new Circle(x, y, diameter);
-                    
-                    if (isValidPosition(newCircle, circles)) {
-                        validPosition = true;
-                        circles.push(newCircle);
-                    }
-                    
-                    attempts++;
-                }
-                
-                // Si no se encontró posición válida, forzar una posición
-                if (!validPosition) {
-                    const diameter = 30;
-                    const x = (i % 2) * (canvas.width / 2) + canvas.width / 4;
-                    const y = Math.floor(i / 2) * (canvas.height / 4) + canvas.height / 6;
-                    circles.push(new Circle(x, y, diameter));
-                }
-            }
+        
+        grow() {
+            // Crecimiento más significativo: entre 3 y 5 unidades
+            const growth = Math.floor(Math.random() * 3) + 3;
+            this.diameter += growth;
+            this.radius = this.diameter / 2;
         }
+        
+        shouldDisappear() {
+            return this.diameter >= 300;
+        }
+    }
 
-        // Inicializar el juego
-        function initGame() {
-            circles = [];
-            projectile = null;
-            lives = 10;
-            score = 0;
-            gameActive = true;
+    // Clase para el proyectil
+    class Projectile {
+        constructor(x, y, angle) {
+            this.x = x;
+            this.y = y;
+            this.radius = 5;
+            this.speed = 5;
+            this.angle = (180 - angle) * Math.PI / 180;
+            this.vx = this.speed * Math.cos(this.angle);
+            this.vy = -this.speed * Math.sin(this.angle);
+            this.active = true;
+        }
+        
+  // En la clase Projectile, modifica el método update:
+
+// En la clase Projectile, modifica el método update:
+
+update() {
+    this.x += this.vx;
+    this.y += this.vy;
+    
+    // Velocidad mínima para evitar que sea demasiado lenta
+    const minSpeed = 3.5;
+    const currentSpeed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+    
+    if (currentSpeed < minSpeed && currentSpeed > 0) {
+        const ratio = minSpeed / currentSpeed;
+        this.vx *= ratio;
+        this.vy *= ratio;
+    }
+    
+    // Rebotar en las paredes laterales con factor aleatorio
+    if (this.x - this.radius <= 0 || this.x + this.radius >= canvas.width) {
+        this.vx = -this.vx;
+        
+        // Agregar pequeño factor aleatorio para evitar rebotes infinitos horizontales
+        const randomFactor = (Math.random() * 0.4) - 0.2; // Entre -0.2 y +0.2
+        this.vy += randomFactor;
+        
+        score++;
+        scoreElement.textContent = score;
+    }
+    
+    // Rebotar en la parte superior con factor aleatorio
+    if (this.y - this.radius <= 0) {
+        this.vy = -this.vy;
+        
+        // Agregar pequeño factor aleatorio para evitar que se quede atrapada
+        const randomFactor = (Math.random() * 0.4) - 0.2; // Entre -0.2 y +0.2
+        this.vx += randomFactor;
+        
+        // Asegurar que la pelota no se quede atrapada en el borde superior
+        this.y = this.radius + 1;
+        
+        score++;
+        scoreElement.textContent = score;
+    }
+    
+    // Rebotar en la paleta
+    if (this.y + this.radius >= paddle.y && 
+        this.y - this.radius <= paddle.y + paddle.height &&
+        this.x + this.radius >= paddle.x && 
+        this.x - this.radius <= paddle.x + paddle.width) {
+        
+        // Calcular el punto de impacto en la paleta (de -1 a 1)
+        const hitPos = (this.x - (paddle.x + paddle.width / 2)) / (paddle.width / 2);
+        
+        // Cambiar dirección con ángulo basado en el punto de impacto
+        this.vy = -Math.abs(this.vy);
+        this.vx = hitPos * 4; // Ajustar dirección horizontal basada en el punto de impacto
+        
+        // Asegurar velocidad mínima después del rebote en la paleta
+        const speedAfterBounce = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+        if (speedAfterBounce < minSpeed) {
+            const ratio = minSpeed / speedAfterBounce;
+            this.vx *= ratio;
+            this.vy *= ratio;
+        }
+        
+        score++;
+        scoreElement.textContent = score;
+    }
+    
+    // Verificar colisión con círculos
+    for (let circle of circles) {
+        const dx = this.x - circle.x;
+        const dy = this.y - circle.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        
+        if (distance < this.radius + circle.radius) {
+            // Calcular el ángulo de reflexión
+            const angle = Math.atan2(dy, dx);
             
-            livesElement.textContent = lives;
+            // Actualizar velocidad del proyectil
+            const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+            this.vx = speed * Math.cos(angle);
+            this.vy = speed * Math.sin(angle);
+            
+            // Mover el proyectil fuera del círculo
+            const overlap = this.radius + circle.radius - distance;
+            this.x += overlap * Math.cos(angle);
+            this.y += overlap * Math.sin(angle);
+            
+            // Agrandar el círculo significativamente
+            circle.grow();
+            score += 5;
             scoreElement.textContent = score;
             
-            // Reiniciar posición de la paleta
-            paddle.x = (canvas.width - paddle.width) / 2;
-            
-            initCircles();
-            
-            gameOverElement.style.display = 'none';
-            
-            if (animationId) {
-                cancelAnimationFrame(animationId);
+            // Verificar si el círculo debe desaparecer
+            if (circle.shouldDisappear()) {
+                const index = circles.indexOf(circle);
+                if (index > -1) {
+                    circles.splice(index, 1);
+                    score += 20; // Bonus por eliminar círculo
+                    scoreElement.textContent = score;
+                }
             }
-            animate();
+            break;
         }
-
-        // Bucle de animación
-        function animate() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            // Dibujar fondo
-            ctx.fillStyle = '#000';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
-            // Dibujar trayectoria si no hay proyectil activo
-            if (!projectile || !projectile.active) {
-                drawTrajectory(currentAngle);
-            }
-            
-            // Dibujar círculos
-            for (let circle of circles) {
-                circle.draw();
-            }
-            
-            // Dibujar y actualizar paleta
-            updatePaddle();
-            drawPaddle();
-            
-            // Actualizar y dibujar proyectil si está activo
-            if (projectile && projectile.active) {
-                projectile.update();
-                projectile.draw();
-            }
-            
-            // Verificar si quedan círculos, si no, crear nuevos
-            if (circles.length === 0) {
-                initCircles();
-            }
-            
-            // Continuar animación si el juego está activo
-            if (gameActive) {
-                animationId = requestAnimationFrame(animate);
-            }
+    }
+    
+    // Verificar si el proyectil toca el suelo (pierde vida)
+    if (this.y + this.radius >= canvas.height) {
+        this.active = false;
+        lives--;
+        livesElement.textContent = lives;
+        
+        // RESTAURAR el modo de control a 'angle'
+        setControlsMode('angle');
+        
+        if (lives <= 0) {
+            endGame();
         }
+    }
+}
+        
+        draw() {
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+            ctx.fillStyle = '#fff';
+            ctx.fill();
+            ctx.strokeStyle = '#e94560';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        }
+    }
 
-        // Finalizar el juego
-        function endGame() {
-            gameActive = false;            
-            if (score > bestScore) {
-                bestScore = score;
-                localStorage.setItem('bestScore', bestScore);
-                bestElement.textContent = bestScore;
+    // Dibujar la paleta
+    function drawPaddle() {
+        ctx.fillStyle = paddle.color;
+        ctx.fillRect(paddle.x, paddle.y, paddle.width, paddle.height);
+        
+        // Borde de la paleta
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(paddle.x, paddle.y, paddle.width, paddle.height);
+    }
+
+    // Actualizar posición de la paleta
+    function updatePaddle() {
+        if (keys.left && paddle.x > 0) {
+            paddle.x -= paddle.speed;
+        }
+        if (keys.right && paddle.x + paddle.width < canvas.width) {
+            paddle.x += paddle.speed;
+        }
+    }
+
+    // Dibuja la trayectoria de disparo (simulación)
+    function drawTrajectory(angle) {
+        if (projectile && projectile.active) return;
+        
+        const startX = canvas.width / 2;
+        const startY = canvas.height - 20;
+        const radius = 5;
+        const speed = 5;
+        const angleRad = (180 - angle) * Math.PI / 180;
+        
+        let x = startX;
+        let y = startY;
+        let vx = speed * Math.cos(angleRad);
+        let vy = -speed * Math.sin(angleRad);
+        
+        // ... (el resto de la función drawTrajectory es el mismo)
+        
+        // Dibujar línea principal más gruesa y visible
+        ctx.setLineDash([]);
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        
+        // Simular hasta 15 rebotes o hasta salir por abajo
+        for (let i = 0; i < 15; i++) {
+            x += vx * 10;
+            y += vy * 10;
+            
+            // Rebotar en paredes laterales
+            if (x - radius <= 0 || x + radius >= canvas.width) {
+                vx = -vx;
+                // Dibujar punto de rebote
+                ctx.fillStyle = '#ffd166';
+                ctx.beginPath();
+                ctx.arc(x, y, 3, 0, Math.PI * 2);
+                ctx.fill();
             }
             
-            finalScoreElement.textContent = score;
-            finalBestElement.textContent = bestScore;
-            gameOverElement.style.display = 'block';
+            // Rebotar en techo
+            if (y - radius <= 0) {
+                vy = -vy;
+                // Dibujar punto de rebote
+                ctx.fillStyle = '#ffd166';
+                ctx.beginPath();
+                ctx.arc(x, y, 3, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            // Rebotar en paleta
+            if (y + radius >= paddle.y && 
+                y - radius <= paddle.y + paddle.height &&
+                x + radius >= paddle.x && 
+                x - radius <= paddle.x + paddle.width) {
+                
+                // Simular rebote en paleta
+                vy = -Math.abs(vy);
+                const hitPos = (x - (paddle.x + paddle.width / 2)) / (paddle.width / 2);
+                vx = hitPos * 4;
+            }
+            
+            // Detener si toca el suelo (pierde vida)
+            if (y + radius >= canvas.height) {
+                ctx.lineTo(x, y);
+                // Marcar punto de pérdida de vida
+                ctx.fillStyle = '#e94560';
+                ctx.beginPath();
+                ctx.arc(x, y, 4, 0, Math.PI * 2);
+                ctx.fill();
+                break;
+            }
+            
+            ctx.lineTo(x, y);
+            
+            // Detener si sale del canvas
+            if (x < 0 || x > canvas.width || y < 0 || y > canvas.height) {
+                break;
+            }
         }
         
-        continueBtn.addEventListener('click', function() {
-            lives = 2; // Dar 2 vidas adicionales
-            livesElement.textContent = lives;
-            gameOverElement.style.display = 'none';
-            gameActive = true;
-            animate(); // Reanudar la animación
-        });
-
-        // Event Listeners para el teclado
-        window.addEventListener('keydown', function(e) {
-            if (e.key === 'ArrowLeft') keys.left = true;
-            if (e.key === 'ArrowRight') keys.right = true;
-        });
-
-        window.addEventListener('keyup', function(e) {
-            if (e.key === 'ArrowLeft') keys.left = false;
-            if (e.key === 'ArrowRight') keys.right = false;
-        });
-
-        // Event Listeners para pantallas táctiles
-        canvas.addEventListener('touchmove', function(e) {
-            e.preventDefault();
-            const touch = e.touches[0];
-            const rect = canvas.getBoundingClientRect();
-            const touchX = touch.clientX - rect.left;
+        // Dibujar la línea de trayectoria principal
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+        ctx.lineWidth = 4;
+        ctx.stroke();
+        
+        // Dibujar línea punteada secundaria para mejor visibilidad
+        ctx.setLineDash([5, 3]);
+        ctx.beginPath();
+        ctx.moveTo(startX, startY);
+        
+        x = startX;
+        y = startY;
+        vx = speed * Math.cos(angleRad);
+        vy = -speed * Math.sin(angleRad);
+        
+        for (let i = 0; i < 15; i++) {
+            x += vx * 10;
+            y += vy * 10;
             
-            // Mover la paleta a la posición del toque
-            paddle.x = touchX - paddle.width / 2;
+            if (x - radius <= 0 || x + radius >= canvas.width) vx = -vx;
+            if (y - radius <= 0) vy = -vy;
+            if (y + radius >= canvas.height) break;
             
-            // Limitar la paleta dentro del canvas
-            if (paddle.x < 0) paddle.x = 0;
-            if (paddle.x + paddle.width > canvas.width) paddle.x = canvas.width - paddle.width;
-        });
+            ctx.lineTo(x, y);
+            if (x < 0 || x > canvas.width || y < 0 || y > canvas.height) break;
+        }
+        
+        ctx.strokeStyle = 'rgba(255, 215, 102, 0.5)';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.setLineDash([]);
+    }
 
-        // Event Listeners
-        angleSlider.addEventListener('input', function() {
+    // Inicializar círculos sin superposición
+    function initCircles() {
+        circles = [];
+        const maxAttempts = 100;
+        
+        for (let i = 0; i < 4; i++) {
+            let attempts = 0;
+            let validPosition = false;
+            let newCircle;
+            
+            while (!validPosition && attempts < maxAttempts) {
+                const diameter = Math.floor(Math.random() * 25) + 30;
+                const x = Math.random() * (canvas.width - diameter * 2) + diameter;
+                const y = Math.random() * (canvas.height * 0.4) + 40; // Más abajo para dejar espacio
+                
+                newCircle = new Circle(x, y, diameter);
+                
+                if (isValidPosition(newCircle, circles)) {
+                    validPosition = true;
+                    circles.push(newCircle);
+                }
+                
+                attempts++;
+            }
+            
+            // Si no se encontró posición válida, forzar una posición
+            if (!validPosition) {
+                const diameter = 30;
+                const x = (i % 2) * (canvas.width / 2) + canvas.width / 4;
+                const y = Math.floor(i / 2) * (canvas.height / 4) + canvas.height / 6;
+                circles.push(new Circle(x, y, diameter));
+            }
+        }
+    }
+
+    // FUNCIÓN PARA CAMBIAR EL MODO DE CONTROL
+// En la función setControlsMode, modifica esta línea:
+function setControlsMode(mode) {
+    controlsMode = mode;
+    if (mode === 'angle') {
+        angleSlider.min = 0;
+        angleSlider.max = 180;
+        angleSlider.value = currentAngle; // Usar el último ángulo
+        angleLabel.innerHTML = `<span id="angleValue">${currentAngle}°</span>`; // Quitado "Ángulo: "
+        fireBtn.textContent = 'DISPARAR';
+        fireBtn.disabled = false;
+    } else if (mode === 'paddle') {
+        angleSlider.min = 0;
+        angleSlider.max = canvas.width - paddle.width;
+        angleSlider.value = paddle.x; // Sincronizar con la posición actual de la paleta
+        angleLabel.innerHTML = '<span id="angleValue">Mover</span>'; // Cambiar la etiqueta
+        fireBtn.textContent = 'ESPERANDO';
+        fireBtn.disabled = true;
+    }
+}
+
+
+    // Inicializar el juego
+function initGame() {
+    circles = [];
+    projectile = null;
+    lives = 10;
+    score = 0;
+    gameActive = true;
+    allCirclesCleared = false; // Resetear esta variable
+    
+    livesElement.textContent = lives;
+    scoreElement.textContent = score;
+    
+    // Reiniciar posición de la paleta
+    paddle.x = (canvas.width - paddle.width) / 2;
+    
+    initCircles();
+    
+    gameOverElement.style.display = 'none';
+
+    // RESTABLECER el modo de control al inicio
+    setControlsMode('angle');
+    
+    if (animationId) {
+        cancelAnimationFrame(animationId);
+    }
+    animate();
+}
+
+    // Bucle de animación
+function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // Dibujar fondo
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Dibujar trayectoria si no hay proyectil activo Y estamos en modo ángulo
+    if ((!projectile || !projectile.active) && controlsMode === 'angle' && !allCirclesCleared) {
+        drawTrajectory(currentAngle);
+    }
+    
+    // Dibujar círculos
+    for (let circle of circles) {
+        circle.draw();
+    }
+    
+    // Dibujar y actualizar paleta
+    updatePaddle();
+    drawPaddle();
+    
+    // Actualizar y dibujar proyectil si está activo
+    if (projectile && projectile.active && !allCirclesCleared) {
+        projectile.update();
+        projectile.draw();
+    }
+    
+    // Verificar si quedan círculos, si no, mostrar mensaje de victoria
+    if (circles.length === 0 && !allCirclesCleared && gameActive) {
+        showVictoryMessage();
+        allCirclesCleared = true;
+    }
+    
+    // Continuar animación si el juego está activo
+    if (gameActive) {
+        animationId = requestAnimationFrame(animate);
+    }
+}
+
+    // Finalizar el juego
+    function endGame() {
+        gameActive = false;
+        
+        if (score > bestScore) {
+            bestScore = score;
+            localStorage.setItem('bestScore', bestScore);
+            bestElement.textContent = bestScore;
+        }
+        
+        finalScoreElement.textContent = score;
+        finalBestElement.textContent = bestScore;
+        gameOverElement.style.display = 'block';
+    }
+    
+continueBtn.addEventListener('click', function() {
+    if (!allCirclesCleared) {
+        lives = 2; // Dar 2 vidas adicionales
+        livesElement.textContent = lives;
+        gameOverElement.style.display = 'none';
+        gameActive = true;
+        
+        // Restaurar modo ángulo al continuar
+        setControlsMode('angle'); 
+        animate(); // Reanudar la animación
+    }
+});
+
+    // Event Listeners para el teclado (sin cambios)
+    window.addEventListener('keydown', function(e) {
+        if (e.key === 'ArrowLeft') keys.left = true;
+        if (e.key === 'ArrowRight') keys.right = true;
+    });
+
+    window.addEventListener('keyup', function(e) {
+        if (e.key === 'ArrowLeft') keys.left = false;
+        if (e.key === 'ArrowRight') keys.right = false;
+    });
+
+    // Event Listeners para pantallas táctiles (sin cambios para el canvas)
+    canvas.addEventListener('touchmove', function(e) {
+        e.preventDefault();
+        const touch = e.touches[0];
+        const rect = canvas.getBoundingClientRect();
+        const touchX = touch.clientX - rect.left;
+        
+        // Mover la paleta a la posición del toque
+        paddle.x = touchX - paddle.width / 2;
+        
+        // Limitar la paleta dentro del canvas
+        if (paddle.x < 0) paddle.x = 0;
+        if (paddle.x + paddle.width > canvas.width) paddle.x = canvas.width - paddle.width;
+    });
+
+    // Event Listeners para el slider y el botón de disparo
+    
+    // LÓGICA MODIFICADA DEL SLIDER
+    angleSlider.addEventListener('input', function() {
+        if (controlsMode === 'angle') {
             currentAngle = parseInt(this.value);
             angleValue.textContent = `${currentAngle}°`;
-        });
+        } else if (controlsMode === 'paddle') {
+            // Mover la paleta
+            paddle.x = parseInt(this.value);
+        }
+    });
 
-        fireBtn.addEventListener('click', function() {
+    // LÓGICA MODIFICADA DEL BOTÓN DE DISPARO
+    fireBtn.addEventListener('click', function() {
+        if (controlsMode === 'angle') {
             if (!projectile || !projectile.active) {
+                // Crear el nuevo proyectil
                 projectile = new Projectile(canvas.width / 2, canvas.height - 20, currentAngle);
+                
+                // Cambiar el modo de control a 'paddle' después del disparo
+                setControlsMode('paddle');
             }
-        });
+        }
+    });
 
-        restartBtn.addEventListener('click', initGame);
+    restartBtn.addEventListener('click', initGame);
 
-        // Iniciar el juego al cargar la página
-        window.addEventListener('load', function() {
-            resizeCanvas();
-            initGame();
+    // Iniciar el juego al cargar la página
+    window.addEventListener('load', function() {
+        resizeCanvas();
+        initGame();
+        // Inicializar el modo de control al cargar
+        setControlsMode('angle');
+    });
+    // Función para mostrar mensaje de victoria con confetti
+function showVictoryMessage() {
+    // Detener el proyectil
+    if (projectile) {
+        projectile.active = false;
+    }
+        // Actualizar mejor puntuación si es necesario
+    if (score > bestScore) {
+        bestScore = score;
+        localStorage.setItem('bestScore', bestScore);
+        bestElement.textContent = bestScore;
+    }
+    
+    // Mostrar mensaje de victoria
+    const victoryMessage = document.createElement('div');
+    victoryMessage.style.position = 'absolute';
+    victoryMessage.style.top = '50%';
+    victoryMessage.style.left = '50%';
+    victoryMessage.style.transform = 'translate(-50%, -50%)';
+    victoryMessage.style.background = 'rgba(0, 0, 0, 0.9)';
+    victoryMessage.style.color = '#0fce7c';
+    victoryMessage.style.padding = '30px';
+    victoryMessage.style.borderRadius = '15px';
+    victoryMessage.style.textAlign = 'center';
+    victoryMessage.style.zIndex = '20';
+    victoryMessage.style.boxShadow = '0 0 30px rgba(15, 206, 124, 0.5)';
+    victoryMessage.style.border = '2px solid #0fce7c';
+    
+    victoryMessage.innerHTML = `
+        <h2 style="margin-bottom: 15px; font-size: 1.8rem;">¡Felicidades!</h2>
+        <p style="margin-bottom: 10px; font-size: 1.2rem;">¡Eliminaste todos los círculos!</p>
+        <p style="margin-bottom: 20px; font-size: 1.1rem;">Puntuación final: <strong>${score}</strong></p>
+        <p style="margin-bottom: 20px; font-size: 1.1rem;">Mejor puntuación: <strong>${bestScore}</strong></p>
+        <button id="playAgainBtn" style="
+            background: linear-gradient(to right, #0fce7c, #4cd9a1);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(15, 206, 124, 0.4);
+        ">JUGAR DE NUEVO</button>
+    `;
+    
+    document.querySelector('.game-area').appendChild(victoryMessage);
+    
+    // Lanzar confetti
+    launchConfetti();
+    
+    // Event listener para el botón de jugar de nuevo
+    document.getElementById('playAgainBtn').addEventListener('click', function() {
+        victoryMessage.remove();
+        initGame();
+    });
+}
+
+// Función para lanzar confetti
+function launchConfetti() {
+    const confettiCount = 200;
+    const colors = ['#e94560', '#0fce7c', '#ffd166', '#118ab2', '#9b5de5', '#ffffff'];
+    
+    for (let i = 0; i < confettiCount; i++) {
+        const confetti = document.createElement('div');
+        confetti.style.position = 'absolute';
+        confetti.style.width = '10px';
+        confetti.style.height = '10px';
+        confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+        confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+        confetti.style.top = '-20px';
+        confetti.style.left = Math.random() * 100 + 'vw';
+        confetti.style.opacity = '0.8';
+        confetti.style.zIndex = '15';
+        confetti.style.pointerEvents = 'none';
+        
+        document.body.appendChild(confetti);
+        
+        // Animación del confetti
+        const animation = confetti.animate([
+            { 
+                transform: `translateY(0px) rotate(0deg)`,
+                opacity: 1 
+            },
+            { 
+                transform: `translateY(${window.innerHeight + 100}px) rotate(${Math.random() * 360}deg)`,
+                opacity: 0 
+            }
+        ], {
+            duration: Math.random() * 3000 + 2000,
+            easing: 'cubic-bezier(0.1, 0.8, 0.3, 1)'
         });
         
-        // Redimensionar canvas cuando cambie el tamaño de la ventana
-        window.addEventListener('resize', resizeCanvas);
-    </script>
+        // Eliminar el confetti después de la animación
+        animation.onfinish = () => {
+            confetti.remove();
+        };
+    }
+}
+    
+    // Redimensionar canvas cuando cambie el tamaño de la ventana
+    window.addEventListener('resize', resizeCanvas);
+</script>
 </body>
 </html>
