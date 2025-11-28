@@ -242,7 +242,7 @@
         <div class="controls">
             <div class="angle-control">
                 <div class="angle-label">Ángulo: <span id="angleValue">45°</span></div>
-                <input type="range" min="1" max="179" value="45" class="angle-slider" id="angleSlider">
+                <input type="range" min="0" max="180" value="135" class="angle-slider" id="angleSlider">
             </div>
             <button class="fire-btn" id="fireBtn">DISPARAR</button>
         </div>
@@ -278,7 +278,7 @@
         let bestScore = localStorage.getItem('bestScore') || 0;
         let gameActive = true;
         let animationId = null;
-        let currentAngle = 45;
+        let currentAngle = 135;
 
         // Configuración inicial
         bestElement.textContent = bestScore;
@@ -363,7 +363,7 @@
                 this.y = y;
                 this.radius = 5;
                 this.speed = 5;
-                this.angle = angle * Math.PI / 180;
+                this.angle = (180 - angle) * Math.PI / 180;
                 this.vx = this.speed * Math.cos(this.angle);
                 this.vy = -this.speed * Math.sin(this.angle);
                 this.active = true;
