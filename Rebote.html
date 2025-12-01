@@ -419,6 +419,7 @@
     // Clase para el proyectil
     class Projectile {
         constructor(x, y, angle) {
+            // MODIFICACIÓN: La pelota ahora parte desde el centro de la paleta
             this.x = x;
             this.y = y;
             this.radius = 5;
@@ -563,12 +564,13 @@
         }
     }
 
-    // Dibuja la trayectoria de disparo
+    // MODIFICACIÓN: Dibuja la trayectoria de disparo - MUCHO MÁS GRUESA Y DESDE LA PALETA
     function drawTrajectory(angle) {
         if (projectile && projectile.active) return;
         
-        const startX = canvas.width / 2;
-        const startY = canvas.height - 20;
+        // MODIFICACIÓN: La trayectoria comienza desde el centro de la paleta
+        const startX = paddle.x + paddle.width / 2;
+        const startY = paddle.y - 5; // Justo encima de la paleta
         const radius = 5;
         const speed = 5;
         const angleRad = (180 - angle) * Math.PI / 180;
@@ -578,19 +580,20 @@
         let vx = speed * Math.cos(angleRad);
         let vy = -speed * Math.sin(angleRad);
         
+        // Línea principal de trayectoria - MÁS GRUESA
         ctx.setLineDash([]);
         ctx.beginPath();
         ctx.moveTo(x, y);
         
-        for (let i = 0; i < 15; i++) {
-            x += vx * 10;
-            y += vy * 10;
+        for (let i = 0; i < 20; i++) { // Aumentado a 20 pasos para trayectoria más larga
+            x += vx * 8;
+            y += vy * 8;
             
             if (x - radius <= 0 || x + radius >= canvas.width) {
                 vx = -vx;
                 ctx.fillStyle = '#ffd166';
                 ctx.beginPath();
-                ctx.arc(x, y, 3, 0, Math.PI * 2);
+                ctx.arc(x, y, 4, 0, Math.PI * 2); // Punto más grande
                 ctx.fill();
             }
             
@@ -598,7 +601,7 @@
                 vy = -vy;
                 ctx.fillStyle = '#ffd166';
                 ctx.beginPath();
-                ctx.arc(x, y, 3, 0, Math.PI * 2);
+                ctx.arc(x, y, 4, 0, Math.PI * 2); // Punto más grande
                 ctx.fill();
             }
             
@@ -616,7 +619,7 @@
                 ctx.lineTo(x, y);
                 ctx.fillStyle = '#e94560';
                 ctx.beginPath();
-                ctx.arc(x, y, 4, 0, Math.PI * 2);
+                ctx.arc(x, y, 5, 0, Math.PI * 2); // Punto final más grande
                 ctx.fill();
                 break;
             }
@@ -628,11 +631,12 @@
             }
         }
         
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
-        ctx.lineWidth = 4;
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
+        ctx.lineWidth = 6; // AUMENTADO: Línea más gruesa (antes era 4)
         ctx.stroke();
         
-        ctx.setLineDash([5, 3]);
+        // Línea punteada de trayectoria secundaria - TAMBIÉN MÁS GRUESA
+        ctx.setLineDash([8, 6]); // Patrón de puntos más grande
         ctx.beginPath();
         ctx.moveTo(startX, startY);
         
@@ -641,9 +645,9 @@
         vx = speed * Math.cos(angleRad);
         vy = -speed * Math.sin(angleRad);
         
-        for (let i = 0; i < 15; i++) {
-            x += vx * 10;
-            y += vy * 10;
+        for (let i = 0; i < 20; i++) {
+            x += vx * 8;
+            y += vy * 8;
             
             if (x - radius <= 0 || x + radius >= canvas.width) vx = -vx;
             if (y - radius <= 0) vy = -vy;
@@ -653,10 +657,19 @@
             if (x < 0 || x > canvas.width || y < 0 || y > canvas.height) break;
         }
         
-        ctx.strokeStyle = 'rgba(255, 215, 102, 0.5)';
-        ctx.lineWidth = 2;
+        ctx.strokeStyle = 'rgba(255, 215, 102, 0.8)';
+        ctx.lineWidth = 4; // AUMENTADO: Línea punteada más gruesa (antes era 2)
         ctx.stroke();
         ctx.setLineDash([]);
+        
+        // Dibujar punto de inicio en la paleta
+        ctx.fillStyle = '#e94560';
+        ctx.beginPath();
+        ctx.arc(startX, startY, 6, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 2;
+        ctx.stroke();
     }
 
     // Inicializar círculos sin superposición
@@ -926,7 +939,12 @@
     fireBtn.addEventListener('click', function() {
         if (controlsMode === 'angle') {
             if (!projectile || !projectile.active) {
-                projectile = new Projectile(canvas.width / 2, canvas.height - 20, currentAngle);
+                // MODIFICACIÓN: La pelota parte desde el centro de la paleta
+                projectile = new Projectile(
+                    paddle.x + paddle.width / 2,  // Centro X de la paleta
+                    paddle.y - 5,                 // Justo encima de la paleta
+                    currentAngle
+                );
                 setControlsMode('paddle');
             }
         }
