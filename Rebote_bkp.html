@@ -377,7 +377,15 @@
         }
         
         getRandomColor() {
-            const colors = ['#e94560', '#0fce7c', '#ffd166', '#118ab2', '#9b5de5'];
+            // Paleta de colores más amplia y variada
+            const colors = [
+                '#e94560', '#ff6b6b', '#ff9e7d', // Rojos/Naranjas
+                '#0fce7c', '#4cd9a1', '#1dd1a1', // Verdes
+                '#ffd166', '#ffed99', '#f9c74f', // Amarillos
+                '#118ab2', '#06d6a0', '#4cc9f0', // Azules/Verdes
+                '#9b5de5', '#c77dff', '#7209b7', // Púrpuras
+                '#f15bb5', '#ff70a6', '#ff477e'  // Rosas
+            ];
             return colors[Math.floor(Math.random() * colors.length)];
         }
         
@@ -444,10 +452,15 @@
                 scoreElement.textContent = score;
             }
             
-            // Rebotar en la parte superior
+            // Rebotar en la parte superior - CON MEJORA: factor aleatorio hacia el centro
             if (this.y - this.radius <= 0) {
                 this.vy = -this.vy;
-                const randomFactor = (Math.random() * 0.4) - 0.2;
+                
+                // Nuevo factor aleatorio que empuja hacia el centro del canvas
+                const centerX = canvas.width / 2;
+                const directionToCenter = centerX - this.x > 0 ? 1 : -1;
+                const randomFactor = (Math.random() * 0.5) * directionToCenter;
+                
                 this.vx += randomFactor;
                 this.y = this.radius + 1;
                 score++;
