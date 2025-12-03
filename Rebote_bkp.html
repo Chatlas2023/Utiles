@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bounce Game</title>
+    <title>Bounce Game - Levels</title>
     <style>
         * {
             margin: 0;
@@ -22,6 +22,7 @@
             min-height: 100vh;
             padding: 10px;
             overflow-x: hidden;
+            transition: background 0.5s ease;
         }
         
         .container {
@@ -56,11 +57,7 @@
             align-items: center;
             justify-content: center;
             margin: 0 10px;
-            order: 4;
-        }
-        
-        .info-item:nth-child(4) {
-            order: 3;
+            order: 5;
         }
         
         .info-label {
@@ -85,6 +82,10 @@
         
         .best {
             color: #ffd166;
+        }
+        
+        .level {
+            color: #9b5de5;
         }
         
         .game-area {
@@ -230,6 +231,59 @@
             transform: scale(0.95);
         }
         
+        .level-complete {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.95);
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 0 40px rgba(15, 206, 124, 0.7);
+            display: none;
+            z-index: 20;
+            width: 85%;
+            max-width: 380px;
+            border: 3px solid #0fce7c;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 40px rgba(15, 206, 124, 0.7); }
+            50% { box-shadow: 0 0 60px rgba(15, 206, 124, 0.9); }
+            100% { box-shadow: 0 0 40px rgba(15, 206, 124, 0.7); }
+        }
+        
+        .level-complete h2 {
+            color: #0fce7c;
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+        }
+        
+        .level-complete p {
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+        
+        .next-level-btn {
+            background: linear-gradient(to right, #9b5de5, #c77dff);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(155, 93, 229, 0.4);
+            margin-top: 10px;
+            width: 100%;
+        }
+        
+        .next-level-btn:active {
+            transform: scale(0.95);
+        }
+        
         @media (max-width: 500px) {
             .game-info {
                 flex-direction: row;
@@ -252,6 +306,11 @@
             
             canvas {
                 height: 350px;
+            }
+            
+            .level-complete {
+                padding: 20px;
+                width: 90%;
             }
         }
         .confetti {
@@ -276,12 +335,25 @@
             justify-content: center;
             margin: 0 10px;
             flex-shrink: 0;
-            order: 4;
+            order: 5;
+        }
+        
+        .level-indicator {
+            margin-top: 5px;
+            font-size: 1rem;
+            color: #9b5de5;
+            font-weight: bold;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 5px 15px;
+            border-radius: 20px;
+            display: inline-block;
         }
     </style>
 </head>
 <body>
     <div class="container">
+        <div class="level-indicator" id="levelIndicator">Level 1</div>
+        
         <div class="game-info">
             <div class="info-item">
                 <span class="info-label">LIVES</span>
@@ -294,6 +366,10 @@
             <div class="info-item">
                 <span class="info-label">BEST</span>
                 <span class="info-value best" id="best">0</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">LEVEL</span>
+                <span class="info-value level" id="level">1</span>
             </div>
             <div class="sound-toggle-container">
                 <button class="sound-toggle" id="soundToggle">🔊</button>
@@ -322,6 +398,15 @@
             <button class="continue-btn" id="continueBtn">CONTINUE (+2 LIVES)</button>
         </div>
     </div>
+    
+    <div class="level-complete" id="levelComplete">
+        <h2>Level Complete!</h2>
+        <p>Level <span id="completedLevel">1</span> Completed</p>
+        <p>Score: <span id="levelScore">0</span></p>
+        <p>Lives remaining: <span id="remainingLives">10</span></p>
+        <button class="next-level-btn" id="nextLevelBtn">NEXT LEVEL</button>
+        <button class="restart-btn" style="margin-top: 10px;" id="menuBtn">LEVEL SELECT</button>
+    </div>
 
 <script>
     // Get DOM elements
@@ -334,12 +419,20 @@
     const livesElement = document.getElementById('lives');
     const scoreElement = document.getElementById('score');
     const bestElement = document.getElementById('best');
+    const levelElement = document.getElementById('level');
+    const levelIndicator = document.getElementById('levelIndicator');
     const gameOverElement = document.getElementById('gameOver');
     const finalScoreElement = document.getElementById('finalScore');
     const finalBestElement = document.getElementById('finalBest');
     const restartBtn = document.getElementById('restartBtn');
     const continueBtn = document.getElementById('continueBtn');
     const soundToggle = document.getElementById('soundToggle');
+    const levelCompleteElement = document.getElementById('levelComplete');
+    const completedLevelElement = document.getElementById('completedLevel');
+    const levelScoreElement = document.getElementById('levelScore');
+    const remainingLivesElement = document.getElementById('remainingLives');
+    const nextLevelBtn = document.getElementById('nextLevelBtn');
+    const menuBtn = document.getElementById('menuBtn');
 
     // Game variables
     let circles = [];
@@ -354,6 +447,24 @@
     let allCirclesCleared = false;
     let soundEnabled = true;
     
+    // NUEVO: Variables para niveles
+    let currentLevel = 1;
+    const maxLevels = 3;
+    
+    // Temas de fondo por nivel
+    const levelThemes = {
+        1: ['#1a1a2e', '#16213e'], // Azul oscuro
+        2: ['#2d1b3d', '#4a235a'], // Púrpura oscuro
+        3: ['#1b3d2d', '#235a4a']  // Verde oscuro
+    };
+    
+    // Nombres de niveles
+    const levelNames = {
+        1: "Classic",
+        2: "Moving Circles",
+        3: "Small Paddle Challenge"
+    };
+    
     // Paddle variables
     let paddle = {
         width: 50,
@@ -364,6 +475,13 @@
         color: '#ffffff'
     };
     
+    // Tamaño de paleta por nivel
+    const paddleSizes = {
+        1: 50,
+        2: 50,
+        3: 35  // Paleta más pequeña en nivel 3
+    };
+    
     // Controls
     let keys = {
         left: false,
@@ -372,6 +490,8 @@
 
     // Initial setup
     bestElement.textContent = bestScore;
+    levelElement.textContent = currentLevel;
+    levelIndicator.textContent = `Level ${currentLevel}: ${levelNames[currentLevel]}`;
 
     // Musical notes frequencies (G4 to C5 scale)
     const musicalNotes = {
@@ -392,8 +512,8 @@
     // Create audio context
     const audioContext = new (window.AudioContext || window.webkitAudioContext)();
     
-    // Fixed frequency for paddle sound - siempre la misma
-    const PADDLE_FREQUENCY = 440.00; // A4 - siempre el mismo sonido
+    // Fixed frequency for paddle sound
+    const PADDLE_FREQUENCY = 440.00;
     
     // Function to play bounce sound with musical notes
     function playBounceSound(type = 'wall') {
@@ -407,24 +527,18 @@
             gainNode.connect(audioContext.destination);
             
             if (type === 'paddle') {
-                // SONIDO FIJO PARA LA PALETA - siempre el mismo (MÁS TENUE)
                 oscillator.frequency.value = PADDLE_FREQUENCY;
                 oscillator.type = 'square';
-                gainNode.gain.value = 0.12; // REDUCIDO: de 0.18 a 0.12 (33% más tenue)
+                gainNode.gain.value = 0.12;
                 gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.12);
                 oscillator.start();
                 oscillator.stop(audioContext.currentTime + 0.12);
             } else {
-                // Para otros sonidos, seleccionar nota musical aleatoria
                 const noteIndex = Math.floor(Math.random() * bounceNotes.length);
                 const baseFrequency = bounceNotes[noteIndex];
-                
-                // Add slight variation (±10Hz) for natural feel
                 const frequency = baseFrequency + (Math.random() * 20 - 10);
                 
-                // Different sound characteristics based on bounce type
                 if (type === 'wall') {
-                    // "tic" sound for walls - short, sharp
                     oscillator.frequency.value = frequency;
                     oscillator.type = 'sine';
                     gainNode.gain.value = 0.15;
@@ -432,16 +546,14 @@
                     oscillator.start();
                     oscillator.stop(audioContext.currentTime + 0.08);
                 } else if (type === 'top') {
-                    // Top wall bounce - bright sound
-                    oscillator.frequency.value = frequency * 1.05; // Slightly higher
+                    oscillator.frequency.value = frequency * 1.05;
                     oscillator.type = 'sine';
                     gainNode.gain.value = 0.14;
                     gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.09);
                     oscillator.start();
                     oscillator.stop(audioContext.currentTime + 0.09);
                 } else if (type === 'circle') {
-                    // Circle bounce - medium length with different waveform
-                    oscillator.frequency.value = frequency * 0.85; // Lower for circles
+                    oscillator.frequency.value = frequency * 0.85;
                     oscillator.type = 'triangle';
                     gainNode.gain.value = 0.16;
                     gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.1);
@@ -475,7 +587,7 @@
         canvas.width = maxWidth;
         canvas.height = 380;
         
-        paddle.width = canvas.width / 8;
+        paddle.width = paddleSizes[currentLevel] || 50;
         paddle.x = (canvas.width - paddle.width) / 2;
         paddle.y = canvas.height - 10;
     }
@@ -498,14 +610,31 @@
         return true;
     }
 
-    // Circle class
+    // Circle class CON MOVIMIENTO PARA NIVEL 2+
     class Circle {
-        constructor(x, y, diameter) {
+        constructor(x, y, diameter, level = 1) {
             this.x = x;
             this.y = y;
             this.diameter = diameter;
             this.radius = diameter / 2;
             this.color = this.getRandomColor();
+            this.level = level;
+            
+            // NUEVO: Propiedades de movimiento para nivel 2+
+            if (level >= 2) {
+                this.speedX = (Math.random() - 0.5) * 2; // Velocidad aleatoria entre -1 y 1
+                this.speedY = (Math.random() - 0.5) * 1.5;
+                this.maxSpeed = 1.5 + (level * 0.3);
+            } else {
+                this.speedX = 0;
+                this.speedY = 0;
+            }
+            
+            // Para rebote en bordes
+            this.minX = this.radius;
+            this.maxX = canvas.width - this.radius;
+            this.minY = this.radius + 20;
+            this.maxY = canvas.height * 0.5;
         }
         
         getRandomColor() {
@@ -520,6 +649,32 @@
             return colors[Math.floor(Math.random() * colors.length)];
         }
         
+        update() {
+            // NUEVO: Mover círculos en niveles 2+
+            if (this.level >= 2) {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                
+                // Rebotar en bordes
+                if (this.x <= this.minX || this.x >= this.maxX) {
+                    this.speedX = -this.speedX;
+                    this.x = this.x <= this.minX ? this.minX + 1 : this.maxX - 1;
+                }
+                
+                if (this.y <= this.minY || this.y >= this.maxY) {
+                    this.speedY = -this.speedY;
+                    this.y = this.y <= this.minY ? this.minY + 1 : this.maxY - 1;
+                }
+                
+                // Mantener velocidad máxima
+                const speed = Math.sqrt(this.speedX * this.speedX + this.speedY * this.speedY);
+                if (speed > this.maxSpeed) {
+                    this.speedX = (this.speedX / speed) * this.maxSpeed;
+                    this.speedY = (this.speedY / speed) * this.maxSpeed;
+                }
+            }
+        }
+        
         draw() {
             ctx.beginPath();
             ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
@@ -528,6 +683,15 @@
             ctx.strokeStyle = '#fff';
             ctx.lineWidth = 2;
             ctx.stroke();
+            
+            // NUEVO: Indicador visual para círculos en movimiento
+            if (this.level >= 2) {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius + 3, 0, Math.PI * 2);
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+            }
             
             ctx.fillStyle = '#fff';
             ctx.font = `${Math.max(10, this.radius / 2)}px Arial`;
@@ -540,6 +704,12 @@
             const growth = Math.floor(Math.random() * 3) + 3;
             this.diameter += growth;
             this.radius = this.diameter / 2;
+            
+            // Actualizar límites de movimiento
+            this.minX = this.radius;
+            this.maxX = canvas.width - this.radius;
+            this.minY = this.radius + 20;
+            this.maxY = canvas.height * 0.5;
         }
         
         shouldDisappear() {
@@ -547,7 +717,7 @@
         }
     }
 
-    // Projectile class - CON CORRECCIONES PARA BUG DE COLISIONES REPETITIVAS
+    // Projectile class
     class Projectile {
         constructor(x, y, angle) {
             this.x = x;
@@ -560,23 +730,20 @@
             this.active = true;
             this.lastTopBounce = 0;
             
-            // NUEVO: Propiedades para prevenir colisiones repetitivas
             this.lastWallCollisionTime = 0;
             this.lastTopCollisionTime = 0;
             this.lastPaddleCollisionTime = 0;
-            this.minCollisionInterval = 100; // ms entre colisiones del mismo tipo
-            this.collisionCooldown = 50; // ms mínimo entre cualquier colisión
+            this.minCollisionInterval = 100;
+            this.collisionCooldown = 50;
             this.lastAnyCollisionTime = 0;
         }
         
         update() {
             const currentTime = Date.now();
             
-            // Mover la pelota
             this.x += this.vx;
             this.y += this.vy;
             
-            // Minimum speed
             const minSpeed = 3.5;
             const currentSpeed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
             
@@ -586,12 +753,10 @@
                 this.vy *= ratio;
             }
             
-            // Bounce on side walls CON COOLDOWN
             if ((this.x - this.radius <= 0 || this.x + this.radius >= canvas.width) && 
                 currentTime - this.lastWallCollisionTime > this.minCollisionInterval &&
                 currentTime - this.lastAnyCollisionTime > this.collisionCooldown) {
                 
-                // Ajustar posición para evitar quedarse atascado en la pared
                 if (this.x - this.radius <= 0) {
                     this.x = this.radius + 1;
                 } else {
@@ -605,25 +770,19 @@
                 scoreElement.textContent = score;
                 playBounceSound('wall');
                 
-                // Actualizar tiempos de colisión
                 this.lastWallCollisionTime = currentTime;
                 this.lastAnyCollisionTime = currentTime;
             }
             
-            // Bounce on top wall CON COOLDOWN
             if (this.y - this.radius <= 0 && 
                 currentTime - this.lastTopCollisionTime > this.minCollisionInterval &&
                 currentTime - this.lastAnyCollisionTime > this.collisionCooldown) {
                 
-                // Ajustar posición para evitar quedarse atascado en el techo
                 this.y = this.radius + 1;
                 this.vy = -this.vy;
                 
-                // Calcular dirección hacia el centro
                 const centerX = canvas.width / 2;
                 const distanceToCenter = centerX - this.x;
-                
-                // Aplicar fuerza hacia el centro más fuerte
                 const pushStrength = 0.8;
                 const directionToCenter = distanceToCenter > 0 ? 1 : -1;
                 const normalizedDistance = Math.abs(distanceToCenter) / (canvas.width / 2);
@@ -631,12 +790,10 @@
                 
                 this.vx += pushForce;
                 
-                // Asegurar que no sea completamente vertical
                 if (Math.abs(this.vx) < 0.5) {
                     this.vx = this.vx < 0 ? -0.5 : 0.5;
                 }
                 
-                // Limitar velocidad máxima en X para control
                 const maxVX = 4;
                 if (Math.abs(this.vx) > maxVX) {
                     this.vx = this.vx > 0 ? maxVX : -maxVX;
@@ -647,13 +804,11 @@
                 scoreElement.textContent = score;
                 playBounceSound('top');
                 
-                // Actualizar tiempos de colisión
                 this.lastTopCollisionTime = currentTime;
                 this.lastAnyCollisionTime = currentTime;
                 this.lastTopBounce = currentTime;
             }
             
-            // Bounce on paddle CON COOLDOWN
             if (this.y + this.radius >= paddle.y && 
                 this.y - this.radius <= paddle.y + paddle.height &&
                 this.x + this.radius >= paddle.x && 
@@ -661,14 +816,12 @@
                 currentTime - this.lastPaddleCollisionTime > this.minCollisionInterval &&
                 currentTime - this.lastAnyCollisionTime > this.collisionCooldown) {
                 
-                // Ajustar posición para evitar múltiples colisiones
                 this.y = paddle.y - this.radius - 1;
                 
                 const hitPos = (this.x - (paddle.x + paddle.width / 2)) / (paddle.width / 2);
                 this.vy = -Math.abs(this.vy);
                 this.vx = hitPos * 4;
                 
-                // Evitar ángulos demasiado verticales
                 if (Math.abs(this.vx) < 1.0) {
                     this.vx = this.vx < 0 ? -1.0 : 1.0;
                 }
@@ -684,12 +837,10 @@
                 scoreElement.textContent = score;
                 playBounceSound('paddle');
                 
-                // Actualizar tiempos de colisión
                 this.lastPaddleCollisionTime = currentTime;
                 this.lastAnyCollisionTime = currentTime;
             }
             
-            // Check collision with circles (sin cooldown para permitir múltiples colisiones rápidas)
             for (let i = 0; i < circles.length; i++) {
                 const circle = circles[i];
                 const dx = this.x - circle.x;
@@ -702,7 +853,6 @@
                     this.vx = speed * Math.cos(angle);
                     this.vy = speed * Math.sin(angle);
                     
-                    // Ajustar posición para separar del círculo
                     const overlap = this.radius + circle.radius - distance;
                     this.x += overlap * Math.cos(angle);
                     this.y += overlap * Math.sin(angle);
@@ -712,7 +862,6 @@
                     scoreElement.textContent = score;
                     playBounceSound('circle');
                     
-                    // Pequeño ajuste para evitar loops
                     if (circle.y < canvas.height * 0.3) {
                         const centerX = canvas.width / 2;
                         const pushToCenter = (centerX - this.x) * 0.1 / canvas.width;
@@ -731,13 +880,11 @@
                 }
             }
             
-            // Detectar y corregir movimiento casi vertical
             if (Math.abs(this.vx) < 0.3 && Math.abs(this.vy) > 2) {
                 const randomPush = (Math.random() - 0.5) * 1.5;
                 this.vx += randomPush;
             }
             
-            // Lose life only if touches ground and is active
             if (this.y + this.radius >= canvas.height && this.active) {
                 this.active = false;
                 lives--;
@@ -768,6 +915,13 @@
         ctx.strokeStyle = '#fff';
         ctx.lineWidth = 2;
         ctx.strokeRect(paddle.x, paddle.y, paddle.width, paddle.height);
+        
+        // NUEVO: Indicador visual para paleta pequeña
+        if (currentLevel === 3) {
+            ctx.fillStyle = 'rgba(233, 69, 96, 0.3)';
+            ctx.fillRect(paddle.x - 10, paddle.y, 10, paddle.height);
+            ctx.fillRect(paddle.x + paddle.width, paddle.y, 10, paddle.height);
+        }
     }
 
     // Update paddle position
@@ -813,7 +967,6 @@
             
             if (y - radius <= 0) {
                 vy = -vy;
-                // Simular empuje hacia el centro
                 const centerX = canvas.width / 2;
                 const pushToCenter = (centerX - x) * 0.1;
                 vx += pushToCenter;
@@ -894,12 +1047,13 @@
         ctx.stroke();
     }
 
-    // Initialize circles without overlap
-    function initCircles() {
+    // Initialize circles for current level
+    function initCirclesForLevel() {
         circles = [];
         const maxAttempts = 100;
+        const circleCount = 4 + Math.floor(currentLevel / 2); // Más círculos en niveles altos
         
-        for (let i = 0; i < 4; i++) {
+        for (let i = 0; i < circleCount; i++) {
             let attempts = 0;
             let validPosition = false;
             let newCircle;
@@ -909,7 +1063,7 @@
                 const x = Math.random() * (canvas.width - diameter * 2) + diameter;
                 const y = Math.random() * (canvas.height * 0.4) + 40;
                 
-                newCircle = new Circle(x, y, diameter);
+                newCircle = new Circle(x, y, diameter, currentLevel);
                 
                 if (isValidPosition(newCircle, circles)) {
                     validPosition = true;
@@ -923,7 +1077,7 @@
                 const diameter = 30;
                 const x = (i % 2) * (canvas.width / 2) + canvas.width / 4;
                 const y = Math.floor(i / 2) * (canvas.height / 4) + canvas.height / 6;
-                circles.push(new Circle(x, y, diameter));
+                circles.push(new Circle(x, y, diameter, currentLevel));
             }
         }
     }
@@ -948,8 +1102,24 @@
         }
     }
 
-    // Initialize game
-    function initGame() {
+    // Apply level theme
+    function applyLevelTheme() {
+        const theme = levelThemes[currentLevel] || levelThemes[1];
+        document.body.style.background = `linear-gradient(135deg, ${theme[0]}, ${theme[1]})`;
+        
+        // Actualizar indicador de nivel
+        levelElement.textContent = currentLevel;
+        levelIndicator.textContent = `Level ${currentLevel}: ${levelNames[currentLevel]}`;
+        
+        // Actualizar tamaño de paleta
+        paddle.width = paddleSizes[currentLevel] || 50;
+        paddle.x = (canvas.width - paddle.width) / 2;
+    }
+
+    // Initialize game for specific level
+    function initGame(level = 1) {
+        currentLevel = level;
+        
         circles = [];
         projectile = null;
         lives = 10;
@@ -960,11 +1130,18 @@
         livesElement.textContent = lives;
         scoreElement.textContent = score;
         
+        // Aplicar tema del nivel
+        applyLevelTheme();
+        
+        // Configurar paleta
+        paddle.width = paddleSizes[currentLevel] || 50;
         paddle.x = (canvas.width - paddle.width) / 2;
         
-        initCircles();
+        // Inicializar círculos
+        initCirclesForLevel();
         
         gameOverElement.style.display = 'none';
+        levelCompleteElement.style.display = 'none';
         setControlsMode('angle');
         
         if (animationId) {
@@ -973,7 +1150,7 @@
         animate();
     }
 
-    // Animation loop con verificación adicional para velocidad baja
+    // Animation loop
     function animate() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         
@@ -984,7 +1161,9 @@
             drawTrajectory(currentAngle);
         }
         
+        // NUEVO: Actualizar círculos (para movimiento en nivel 2+)
         for (let circle of circles) {
+            circle.update();
             circle.draw();
         }
         
@@ -995,10 +1174,8 @@
             projectile.update();
             projectile.draw();
             
-            // Verificación adicional de velocidad mínima para evitar atascos
             const speed = Math.sqrt(projectile.vx * projectile.vx + projectile.vy * projectile.vy);
-            if (speed < 2.0 && speed > 0) { // Más bajo que el mínimo normal
-                // Si está muy lento, dar un pequeño impulso aleatorio
+            if (speed < 2.0 && speed > 0) {
                 const boost = 1.5;
                 projectile.vx += (Math.random() - 0.5) * boost;
                 projectile.vy += (Math.random() - 0.5) * boost;
@@ -1006,14 +1183,58 @@
         }
         
         if (circles.length === 0 && !allCirclesCleared && gameActive) {
-            showVictoryMessage();
             allCirclesCleared = true;
+            completeLevel();
         }
         
         if (gameActive) {
             animationId = requestAnimationFrame(animate);
         }
     }
+
+    // Complete level
+    // Complete level
+// Complete level
+function completeLevel() {
+    gameActive = false;
+    
+    // Actualizar mejor puntuación si es necesario
+    if (score > bestScore) {
+        bestScore = score;
+        localStorage.setItem('bestScore', bestScore);
+        bestElement.textContent = bestScore;
+    }
+    
+    // Lanzar confeti
+    launchConfetti();
+    
+    // Si es el último nivel, mostrar mensaje especial
+    if (currentLevel === maxLevels) {
+        levelCompleteElement.innerHTML = `
+            <h2>🎉 Congratulations! 🎉</h2>
+            <p>You've completed all levels!</p>
+            <p>Final score: <strong>${score}</strong></p>
+            <p>Total lives remaining: <strong>${lives}</strong></p>
+            <button class="next-level-btn" id="playAgainBtn">PLAY AGAIN FROM LEVEL 1</button>
+        `;
+        
+        levelCompleteElement.style.display = 'block';
+        
+        // Agregar event listener después de actualizar el HTML
+        setTimeout(() => {
+            document.getElementById('playAgainBtn').addEventListener('click', function() {
+                currentLevel = 1;
+                initGame(currentLevel);
+            });
+        }, 100);
+    } else {
+        // Mostrar pantalla normal de nivel completado
+        completedLevelElement.textContent = currentLevel;
+        levelScoreElement.textContent = score;
+        remainingLivesElement.textContent = lives;
+        levelCompleteElement.style.display = 'block';
+    }
+}
 
     // End game
     function endGame() {
@@ -1030,63 +1251,9 @@
         gameOverElement.style.display = 'block';
     }
     
-    // Show victory message with confetti
-    function showVictoryMessage() {
-        if (projectile) {
-            projectile.active = false;
-        }
-        
-        if (score > bestScore) {
-            bestScore = score;
-            localStorage.setItem('bestScore', bestScore);
-            bestElement.textContent = bestScore;
-        }
-        
-        const victoryMessage = document.createElement('div');
-        victoryMessage.style.position = 'absolute';
-        victoryMessage.style.top = '50%';
-        victoryMessage.style.left = '50%';
-        victoryMessage.style.transform = 'translate(-50%, -50%)';
-        victoryMessage.style.background = 'rgba(0, 0, 0, 0.9)';
-        victoryMessage.style.color = '#0fce7c';
-        victoryMessage.style.padding = '30px';
-        victoryMessage.style.borderRadius = '15px';
-        victoryMessage.style.textAlign = 'center';
-        victoryMessage.style.zIndex = '20';
-        victoryMessage.style.boxShadow = '0 0 30px rgba(15, 206, 124, 0.5)';
-        victoryMessage.style.border = '2px solid #0fce7c';
-        
-        victoryMessage.innerHTML = `
-            <h2 style="margin-bottom: 15px; font-size: 1.8rem;">Congratulations!</h2>
-            <p style="margin-bottom: 10px; font-size: 1.2rem;">You cleared all circles!</p>
-            <p style="margin-bottom: 10px; font-size: 1.1rem;">Final score: <strong>${score}</strong></p>
-            <p style="margin-bottom: 20px; font-size: 1.1rem;">Best score: <strong>${bestScore}</strong></p>
-            <button id="playAgainBtn" style="
-                background: linear-gradient(to right, #0fce7c, #4cd9a1);
-                color: white;
-                border: none;
-                padding: 12px 25px;
-                font-size: 1rem;
-                border-radius: 50px;
-                cursor: pointer;
-                transition: all 0.3s ease;
-                box-shadow: 0 5px 15px rgba(15, 206, 124, 0.4);
-            ">PLAY AGAIN</button>
-        `;
-        
-        document.querySelector('.game-area').appendChild(victoryMessage);
-        
-        launchConfetti();
-        
-        document.getElementById('playAgainBtn').addEventListener('click', function() {
-            victoryMessage.remove();
-            initGame();
-        });
-    }
-
     // Launch confetti
     function launchConfetti() {
-        const confettiCount = 200;
+        const confettiCount = 150;
         const colors = ['#e94560', '#0fce7c', '#ffd166', '#118ab2', '#9b5de5', '#ffffff'];
         
         for (let i = 0; i < confettiCount; i++) {
@@ -1138,6 +1305,28 @@
         }
     });
 
+nextLevelBtn.addEventListener('click', function() {
+    levelCompleteElement.style.display = 'none';
+    
+    // Si no es el último nivel, pasar al siguiente
+    if (currentLevel < maxLevels) {
+        currentLevel++;
+        initGame(currentLevel);
+    } else {
+        // Si es el último nivel, reiniciar desde el nivel 1
+        currentLevel = 1;
+        initGame(currentLevel);
+    }
+});
+
+    menuBtn.addEventListener('click', function() {
+        // Para futura implementación de selección de niveles
+        levelCompleteElement.style.display = 'none';
+        // Por ahora, reiniciar desde nivel 1
+        currentLevel = 1;
+        initGame(currentLevel);
+    });
+
     window.addEventListener('keydown', function(e) {
         if (e.key === 'ArrowLeft') keys.left = true;
         if (e.key === 'ArrowRight') keys.right = true;
@@ -1182,11 +1371,14 @@
         }
     });
 
-    restartBtn.addEventListener('click', initGame);
+    restartBtn.addEventListener('click', function() {
+        currentLevel = 1;
+        initGame(currentLevel);
+    });
 
     window.addEventListener('load', function() {
         resizeCanvas();
-        initGame();
+        initGame(currentLevel);
         setControlsMode('angle');
         
         // Initialize audio context on user interaction
