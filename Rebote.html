@@ -47,6 +47,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            flex: 1;
         }
         
         .info-label {
@@ -131,7 +132,7 @@
         }
         
         .fire-btn {
-            background: linear-gradient(to right, #e94560, #ff7b9c);
+            background: linear-gradient(to right, #0fce7c, #4cd9a1); /* CAMBIADO A VERDE */
             color: white;
             border: none;
             padding: 12px 30px;
@@ -139,7 +140,7 @@
             border-radius: 50px;
             cursor: pointer;
             transition: all 0.3s ease;
-            box-shadow: 0 5px 15px rgba(233, 69, 96, 0.4);
+            box-shadow: 0 5px 15px rgba(15, 206, 124, 0.4); /* CAMBIADO A VERDE */
             margin-bottom: 12px;
             width: 100%;
             max-width: 200px;
@@ -148,7 +149,7 @@
         
         .fire-btn:active {
             transform: scale(0.95);
-            box-shadow: 0 2px 10px rgba(233, 69, 96, 0.6);
+            box-shadow: 0 2px 10px rgba(15, 206, 124, 0.6); /* CAMBIADO A VERDE */
         }
         
         .game-over {
@@ -249,22 +250,26 @@
         }
         
         .sound-toggle {
-            position: absolute;
-            top: 85px; /* POSICIÓN MODIFICADA: debajo del área de juego */
-            left: 50%;
-            transform: translateX(-50%);
             background: rgba(0, 0, 0, 0.3);
             border: none;
             color: white;
-            width: 40px;
-            height: 40px;
+            width: 35px;
+            height: 35px;
             border-radius: 50%;
             cursor: pointer;
-            font-size: 1.5rem;
+            font-size: 1.2rem;
             display: flex;
             align-items: center;
             justify-content: center;
-            z-index: 5;
+            margin: 0 10px;
+            flex-shrink: 0;
+        }
+        
+        .sound-toggle-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 10px;
         }
     </style>
 </head>
@@ -279,6 +284,9 @@
                 <span class="info-label">SCORE</span>
                 <span class="info-value score" id="score">0</span>
             </div>
+            <div class="sound-toggle-container">
+                <button class="sound-toggle" id="soundToggle">🔊</button>
+            </div>
             <div class="info-item">
                 <span class="info-label">BEST</span>
                 <span class="info-value best" id="best">0</span>
@@ -288,8 +296,6 @@
         <div class="game-area">
             <canvas id="gameCanvas" width="400" height="380"></canvas>
         </div>
-        
-        <button class="sound-toggle" id="soundToggle">🔊</button>
         
         <div class="controls">
             <div class="angle-control">
@@ -379,6 +385,9 @@
     // Create audio context
     const audioContext = new (window.AudioContext || window.webkitAudioContext)();
     
+    // Fixed frequency for paddle sound - siempre la misma
+    const PADDLE_FREQUENCY = 440.00; // A4 - siempre el mismo sonido
+    
     // Function to play bounce sound with musical notes
     function playBounceSound(type = 'wall') {
         if (!soundEnabled) return;
@@ -390,46 +399,48 @@
             oscillator.connect(gainNode);
             gainNode.connect(audioContext.destination);
             
-            // Select random musical note from our range
-            const noteIndex = Math.floor(Math.random() * bounceNotes.length);
-            const baseFrequency = bounceNotes[noteIndex];
-            
-            // Add slight variation (±10Hz) for natural feel
-            const frequency = baseFrequency + (Math.random() * 20 - 10);
-            
-            // Different sound characteristics based on bounce type
-            if (type === 'wall') {
-                // "tic" sound for walls - short, sharp
-                oscillator.frequency.value = frequency;
-                oscillator.type = 'sine';
-                gainNode.gain.value = 0.15;
-                gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.08);
-                oscillator.start();
-                oscillator.stop(audioContext.currentTime + 0.08);
-            } else if (type === 'top') {
-                // Top wall bounce - bright sound
-                oscillator.frequency.value = frequency * 1.05; // Slightly higher
-                oscillator.type = 'sine';
-                gainNode.gain.value = 0.14;
-                gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.09);
-                oscillator.start();
-                oscillator.stop(audioContext.currentTime + 0.09);
-            } else if (type === 'paddle') {
-                // "toc" sound for paddle - slightly longer, fuller
-                oscillator.frequency.value = frequency * 0.95; // Slightly lower
+            if (type === 'paddle') {
+                // SONIDO FIJO PARA LA PALETA - siempre el mismo
+                oscillator.frequency.value = PADDLE_FREQUENCY;
                 oscillator.type = 'square';
                 gainNode.gain.value = 0.18;
                 gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.12);
                 oscillator.start();
                 oscillator.stop(audioContext.currentTime + 0.12);
-            } else if (type === 'circle') {
-                // Circle bounce - medium length with different waveform
-                oscillator.frequency.value = frequency * 0.85; // Lower for circles
-                oscillator.type = 'triangle';
-                gainNode.gain.value = 0.16;
-                gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.1);
-                oscillator.start();
-                oscillator.stop(audioContext.currentTime + 0.1);
+            } else {
+                // Para otros sonidos, seleccionar nota musical aleatoria
+                const noteIndex = Math.floor(Math.random() * bounceNotes.length);
+                const baseFrequency = bounceNotes[noteIndex];
+                
+                // Add slight variation (±10Hz) for natural feel
+                const frequency = baseFrequency + (Math.random() * 20 - 10);
+                
+                // Different sound characteristics based on bounce type
+                if (type === 'wall') {
+                    // "tic" sound for walls - short, sharp
+                    oscillator.frequency.value = frequency;
+                    oscillator.type = 'sine';
+                    gainNode.gain.value = 0.15;
+                    gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.08);
+                    oscillator.start();
+                    oscillator.stop(audioContext.currentTime + 0.08);
+                } else if (type === 'top') {
+                    // Top wall bounce - bright sound
+                    oscillator.frequency.value = frequency * 1.05; // Slightly higher
+                    oscillator.type = 'sine';
+                    gainNode.gain.value = 0.14;
+                    gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.09);
+                    oscillator.start();
+                    oscillator.stop(audioContext.currentTime + 0.09);
+                } else if (type === 'circle') {
+                    // Circle bounce - medium length with different waveform
+                    oscillator.frequency.value = frequency * 0.85; // Lower for circles
+                    oscillator.type = 'triangle';
+                    gainNode.gain.value = 0.16;
+                    gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.1);
+                    oscillator.start();
+                    oscillator.stop(audioContext.currentTime + 0.1);
+                }
             }
         } catch (e) {
             console.log("Audio not available:", e);
@@ -600,10 +611,10 @@
                 
                 score++;
                 scoreElement.textContent = score;
-                playBounceSound('paddle');
+                playBounceSound('paddle'); // SIEMPRE EL MISMO SONIDO
             }
             
-            // Check collision with circles - ARREGLADO: Sonido en círculos
+            // Check collision with circles
             for (let i = 0; i < circles.length; i++) {
                 const circle = circles[i];
                 const dx = this.x - circle.x;
@@ -624,7 +635,6 @@
                     score += 5;
                     scoreElement.textContent = score;
                     
-                    // SONIDO AÑADIDO AQUÍ - cuando la pelota golpea un círculo
                     playBounceSound('circle');
                     
                     if (circle.shouldDisappear()) {
@@ -633,7 +643,7 @@
                         scoreElement.textContent = score;
                         i--;
                     }
-                    break; // Importante: salir del bucle después de encontrar colisión
+                    break;
                 }
             }
             
