@@ -41,6 +41,7 @@
             border-radius: 10px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             font-size: 14px;
+            flex-wrap: wrap; /* Añadido para mejor soporte responsive */
         }
         
         .info-item {
@@ -263,6 +264,7 @@
             justify-content: center;
             margin: 0 10px;
             flex-shrink: 0;
+            order: 3;
         }
         
         .sound-toggle-container {
@@ -270,28 +272,36 @@
             align-items: center;
             justify-content: center;
             margin: 0 10px;
+            order: 3;
+            }
+
+.info-item:nth-child(4) { /* BEST ahora será el cuarto elemento */
+    order: 4; /* BEST se mueve a la posición 4 */
         }
+        
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="game-info">
-            <div class="info-item">
-                <span class="info-label">LIVES</span>
-                <span class="info-value lives" id="lives">10</span>
-            </div>
-            <div class="info-item">
-                <span class="info-label">SCORE</span>
-                <span class="info-value score" id="score">0</span>
-            </div>
-            <div class="sound-toggle-container">
-                <button class="sound-toggle" id="soundToggle">🔊</button>
-            </div>
-            <div class="info-item">
-                <span class="info-label">BEST</span>
-                <span class="info-value best" id="best">0</span>
-            </div>
-        </div>
+<!-- HTML - Solo cambios en la estructura del game-info -->
+<div class="game-info">
+    <div class="info-item">
+        <span class="info-label">LIVES</span>
+        <span class="info-value lives" id="lives">10</span>
+    </div>
+    <div class="info-item">
+        <span class="info-label">SCORE</span>
+        <span class="info-value score" id="score">0</span>
+    </div>
+    <!-- BEST se mueve a la derecha del parlante -->
+    <div class="info-item">
+        <span class="info-label">BEST</span>
+        <span class="info-value best" id="best">0</span>
+    </div>
+    <div class="sound-toggle-container">
+        <button class="sound-toggle" id="soundToggle">🔊</button>
+    </div>
+</div>
         
         <div class="game-area">
             <canvas id="gameCanvas" width="400" height="380"></canvas>
