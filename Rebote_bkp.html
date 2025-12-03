@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bounce Game</title>
+    <title>Juego de Rebotes</title>
     <style>
         * {
             margin: 0;
@@ -250,7 +250,7 @@
         .sound-toggle {
             position: absolute;
             top: 20px;
-            left: 20px; /* CAMBIADO: de right a left */
+            right: 20px;
             background: rgba(0, 0, 0, 0.3);
             border: none;
             color: white;
@@ -272,15 +272,15 @@
     <div class="container">
         <div class="game-info">
             <div class="info-item">
-                <span class="info-label">LIVES</span>
+                <span class="info-label">VIDAS</span>
                 <span class="info-value lives" id="lives">10</span>
             </div>
             <div class="info-item">
-                <span class="info-label">SCORE</span>
+                <span class="info-label">PUNTUACIÓN</span>
                 <span class="info-value score" id="score">0</span>
             </div>
             <div class="info-item">
-                <span class="info-label">BEST</span>
+                <span class="info-label">MEJOR</span>
                 <span class="info-value best" id="best">0</span>
             </div>
         </div>
@@ -294,22 +294,22 @@
                 <div class="angle-label"><span id="angleValue">45°</span></div>
                 <input type="range" min="0" max="180" value="135" class="angle-slider" id="angleSlider">
             </div>
-            <button class="fire-btn" id="fireBtn">FIRE</button>
+            <button class="fire-btn" id="fireBtn">DISPARAR</button>
         </div>
     </div>
     
     <div class="game-over" id="gameOver">
-        <h2>Game Over!</h2>
-        <p>Your score: <span id="finalScore">0</span></p>
-        <p>Best score: <span id="finalBest">0</span></p>
+        <h2>¡Juego Terminado!</h2>
+        <p>Tu puntuación: <span id="finalScore">0</span></p>
+        <p>Mejor puntuación: <span id="finalBest">0</span></p>
         <div class="game-over-buttons">
-            <button class="restart-btn" id="restartBtn">PLAY AGAIN</button>
-            <button class="continue-btn" id="continueBtn">CONTINUE (+2 LIVES)</button>
+            <button class="restart-btn" id="restartBtn">JUGAR DE NUEVO</button>
+            <button class="continue-btn" id="continueBtn">CONTINUAR (+2 VIDAS)</button>
         </div>
     </div>
 
 <script>
-    // Get DOM elements
+    // Obtener elementos del DOM
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
     const angleSlider = document.getElementById('angleSlider');
@@ -326,7 +326,7 @@
     const continueBtn = document.getElementById('continueBtn');
     const soundToggle = document.getElementById('soundToggle');
 
-    // Game variables
+    // Variables del juego
     let circles = [];
     let projectile = null;
     let lives = 10;
@@ -339,7 +339,7 @@
     let allCirclesCleared = false;
     let soundEnabled = true;
     
-    // Paddle variables
+    // Variables para la paleta
     let paddle = {
         width: 50,
         height: 10,
@@ -349,39 +349,19 @@
         color: '#ffffff'
     };
     
-    // Controls
+    // Control de la paleta
     let keys = {
         left: false,
         right: false
     };
 
-    // Initial setup
+    // Configuración inicial
     bestElement.textContent = bestScore;
 
-    // Musical notes frequencies (C4 to A4 scale)
-    const musicalNotes = {
-        'C4': 261.63,  // Do
-        'D4': 293.66,  // Re
-        'E4': 329.63,  // Mi
-        'F4': 349.23,  // Fa
-        'G4': 392.00,  // Sol
-        'A4': 440.00,  // La
-        'B4': 493.88,  // Si
-        'C5': 523.25   // Do (high)
-    };
-    
-    // Select notes within 400-600Hz range (mostly G4, A4, B4, C5)
-    const bounceNotes = [
-        musicalNotes['G4'],  // 392 Hz
-        musicalNotes['A4'],  // 440 Hz  
-        musicalNotes['B4'],  // 494 Hz
-        musicalNotes['C5']   // 523 Hz
-    ];
-    
-    // Create audio context
+    // Crear contexto de audio
     const audioContext = new (window.AudioContext || window.webkitAudioContext)();
     
-    // Function to play bounce sound with musical notes
+    // Función para crear sonido de rebote
     function playBounceSound(type = 'wall') {
         if (!soundEnabled) return;
         
@@ -392,67 +372,52 @@
             oscillator.connect(gainNode);
             gainNode.connect(audioContext.destination);
             
-            // Select random musical note from our range
-            const noteIndex = Math.floor(Math.random() * bounceNotes.length);
-            const baseFrequency = bounceNotes[noteIndex];
-            
-            // Add slight variation (±10Hz) for natural feel
-            const frequency = baseFrequency + (Math.random() * 20 - 10);
-            
-            // Different sound characteristics based on bounce type
+            // Diferentes sonidos según el tipo de rebote
             if (type === 'wall') {
-                // "tic" sound for walls - short, sharp
-                oscillator.frequency.value = frequency;
+                // Sonido "tic" para rebotes en paredes
+                oscillator.frequency.value = 800 + Math.random() * 200;
                 oscillator.type = 'sine';
-                gainNode.gain.value = 0.15;
-                gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.08);
-                oscillator.start();
-                oscillator.stop(audioContext.currentTime + 0.08);
-            } else if (type === 'paddle') {
-                // "toc" sound for paddle - slightly longer, fuller
-                oscillator.frequency.value = frequency * 0.95; // Slightly lower
-                oscillator.type = 'square';
-                gainNode.gain.value = 0.18;
-                gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.12);
-                oscillator.start();
-                oscillator.stop(audioContext.currentTime + 0.12);
-            } else if (type === 'circle') {
-                // Circle bounce - medium length
-                oscillator.frequency.value = frequency * 0.85; // Lower for circles
-                oscillator.type = 'triangle';
-                gainNode.gain.value = 0.16;
-                gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.1);
+                gainNode.gain.value = 0.1;
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
                 oscillator.start();
                 oscillator.stop(audioContext.currentTime + 0.1);
-            } else if (type === 'top') {
-                // Top wall bounce - bright sound
-                oscillator.frequency.value = frequency * 1.05; // Slightly higher
-                oscillator.type = 'sine';
-                gainNode.gain.value = 0.14;
-                gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.09);
+            } else if (type === 'paddle') {
+                // Sonido "toc" para rebotes en la paleta
+                oscillator.frequency.value = 600 + Math.random() * 150;
+                oscillator.type = 'square';
+                gainNode.gain.value = 0.15;
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
                 oscillator.start();
-                oscillator.stop(audioContext.currentTime + 0.09);
+                oscillator.stop(audioContext.currentTime + 0.15);
+            } else if (type === 'circle') {
+                // Sonido para rebotes en círculos
+                oscillator.frequency.value = 400 + Math.random() * 300;
+                oscillator.type = 'triangle';
+                gainNode.gain.value = 0.12;
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.12);
+                oscillator.start();
+                oscillator.stop(audioContext.currentTime + 0.12);
             }
         } catch (e) {
-            console.log("Audio not available:", e);
+            console.log("Audio no disponible:", e);
         }
     }
     
-    // Toggle sound function
+    // Función para alternar sonido
     function toggleSound() {
         soundEnabled = !soundEnabled;
         soundToggle.textContent = soundEnabled ? '🔊' : '🔇';
         localStorage.setItem('soundEnabled', soundEnabled);
     }
     
-    // Load sound setting
+    // Cargar configuración de sonido
     const savedSoundSetting = localStorage.getItem('soundEnabled');
     if (savedSoundSetting !== null) {
         soundEnabled = savedSoundSetting === 'true';
         soundToggle.textContent = soundEnabled ? '🔊' : '🔇';
     }
 
-    // Resize canvas for mobile
+    // Ajustar tamaño del canvas para móviles
     function resizeCanvas() {
         const containerWidth = canvas.parentElement.clientWidth;
         const maxWidth = Math.min(400, containerWidth);
@@ -464,7 +429,7 @@
         paddle.y = canvas.height - 10;
     }
 
-    // Check if circles overlap
+    // Verificar si dos círculos se superponen
     function circlesOverlap(circle1, circle2) {
         const dx = circle1.x - circle2.x;
         const dy = circle1.y - circle2.y;
@@ -472,7 +437,7 @@
         return distance < (circle1.radius + circle2.radius + 10);
     }
 
-    // Check if a circle overlaps with any existing circle
+    // Verificar si un círculo se superpone con cualquier otro
     function isValidPosition(newCircle, existingCircles) {
         for (let circle of existingCircles) {
             if (circlesOverlap(newCircle, circle)) {
@@ -482,7 +447,7 @@
         return true;
     }
 
-    // Circle class
+    // Clase para los círculos
     class Circle {
         constructor(x, y, diameter) {
             this.x = x;
@@ -493,13 +458,14 @@
         }
         
         getRandomColor() {
+            // Paleta de colores más amplia y variada
             const colors = [
-                '#e94560', '#ff6b6b', '#ff9e7d',
-                '#0fce7c', '#4cd9a1', '#1dd1a1',
-                '#ffd166', '#ffed99', '#f9c74f',
-                '#118ab2', '#06d6a0', '#4cc9f0',
-                '#9b5de5', '#c77dff', '#7209b7',
-                '#f15bb5', '#ff70a6', '#ff477e'
+                '#e94560', '#ff6b6b', '#ff9e7d', // Rojos/Naranjas
+                '#0fce7c', '#4cd9a1', '#1dd1a1', // Verdes
+                '#ffd166', '#ffed99', '#f9c74f', // Amarillos
+                '#118ab2', '#06d6a0', '#4cc9f0', // Azules/Verdes
+                '#9b5de5', '#c77dff', '#7209b7', // Púrpuras
+                '#f15bb5', '#ff70a6', '#ff477e'  // Rosas
             ];
             return colors[Math.floor(Math.random() * colors.length)];
         }
@@ -531,9 +497,10 @@
         }
     }
 
-    // Projectile class
+    // Clase para el proyectil
     class Projectile {
         constructor(x, y, angle) {
+            // MODIFICACIÓN: La pelota ahora parte desde el centro de la paleta
             this.x = x;
             this.y = y;
             this.radius = 5;
@@ -548,7 +515,7 @@
             this.x += this.vx;
             this.y += this.vy;
             
-            // Minimum speed
+            // Velocidad mínima
             const minSpeed = 3.5;
             const currentSpeed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
             
@@ -558,20 +525,21 @@
                 this.vy *= ratio;
             }
             
-            // Bounce on side walls
+            // Rebotar en las paredes laterales
             if (this.x - this.radius <= 0 || this.x + this.radius >= canvas.width) {
                 this.vx = -this.vx;
                 const randomFactor = (Math.random() * 0.4) - 0.2;
                 this.vy += randomFactor;
                 score++;
                 scoreElement.textContent = score;
-                playBounceSound('wall');
+                playBounceSound('wall'); // SONIDO AL REBOTAR EN PARED
             }
             
-            // Bounce on top wall
+            // Rebotar en la parte superior - CON MEJORA: factor aleatorio hacia el centro
             if (this.y - this.radius <= 0) {
                 this.vy = -this.vy;
                 
+                // Nuevo factor aleatorio que empuja hacia el centro del canvas
                 const centerX = canvas.width / 2;
                 const directionToCenter = centerX - this.x > 0 ? 1 : -1;
                 const randomFactor = (Math.random() * 0.5) * directionToCenter;
@@ -580,10 +548,10 @@
                 this.y = this.radius + 1;
                 score++;
                 scoreElement.textContent = score;
-                playBounceSound('top');
+                playBounceSound('wall'); // SONIDO AL REBOTAR EN TECHO
             }
             
-            // Bounce on paddle
+            // Rebotar en la paleta
             if (this.y + this.radius >= paddle.y && 
                 this.y - this.radius <= paddle.y + paddle.height &&
                 this.x + this.radius >= paddle.x && 
@@ -602,10 +570,10 @@
                 
                 score++;
                 scoreElement.textContent = score;
-                playBounceSound('paddle');
+                playBounceSound('paddle'); // SONIDO AL REBOTAR EN PALETA
             }
             
-            // Check collision with circles
+            // Verificar colisión con círculos
             for (let i = 0; i < circles.length; i++) {
                 const circle = circles[i];
                 const dx = this.x - circle.x;
@@ -625,19 +593,20 @@
                     circle.grow();
                     score += 5;
                     scoreElement.textContent = score;
-                    playBounceSound('circle');
+                    playBounceSound('circle'); // SONIDO AL REBOTAR EN CÍRCULO
                     
+                    // Si el círculo debe desaparecer, lo eliminamos pero el proyectil sigue activo
                     if (circle.shouldDisappear()) {
                         circles.splice(i, 1);
                         score += 20;
                         scoreElement.textContent = score;
-                        i--;
+                        i--; // Ajustar el índice después de eliminar
                     }
                     break;
                 }
             }
             
-            // Lose life only if touches ground and is active
+            // Solo perder vida si toca el suelo y está activo
             if (this.y + this.radius >= canvas.height && this.active) {
                 this.active = false;
                 lives--;
@@ -661,7 +630,7 @@
         }
     }
 
-    // Draw paddle
+    // Dibujar la paleta
     function drawPaddle() {
         ctx.fillStyle = paddle.color;
         ctx.fillRect(paddle.x, paddle.y, paddle.width, paddle.height);
@@ -670,7 +639,7 @@
         ctx.strokeRect(paddle.x, paddle.y, paddle.width, paddle.height);
     }
 
-    // Update paddle position
+    // Actualizar posición de la paleta
     function updatePaddle() {
         if (keys.left && paddle.x > 0) {
             paddle.x -= paddle.speed;
@@ -680,12 +649,13 @@
         }
     }
 
-    // Draw trajectory
+    // MODIFICACIÓN: Dibuja la trayectoria de disparo - MUCHO MÁS GRUESA Y DESDE LA PALETA
     function drawTrajectory(angle) {
         if (projectile && projectile.active) return;
         
+        // MODIFICACIÓN: La trayectoria comienza desde el centro de la paleta
         const startX = paddle.x + paddle.width / 2;
-        const startY = paddle.y - 5;
+        const startY = paddle.y - 5; // Justo encima de la paleta
         const radius = 5;
         const speed = 5;
         const angleRad = (180 - angle) * Math.PI / 180;
@@ -695,11 +665,12 @@
         let vx = speed * Math.cos(angleRad);
         let vy = -speed * Math.sin(angleRad);
         
+        // Línea principal de trayectoria - MÁS GRUESA
         ctx.setLineDash([]);
         ctx.beginPath();
         ctx.moveTo(x, y);
         
-        for (let i = 0; i < 20; i++) {
+        for (let i = 0; i < 20; i++) { // Aumentado a 20 pasos para trayectoria más larga
             x += vx * 8;
             y += vy * 8;
             
@@ -707,7 +678,7 @@
                 vx = -vx;
                 ctx.fillStyle = '#ffd166';
                 ctx.beginPath();
-                ctx.arc(x, y, 4, 0, Math.PI * 2);
+                ctx.arc(x, y, 4, 0, Math.PI * 2); // Punto más grande
                 ctx.fill();
             }
             
@@ -715,7 +686,7 @@
                 vy = -vy;
                 ctx.fillStyle = '#ffd166';
                 ctx.beginPath();
-                ctx.arc(x, y, 4, 0, Math.PI * 2);
+                ctx.arc(x, y, 4, 0, Math.PI * 2); // Punto más grande
                 ctx.fill();
             }
             
@@ -733,7 +704,7 @@
                 ctx.lineTo(x, y);
                 ctx.fillStyle = '#e94560';
                 ctx.beginPath();
-                ctx.arc(x, y, 5, 0, Math.PI * 2);
+                ctx.arc(x, y, 5, 0, Math.PI * 2); // Punto final más grande
                 ctx.fill();
                 break;
             }
@@ -746,10 +717,11 @@
         }
         
         ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
-        ctx.lineWidth = 6;
+        ctx.lineWidth = 6; // AUMENTADO: Línea más gruesa (antes era 4)
         ctx.stroke();
         
-        ctx.setLineDash([8, 6]);
+        // Línea punteada de trayectoria secundaria - TAMBIÉN MÁS GRUESA
+        ctx.setLineDash([8, 6]); // Patrón de puntos más grande
         ctx.beginPath();
         ctx.moveTo(startX, startY);
         
@@ -771,10 +743,11 @@
         }
         
         ctx.strokeStyle = 'rgba(255, 215, 102, 0.8)';
-        ctx.lineWidth = 4;
+        ctx.lineWidth = 4; // AUMENTADO: Línea punteada más gruesa (antes era 2)
         ctx.stroke();
         ctx.setLineDash([]);
         
+        // Dibujar punto de inicio en la paleta
         ctx.fillStyle = '#e94560';
         ctx.beginPath();
         ctx.arc(startX, startY, 6, 0, Math.PI * 2);
@@ -784,7 +757,7 @@
         ctx.stroke();
     }
 
-    // Initialize circles without overlap
+    // Inicializar círculos sin superposición
     function initCircles() {
         circles = [];
         const maxAttempts = 100;
@@ -818,7 +791,7 @@
         }
     }
 
-    // Function to change control mode
+    // FUNCIÓN PARA CAMBIAR EL MODO DE CONTROL
     function setControlsMode(mode) {
         controlsMode = mode;
         if (mode === 'angle') {
@@ -826,19 +799,19 @@
             angleSlider.max = 180;
             angleSlider.value = currentAngle;
             angleLabel.innerHTML = `<span id="angleValue">${currentAngle}°</span>`;
-            fireBtn.textContent = 'FIRE';
+            fireBtn.textContent = 'DISPARAR';
             fireBtn.disabled = false;
         } else if (mode === 'paddle') {
             angleSlider.min = 0;
             angleSlider.max = canvas.width - paddle.width;
             angleSlider.value = paddle.x;
-            angleLabel.innerHTML = '<span id="angleValue">Move</span>';
-            fireBtn.textContent = 'WAITING';
+            angleLabel.innerHTML = '<span id="angleValue">Mover</span>';
+            fireBtn.textContent = 'ESPERANDO';
             fireBtn.disabled = true;
         }
     }
 
-    // Initialize game
+    // Inicializar el juego
     function initGame() {
         circles = [];
         projectile = null;
@@ -863,7 +836,7 @@
         animate();
     }
 
-    // Animation loop
+    // Bucle de animación
     function animate() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         
@@ -896,7 +869,7 @@
         }
     }
 
-    // End game
+    // Finalizar el juego
     function endGame() {
         gameActive = false;
         
@@ -911,7 +884,7 @@
         gameOverElement.style.display = 'block';
     }
     
-    // Show victory message with confetti
+    // Función para mostrar mensaje de victoria con confetti
     function showVictoryMessage() {
         if (projectile) {
             projectile.active = false;
@@ -938,10 +911,10 @@
         victoryMessage.style.border = '2px solid #0fce7c';
         
         victoryMessage.innerHTML = `
-            <h2 style="margin-bottom: 15px; font-size: 1.8rem;">Congratulations!</h2>
-            <p style="margin-bottom: 10px; font-size: 1.2rem;">You cleared all circles!</p>
-            <p style="margin-bottom: 10px; font-size: 1.1rem;">Final score: <strong>${score}</strong></p>
-            <p style="margin-bottom: 20px; font-size: 1.1rem;">Best score: <strong>${bestScore}</strong></p>
+            <h2 style="margin-bottom: 15px; font-size: 1.8rem;">¡Felicidades!</h2>
+            <p style="margin-bottom: 10px; font-size: 1.2rem;">¡Eliminaste todos los círculos!</p>
+            <p style="margin-bottom: 10px; font-size: 1.1rem;">Puntuación final: <strong>${score}</strong></p>
+            <p style="margin-bottom: 20px; font-size: 1.1rem;">Mejor puntuación: <strong>${bestScore}</strong></p>
             <button id="playAgainBtn" style="
                 background: linear-gradient(to right, #0fce7c, #4cd9a1);
                 color: white;
@@ -952,7 +925,7 @@
                 cursor: pointer;
                 transition: all 0.3s ease;
                 box-shadow: 0 5px 15px rgba(15, 206, 124, 0.4);
-            ">PLAY AGAIN</button>
+            ">JUGAR DE NUEVO</button>
         `;
         
         document.querySelector('.game-area').appendChild(victoryMessage);
@@ -965,7 +938,7 @@
         });
     }
 
-    // Launch confetti
+    // Función para lanzar confetti
     function launchConfetti() {
         const confettiCount = 200;
         const colors = ['#e94560', '#0fce7c', '#ffd166', '#118ab2', '#9b5de5', '#ffffff'];
@@ -1053,9 +1026,10 @@
     fireBtn.addEventListener('click', function() {
         if (controlsMode === 'angle') {
             if (!projectile || !projectile.active) {
+                // MODIFICACIÓN: La pelota parte desde el centro de la paleta
                 projectile = new Projectile(
-                    paddle.x + paddle.width / 2,
-                    paddle.y - 5,
+                    paddle.x + paddle.width / 2,  // Centro X de la paleta
+                    paddle.y - 5,                 // Justo encima de la paleta
                     currentAngle
                 );
                 setControlsMode('paddle');
@@ -1070,7 +1044,7 @@
         initGame();
         setControlsMode('angle');
         
-        // Initialize audio context on user interaction
+        // Iniciar el contexto de audio en respuesta a una interacción del usuario
         document.body.addEventListener('click', function initAudio() {
             if (audioContext.state === 'suspended') {
                 audioContext.resume();
