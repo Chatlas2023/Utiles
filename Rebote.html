@@ -29,6 +29,7 @@
             max-width: 500px;
             text-align: center;
             margin-top: 10px;
+            position: relative;
         }
         
         .game-info {
@@ -249,8 +250,9 @@
         
         .sound-toggle {
             position: absolute;
-            top: 20px;
-            left: 20px; /* CAMBIADO: de right a left */
+            top: 85px; /* POSICIÓN MODIFICADA: debajo del área de juego */
+            left: 50%;
+            transform: translateX(-50%);
             background: rgba(0, 0, 0, 0.3);
             border: none;
             color: white;
@@ -267,8 +269,6 @@
     </style>
 </head>
 <body>
-    <button class="sound-toggle" id="soundToggle">🔊</button>
-    
     <div class="container">
         <div class="game-info">
             <div class="info-item">
@@ -289,12 +289,14 @@
             <canvas id="gameCanvas" width="400" height="380"></canvas>
         </div>
         
+        <button class="sound-toggle" id="soundToggle">🔊</button>
+        
         <div class="controls">
             <div class="angle-control">
                 <div class="angle-label"><span id="angleValue">45°</span></div>
                 <input type="range" min="0" max="180" value="135" class="angle-slider" id="angleSlider">
             </div>
-            <button class="fire-btn" id="fireBtn">FIRE</button>
+            <button class="fire-btn" id="fireBtn">GO!</button>
         </div>
     </div>
     
@@ -358,19 +360,15 @@
     // Initial setup
     bestElement.textContent = bestScore;
 
-    // Musical notes frequencies (C4 to A4 scale)
+    // Musical notes frequencies (G4 to C5 scale)
     const musicalNotes = {
-        'C4': 261.63,  // Do
-        'D4': 293.66,  // Re
-        'E4': 329.63,  // Mi
-        'F4': 349.23,  // Fa
         'G4': 392.00,  // Sol
         'A4': 440.00,  // La
         'B4': 493.88,  // Si
         'C5': 523.25   // Do (high)
     };
     
-    // Select notes within 400-600Hz range (mostly G4, A4, B4, C5)
+    // Select notes within 400-600Hz range
     const bounceNotes = [
         musicalNotes['G4'],  // 392 Hz
         musicalNotes['A4'],  // 440 Hz  
@@ -408,6 +406,14 @@
                 gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.08);
                 oscillator.start();
                 oscillator.stop(audioContext.currentTime + 0.08);
+            } else if (type === 'top') {
+                // Top wall bounce - bright sound
+                oscillator.frequency.value = frequency * 1.05; // Slightly higher
+                oscillator.type = 'sine';
+                gainNode.gain.value = 0.14;
+                gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.09);
+                oscillator.start();
+                oscillator.stop(audioContext.currentTime + 0.09);
             } else if (type === 'paddle') {
                 // "toc" sound for paddle - slightly longer, fuller
                 oscillator.frequency.value = frequency * 0.95; // Slightly lower
@@ -417,21 +423,13 @@
                 oscillator.start();
                 oscillator.stop(audioContext.currentTime + 0.12);
             } else if (type === 'circle') {
-                // Circle bounce - medium length
+                // Circle bounce - medium length with different waveform
                 oscillator.frequency.value = frequency * 0.85; // Lower for circles
                 oscillator.type = 'triangle';
                 gainNode.gain.value = 0.16;
                 gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.1);
                 oscillator.start();
                 oscillator.stop(audioContext.currentTime + 0.1);
-            } else if (type === 'top') {
-                // Top wall bounce - bright sound
-                oscillator.frequency.value = frequency * 1.05; // Slightly higher
-                oscillator.type = 'sine';
-                gainNode.gain.value = 0.14;
-                gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.09);
-                oscillator.start();
-                oscillator.stop(audioContext.currentTime + 0.09);
             }
         } catch (e) {
             console.log("Audio not available:", e);
@@ -605,7 +603,7 @@
                 playBounceSound('paddle');
             }
             
-            // Check collision with circles
+            // Check collision with circles - ARREGLADO: Sonido en círculos
             for (let i = 0; i < circles.length; i++) {
                 const circle = circles[i];
                 const dx = this.x - circle.x;
@@ -625,6 +623,8 @@
                     circle.grow();
                     score += 5;
                     scoreElement.textContent = score;
+                    
+                    // SONIDO AÑADIDO AQUÍ - cuando la pelota golpea un círculo
                     playBounceSound('circle');
                     
                     if (circle.shouldDisappear()) {
@@ -633,7 +633,7 @@
                         scoreElement.textContent = score;
                         i--;
                     }
-                    break;
+                    break; // Importante: salir del bucle después de encontrar colisión
                 }
             }
             
@@ -826,7 +826,7 @@
             angleSlider.max = 180;
             angleSlider.value = currentAngle;
             angleLabel.innerHTML = `<span id="angleValue">${currentAngle}°</span>`;
-            fireBtn.textContent = 'FIRE';
+            fireBtn.textContent = 'GO!';
             fireBtn.disabled = false;
         } else if (mode === 'paddle') {
             angleSlider.min = 0;
