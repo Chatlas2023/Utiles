@@ -41,7 +41,7 @@
             border-radius: 10px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             font-size: 14px;
-            flex-wrap: wrap; /* Añadido para mejor soporte responsive */
+            flex-wrap: wrap;
         }
         
         .info-item {
@@ -49,6 +49,18 @@
             flex-direction: column;
             align-items: center;
             flex: 1;
+        }
+        
+        .sound-toggle-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 10px;
+            order: 4;
+        }
+        
+        .info-item:nth-child(4) {
+            order: 3;
         }
         
         .info-label {
@@ -264,44 +276,29 @@
             justify-content: center;
             margin: 0 10px;
             flex-shrink: 0;
-            order: 3;
+            order: 4;
         }
-        
-        .sound-toggle-container {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 10px;
-            order: 3;
-            }
-
-.info-item:nth-child(4) { /* BEST ahora será el cuarto elemento */
-    order: 4; /* BEST se mueve a la posición 4 */
-        }
-        
     </style>
 </head>
 <body>
     <div class="container">
-<!-- HTML - Solo cambios en la estructura del game-info -->
-<div class="game-info">
-    <div class="info-item">
-        <span class="info-label">LIVES</span>
-        <span class="info-value lives" id="lives">10</span>
-    </div>
-    <div class="info-item">
-        <span class="info-label">SCORE</span>
-        <span class="info-value score" id="score">0</span>
-    </div>
-    <!-- BEST se mueve a la derecha del parlante -->
-    <div class="info-item">
-        <span class="info-label">BEST</span>
-        <span class="info-value best" id="best">0</span>
-    </div>
-    <div class="sound-toggle-container">
-        <button class="sound-toggle" id="soundToggle">🔊</button>
-    </div>
-</div>
+        <div class="game-info">
+            <div class="info-item">
+                <span class="info-label">LIVES</span>
+                <span class="info-value lives" id="lives">10</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">SCORE</span>
+                <span class="info-value score" id="score">0</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">BEST</span>
+                <span class="info-value best" id="best">0</span>
+            </div>
+            <div class="sound-toggle-container">
+                <button class="sound-toggle" id="soundToggle">🔊</button>
+            </div>
+        </div>
         
         <div class="game-area">
             <canvas id="gameCanvas" width="400" height="380"></canvas>
@@ -550,7 +547,7 @@
         }
     }
 
-    // Projectile class
+    // Projectile class - CON CORRECCIONES PARA BUG DE COLISIONES REPETITIVAS
     class Projectile {
         constructor(x, y, angle) {
             this.x = x;
@@ -561,10 +558,21 @@
             this.vx = this.speed * Math.cos(this.angle);
             this.vy = -this.speed * Math.sin(this.angle);
             this.active = true;
-            this.lastTopBounce = 0; // Para evitar loops verticales
+            this.lastTopBounce = 0;
+            
+            // NUEVO: Propiedades para prevenir colisiones repetitivas
+            this.lastWallCollisionTime = 0;
+            this.lastTopCollisionTime = 0;
+            this.lastPaddleCollisionTime = 0;
+            this.minCollisionInterval = 100; // ms entre colisiones del mismo tipo
+            this.collisionCooldown = 50; // ms mínimo entre cualquier colisión
+            this.lastAnyCollisionTime = 0;
         }
         
         update() {
+            const currentTime = Date.now();
+            
+            // Mover la pelota
             this.x += this.vx;
             this.y += this.vy;
             
@@ -578,18 +586,37 @@
                 this.vy *= ratio;
             }
             
-            // Bounce on side walls
-            if (this.x - this.radius <= 0 || this.x + this.radius >= canvas.width) {
+            // Bounce on side walls CON COOLDOWN
+            if ((this.x - this.radius <= 0 || this.x + this.radius >= canvas.width) && 
+                currentTime - this.lastWallCollisionTime > this.minCollisionInterval &&
+                currentTime - this.lastAnyCollisionTime > this.collisionCooldown) {
+                
+                // Ajustar posición para evitar quedarse atascado en la pared
+                if (this.x - this.radius <= 0) {
+                    this.x = this.radius + 1;
+                } else {
+                    this.x = canvas.width - this.radius - 1;
+                }
+                
                 this.vx = -this.vx;
                 const randomFactor = (Math.random() * 0.4) - 0.2;
                 this.vy += randomFactor;
                 score++;
                 scoreElement.textContent = score;
                 playBounceSound('wall');
+                
+                // Actualizar tiempos de colisión
+                this.lastWallCollisionTime = currentTime;
+                this.lastAnyCollisionTime = currentTime;
             }
             
-            // Bounce on top wall - MEJORADO PARA EVITAR LOOPS VERTICALES
-            if (this.y - this.radius <= 0) {
+            // Bounce on top wall CON COOLDOWN
+            if (this.y - this.radius <= 0 && 
+                currentTime - this.lastTopCollisionTime > this.minCollisionInterval &&
+                currentTime - this.lastAnyCollisionTime > this.collisionCooldown) {
+                
+                // Ajustar posición para evitar quedarse atascado en el techo
+                this.y = this.radius + 1;
                 this.vy = -this.vy;
                 
                 // Calcular dirección hacia el centro
@@ -597,11 +624,8 @@
                 const distanceToCenter = centerX - this.x;
                 
                 // Aplicar fuerza hacia el centro más fuerte
-                // Cuanto más lejos del centro, más fuerte el empuje
-                const pushStrength = 0.8; // Fuerza aumentada para evitar loops
+                const pushStrength = 0.8;
                 const directionToCenter = distanceToCenter > 0 ? 1 : -1;
-                
-                // Aplicar empuje proporcional a la distancia del centro
                 const normalizedDistance = Math.abs(distanceToCenter) / (canvas.width / 2);
                 const pushForce = pushStrength * normalizedDistance * directionToCenter;
                 
@@ -623,20 +647,28 @@
                 scoreElement.textContent = score;
                 playBounceSound('top');
                 
-                this.lastTopBounce = Date.now();
+                // Actualizar tiempos de colisión
+                this.lastTopCollisionTime = currentTime;
+                this.lastAnyCollisionTime = currentTime;
+                this.lastTopBounce = currentTime;
             }
             
-            // Bounce on paddle
+            // Bounce on paddle CON COOLDOWN
             if (this.y + this.radius >= paddle.y && 
                 this.y - this.radius <= paddle.y + paddle.height &&
                 this.x + this.radius >= paddle.x && 
-                this.x - this.radius <= paddle.x + paddle.width) {
+                this.x - this.radius <= paddle.x + paddle.width &&
+                currentTime - this.lastPaddleCollisionTime > this.minCollisionInterval &&
+                currentTime - this.lastAnyCollisionTime > this.collisionCooldown) {
+                
+                // Ajustar posición para evitar múltiples colisiones
+                this.y = paddle.y - this.radius - 1;
                 
                 const hitPos = (this.x - (paddle.x + paddle.width / 2)) / (paddle.width / 2);
                 this.vy = -Math.abs(this.vy);
                 this.vx = hitPos * 4;
                 
-                // Evitar ángulos demasiado verticales después del rebote en paleta
+                // Evitar ángulos demasiado verticales
                 if (Math.abs(this.vx) < 1.0) {
                     this.vx = this.vx < 0 ? -1.0 : 1.0;
                 }
@@ -651,9 +683,13 @@
                 score++;
                 scoreElement.textContent = score;
                 playBounceSound('paddle');
+                
+                // Actualizar tiempos de colisión
+                this.lastPaddleCollisionTime = currentTime;
+                this.lastAnyCollisionTime = currentTime;
             }
             
-            // Check collision with circles
+            // Check collision with circles (sin cooldown para permitir múltiples colisiones rápidas)
             for (let i = 0; i < circles.length; i++) {
                 const circle = circles[i];
                 const dx = this.x - circle.x;
@@ -666,6 +702,7 @@
                     this.vx = speed * Math.cos(angle);
                     this.vy = speed * Math.sin(angle);
                     
+                    // Ajustar posición para separar del círculo
                     const overlap = this.radius + circle.radius - distance;
                     this.x += overlap * Math.cos(angle);
                     this.y += overlap * Math.sin(angle);
@@ -673,10 +710,9 @@
                     circle.grow();
                     score += 5;
                     scoreElement.textContent = score;
-                    
                     playBounceSound('circle');
                     
-                    // Pequeño ajuste para evitar loops con círculos en la parte superior
+                    // Pequeño ajuste para evitar loops
                     if (circle.y < canvas.height * 0.3) {
                         const centerX = canvas.width / 2;
                         const pushToCenter = (centerX - this.x) * 0.1 / canvas.width;
@@ -689,13 +725,14 @@
                         scoreElement.textContent = score;
                         i--;
                     }
+                    
+                    this.lastAnyCollisionTime = currentTime;
                     break;
                 }
             }
             
-            // Detectar y corregir loops verticales
+            // Detectar y corregir movimiento casi vertical
             if (Math.abs(this.vx) < 0.3 && Math.abs(this.vy) > 2) {
-                // Si el movimiento es casi vertical, agregar empuje lateral aleatorio
                 const randomPush = (Math.random() - 0.5) * 1.5;
                 this.vx += randomPush;
             }
@@ -936,7 +973,7 @@
         animate();
     }
 
-    // Animation loop
+    // Animation loop con verificación adicional para velocidad baja
     function animate() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         
@@ -957,6 +994,15 @@
         if (projectile && projectile.active && !allCirclesCleared) {
             projectile.update();
             projectile.draw();
+            
+            // Verificación adicional de velocidad mínima para evitar atascos
+            const speed = Math.sqrt(projectile.vx * projectile.vx + projectile.vy * projectile.vy);
+            if (speed < 2.0 && speed > 0) { // Más bajo que el mínimo normal
+                // Si está muy lento, dar un pequeño impulso aleatorio
+                const boost = 1.5;
+                projectile.vx += (Math.random() - 0.5) * boost;
+                projectile.vy += (Math.random() - 0.5) * boost;
+            }
         }
         
         if (circles.length === 0 && !allCirclesCleared && gameActive) {
