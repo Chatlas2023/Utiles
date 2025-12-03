@@ -1193,47 +1193,48 @@
     }
 
     // Complete level
-    function completeLevel() {
-        gameActive = false;
+    // Complete level
+// Complete level
+function completeLevel() {
+    gameActive = false;
+    
+    // Actualizar mejor puntuación si es necesario
+    if (score > bestScore) {
+        bestScore = score;
+        localStorage.setItem('bestScore', bestScore);
+        bestElement.textContent = bestScore;
+    }
+    
+    // Lanzar confeti
+    launchConfetti();
+    
+    // Si es el último nivel, mostrar mensaje especial
+    if (currentLevel === maxLevels) {
+        levelCompleteElement.innerHTML = `
+            <h2>🎉 Congratulations! 🎉</h2>
+            <p>You've completed all levels!</p>
+            <p>Final score: <strong>${score}</strong></p>
+            <p>Total lives remaining: <strong>${lives}</strong></p>
+            <button class="next-level-btn" id="playAgainBtn">PLAY AGAIN FROM LEVEL 1</button>
+        `;
         
-        // Mostrar pantalla de nivel completado
+        levelCompleteElement.style.display = 'block';
+        
+        // Agregar event listener después de actualizar el HTML
+        setTimeout(() => {
+            document.getElementById('playAgainBtn').addEventListener('click', function() {
+                currentLevel = 1;
+                initGame(currentLevel);
+            });
+        }, 100);
+    } else {
+        // Mostrar pantalla normal de nivel completado
         completedLevelElement.textContent = currentLevel;
         levelScoreElement.textContent = score;
         remainingLivesElement.textContent = lives;
         levelCompleteElement.style.display = 'block';
-        
-        // Actualizar mejor puntuación si es necesario
-        if (score > bestScore) {
-            bestScore = score;
-            localStorage.setItem('bestScore', bestScore);
-            bestElement.textContent = bestScore;
-        }
-        
-        // Lanzar confeti
-        launchConfetti();
     }
-
-    // Go to next level
-    function nextLevel() {
-        if (currentLevel < maxLevels) {
-            currentLevel++;
-            initGame(currentLevel);
-        } else {
-            // Si es el último nivel, mostrar mensaje especial
-            levelCompleteElement.innerHTML = `
-                <h2>Congratulations!</h2>
-                <p>You've completed all levels!</p>
-                <p>Final score: <strong>${score}</strong></p>
-                <p>Total lives remaining: <strong>${lives}</strong></p>
-                <button class="next-level-btn" id="playAgainBtn">PLAY AGAIN FROM LEVEL 1</button>
-            `;
-            
-            document.getElementById('playAgainBtn').addEventListener('click', function() {
-                currentLevel = 1;
-                initGame(currentLevel);
-            }, { once: true });
-        }
-    }
+}
 
     // End game
     function endGame() {
@@ -1304,10 +1305,19 @@
         }
     });
 
-    nextLevelBtn.addEventListener('click', function() {
-        levelCompleteElement.style.display = 'none';
-        nextLevel();
-    });
+nextLevelBtn.addEventListener('click', function() {
+    levelCompleteElement.style.display = 'none';
+    
+    // Si no es el último nivel, pasar al siguiente
+    if (currentLevel < maxLevels) {
+        currentLevel++;
+        initGame(currentLevel);
+    } else {
+        // Si es el último nivel, reiniciar desde el nivel 1
+        currentLevel = 1;
+        initGame(currentLevel);
+    }
+});
 
     menuBtn.addEventListener('click', function() {
         // Para futura implementación de selección de niveles
