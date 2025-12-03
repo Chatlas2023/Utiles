@@ -132,7 +132,7 @@
         }
         
         .fire-btn {
-            background: linear-gradient(to right, #0fce7c, #4cd9a1); /* CAMBIADO A VERDE */
+            background: linear-gradient(to right, #0fce7c, #4cd9a1);
             color: white;
             border: none;
             padding: 12px 30px;
@@ -140,7 +140,7 @@
             border-radius: 50px;
             cursor: pointer;
             transition: all 0.3s ease;
-            box-shadow: 0 5px 15px rgba(15, 206, 124, 0.4); /* CAMBIADO A VERDE */
+            box-shadow: 0 5px 15px rgba(15, 206, 124, 0.4);
             margin-bottom: 12px;
             width: 100%;
             max-width: 200px;
@@ -149,7 +149,7 @@
         
         .fire-btn:active {
             transform: scale(0.95);
-            box-shadow: 0 2px 10px rgba(15, 206, 124, 0.6); /* CAMBIADO A VERDE */
+            box-shadow: 0 2px 10px rgba(15, 206, 124, 0.6);
         }
         
         .game-over {
@@ -400,10 +400,10 @@
             gainNode.connect(audioContext.destination);
             
             if (type === 'paddle') {
-                // SONIDO FIJO PARA LA PALETA - siempre el mismo
+                // SONIDO FIJO PARA LA PALETA - siempre el mismo (MÁS TENUE)
                 oscillator.frequency.value = PADDLE_FREQUENCY;
                 oscillator.type = 'square';
-                gainNode.gain.value = 0.18;
+                gainNode.gain.value = 0.12; // REDUCIDO: de 0.18 a 0.12 (33% más tenue)
                 gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.12);
                 oscillator.start();
                 oscillator.stop(audioContext.currentTime + 0.12);
@@ -551,6 +551,7 @@
             this.vx = this.speed * Math.cos(this.angle);
             this.vy = -this.speed * Math.sin(this.angle);
             this.active = true;
+            this.lastTopBounce = 0; // Para evitar loops verticales
         }
         
         update() {
@@ -577,19 +578,42 @@
                 playBounceSound('wall');
             }
             
-            // Bounce on top wall
+            // Bounce on top wall - MEJORADO PARA EVITAR LOOPS VERTICALES
             if (this.y - this.radius <= 0) {
                 this.vy = -this.vy;
                 
+                // Calcular dirección hacia el centro
                 const centerX = canvas.width / 2;
-                const directionToCenter = centerX - this.x > 0 ? 1 : -1;
-                const randomFactor = (Math.random() * 0.5) * directionToCenter;
+                const distanceToCenter = centerX - this.x;
                 
-                this.vx += randomFactor;
+                // Aplicar fuerza hacia el centro más fuerte
+                // Cuanto más lejos del centro, más fuerte el empuje
+                const pushStrength = 0.8; // Fuerza aumentada para evitar loops
+                const directionToCenter = distanceToCenter > 0 ? 1 : -1;
+                
+                // Aplicar empuje proporcional a la distancia del centro
+                const normalizedDistance = Math.abs(distanceToCenter) / (canvas.width / 2);
+                const pushForce = pushStrength * normalizedDistance * directionToCenter;
+                
+                this.vx += pushForce;
+                
+                // Asegurar que no sea completamente vertical
+                if (Math.abs(this.vx) < 0.5) {
+                    this.vx = this.vx < 0 ? -0.5 : 0.5;
+                }
+                
+                // Limitar velocidad máxima en X para control
+                const maxVX = 4;
+                if (Math.abs(this.vx) > maxVX) {
+                    this.vx = this.vx > 0 ? maxVX : -maxVX;
+                }
+                
                 this.y = this.radius + 1;
                 score++;
                 scoreElement.textContent = score;
                 playBounceSound('top');
+                
+                this.lastTopBounce = Date.now();
             }
             
             // Bounce on paddle
@@ -602,6 +626,11 @@
                 this.vy = -Math.abs(this.vy);
                 this.vx = hitPos * 4;
                 
+                // Evitar ángulos demasiado verticales después del rebote en paleta
+                if (Math.abs(this.vx) < 1.0) {
+                    this.vx = this.vx < 0 ? -1.0 : 1.0;
+                }
+                
                 const speedAfterBounce = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
                 if (speedAfterBounce < minSpeed) {
                     const ratio = minSpeed / speedAfterBounce;
@@ -611,7 +640,7 @@
                 
                 score++;
                 scoreElement.textContent = score;
-                playBounceSound('paddle'); // SIEMPRE EL MISMO SONIDO
+                playBounceSound('paddle');
             }
             
             // Check collision with circles
@@ -637,6 +666,13 @@
                     
                     playBounceSound('circle');
                     
+                    // Pequeño ajuste para evitar loops con círculos en la parte superior
+                    if (circle.y < canvas.height * 0.3) {
+                        const centerX = canvas.width / 2;
+                        const pushToCenter = (centerX - this.x) * 0.1 / canvas.width;
+                        this.vx += pushToCenter;
+                    }
+                    
                     if (circle.shouldDisappear()) {
                         circles.splice(i, 1);
                         score += 20;
@@ -645,6 +681,13 @@
                     }
                     break;
                 }
+            }
+            
+            // Detectar y corregir loops verticales
+            if (Math.abs(this.vx) < 0.3 && Math.abs(this.vy) > 2) {
+                // Si el movimiento es casi vertical, agregar empuje lateral aleatorio
+                const randomPush = (Math.random() - 0.5) * 1.5;
+                this.vx += randomPush;
             }
             
             // Lose life only if touches ground and is active
@@ -723,6 +766,11 @@
             
             if (y - radius <= 0) {
                 vy = -vy;
+                // Simular empuje hacia el centro
+                const centerX = canvas.width / 2;
+                const pushToCenter = (centerX - x) * 0.1;
+                vx += pushToCenter;
+                
                 ctx.fillStyle = '#ffd166';
                 ctx.beginPath();
                 ctx.arc(x, y, 4, 0, Math.PI * 2);
@@ -773,7 +821,12 @@
             y += vy * 8;
             
             if (x - radius <= 0 || x + radius >= canvas.width) vx = -vx;
-            if (y - radius <= 0) vy = -vy;
+            if (y - radius <= 0) {
+                vy = -vy;
+                const centerX = canvas.width / 2;
+                const pushToCenter = (centerX - x) * 0.1;
+                vx += pushToCenter;
+            }
             if (y + radius >= canvas.height) break;
             
             ctx.lineTo(x, y);
