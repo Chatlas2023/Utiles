@@ -1649,5 +1649,45 @@
     
     window.addEventListener('resize', resizeCanvas);
 </script>
+    <!-- Añade esto antes de </body> -->
+<div class="debug-buttons">
+    <button class="debug-btn" onclick="skipLevel()">Skip Level</button>
+    <button class="debug-btn" onclick="restartLevel()">Restart</button>
+</div>
+
+<style>
+.debug-buttons {
+    position: fixed;
+    bottom: 10px;
+    left: 10px;
+    display: flex;
+    gap: 10px;
+    z-index: 100;
+}
+.debug-btn {
+    background: rgba(155, 93, 229, 0.8);
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    opacity: 0.7;
+}
+</style>
+
+<script>
+// Añade esto al final del script
+function skipLevel() {
+    if (gameActive && !allCirclesCleared) {
+        allCirclesCleared = true;
+        completeLevel();
+    }
+}
+
+function restartLevel() {
+    initGame(currentLevel);
+}
+</script>
 </body>
 </html>
