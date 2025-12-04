@@ -1021,9 +1021,11 @@
                 const dy = this.y - circle.y;
                 const distance = Math.sqrt(dx * dx + dy * dy);
                 
-                if (distance < this.radius + circle.radius) {
+                              if (distance < this.radius + circle.radius) {
                     const angle = Math.atan2(dy, dx);
                     const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+                    
+                    // Mantener la velocidad actual pero en dirección de rebote
                     this.vx = speed * Math.cos(angle);
                     this.vy = speed * Math.sin(angle);
                     
@@ -1063,10 +1065,20 @@
                         }
                     }
                     
+                    // LIMITAR VELOCIDAD DESPUÉS DE LA COLISIÓN CON CÍRCULOS
+                    const currentSpeedAfterCollision = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+                    const maxSpeed = 6; // Mismo límite que en otras partes
+                    
+                    if (currentSpeedAfterCollision > maxSpeed) {
+                        const ratio = maxSpeed / currentSpeedAfterCollision;
+                        this.vx *= ratio;
+                        this.vy *= ratio;
+                    }
+                    
                     this.lastAnyCollisionTime = currentTime;
                     break;
                 }
-            }
+            
             
             if (Math.abs(this.vx) < 0.3 && Math.abs(this.vy) > 2) {
                 const randomPush = (Math.random() - 0.5) * 1.5;
@@ -1099,6 +1111,7 @@
     }
 
     // NUEVO: Función para dividir proyectil
+    // NUEVO: Función para dividir proyectil
     function splitProjectile(originalProjectile) {
         if (!multiProjectileActive) return;
         
@@ -1106,7 +1119,7 @@
         const angle1 = Math.atan2(originalProjectile.vy, originalProjectile.vx) + Math.PI / 12;
         const angle2 = Math.atan2(originalProjectile.vy, originalProjectile.vx) - Math.PI / 12;
         
-        const speed = 5; // Velocidad fija para proyectiles divididos
+        const speed = 4.5; // MISMA velocidad que los proyectiles normales
         
         const projectile1 = new Projectile(
             originalProjectile.x,
