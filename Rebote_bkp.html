@@ -446,7 +446,74 @@
     let controlsMode = 'angle';
     let allCirclesCleared = false;
     let soundEnabled = true;
+    // NUEVO: Verificación de fecha de expiración
+const expirationDate = new Date('2026-3-1'); // CAMBIA ESTA FECHA A LA QUE DESEES
+const currentDate = new Date();
+
+if (currentDate > expirationDate) {
+    // Mostrar mensaje de prueba vencida y deshabilitar el juego
+    const trialExpired = document.createElement('div');
+    trialExpired.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.95);
+        color: #e94560;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        text-align: center;
+        padding: 20px;
+    `;
     
+    trialExpired.innerHTML = `
+        <h2 style="font-size: 2.5rem; margin-bottom: 20px; color: #e94560;">⏰ Periodo de Prueba Vencido</h2>
+        <p style="font-size: 1.2rem; margin-bottom: 30px; color: #fff;">
+            Esta versión de prueba ha expirado.<br>
+            Fecha límite: ${expirationDate.toLocaleDateString()}
+        </p>
+        <p style="font-size: 1rem; color: #ffd166;">
+            Contacta al desarrollador para obtener la versión completa.
+        </p>
+    `;
+    
+    document.body.appendChild(trialExpired);
+    
+    // Deshabilitar todos los controles del juego
+    gameActive = false;
+    
+    // Detener cualquier animación en curso
+    if (animationId) {
+        cancelAnimationFrame(animationId);
+    }
+    
+    // Deshabilitar botones y controles
+    const disableElement = (element) => {
+        if (element) {
+            element.disabled = true;
+            element.style.opacity = '0.5';
+            element.style.cursor = 'not-allowed';
+        }
+    };
+    
+    disableElement(fireBtn);
+    disableElement(angleSlider);
+    disableElement(restartBtn);
+    disableElement(continueBtn);
+    disableElement(nextLevelBtn);
+    disableElement(menuBtn);
+    disableElement(soundToggle);
+    
+    // También puedes deshabilitar el canvas
+    canvas.style.opacity = '0.3';
+    canvas.style.pointerEvents = 'none';
+    
+}
     // NUEVO: Variables para niveles
     let currentLevel = 1;
     const maxLevels = 3;
