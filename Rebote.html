@@ -371,7 +371,7 @@
 </head>
 <body>
     <div class="container">
-        <div class="level-indicator" id="levelIndicator">Level 1</div>
+        <div class="level-indicator" id="levelIndicator">Level 1: Classic</div>
         
         <div class="game-info">
             <div class="info-item">
@@ -475,16 +475,16 @@
     let specialCircle = null;
     let multiProjectileActive = false;
     let multiProjectileTimer = 0;
-    let projectiles = [];  // Array para múltiples proyectiles
+    let projectiles = [];
     let colorChangeTimer = 0;
-    const MULTI_PROJECTILE_DURATION = 10000; // 10 segundos en milisegundos
-    const COLOR_CHANGE_INTERVAL = 500; // Medio segundo
+    const MULTI_PROJECTILE_DURATION = 15000; // 15 segundos
+    const COLOR_CHANGE_INTERVAL = 500;
 
-    // NUEVO: Verificación de fecha de expiración
-    const expirationDate = new Date('2026-3-1'); // CAMBIA ESTA FECHA A LA QUE DESEES
+    // Verificación de fecha de expiración (deshabilitada temporalmente)
+    const expirationDate = new Date('2026-3-1');
     const currentDate = new Date();
 
-    if (false) { // Temporalmente deshabilitado para pruebas
+    if (false) { // Deshabilitado para pruebas
         // Mostrar mensaje de prueba vencida y deshabilitar el juego
         const trialExpired = document.createElement('div');
         trialExpired.style.cssText = `
@@ -546,10 +546,9 @@
         // También puedes deshabilitar el canvas
         canvas.style.opacity = '0.3';
         canvas.style.pointerEvents = 'none';
-        
     }
     
-    // NUEVO: Variables para niveles
+    // Variables para niveles
     let currentLevel = 1;
     const maxLevels = 4;
     
@@ -565,7 +564,7 @@
     const levelNames = {
         1: "Classic",
         2: "Moving Circles",
-        3: "Small Paddle Challenge",
+        3: "Small Paddle",
         4: "Multi-Projectile"
     };
     
@@ -583,8 +582,16 @@
     const paddleSizes = {
         1: 50,
         2: 50,
-        3: 35,  // Paleta más pequeña en nivel 3
-        4: 50   // Paleta normal en nivel 4
+        3: 35,
+        4: 50
+    };
+    
+    // Velocidades de proyectil por nivel
+    const projectileSpeeds = {
+        1: 4.0,
+        2: 4.2,
+        3: 4.5,
+        4: 3.8  // Nivel 4 más lento
     };
     
     // Controls
@@ -598,26 +605,23 @@
     levelElement.textContent = currentLevel;
     levelIndicator.textContent = `Level ${currentLevel}: ${levelNames[currentLevel]}`;
 
-    // Musical notes frequencies (G4 to C5 scale)
+    // Musical notes frequencies
     const musicalNotes = {
-        'G4': 392.00,  // Sol
-        'A4': 440.00,  // La
-        'B4': 493.88,  // Si
-        'C5': 523.25   // Do (high)
+        'G4': 392.00,
+        'A4': 440.00,
+        'B4': 493.88,
+        'C5': 523.25
     };
     
-    // Select notes within 400-600Hz range
     const bounceNotes = [
-        musicalNotes['G4'],  // 392 Hz
-        musicalNotes['A4'],  // 440 Hz  
-        musicalNotes['B4'],  // 494 Hz
-        musicalNotes['C5']   // 523 Hz
+        musicalNotes['G4'],
+        musicalNotes['A4'],
+        musicalNotes['B4'],
+        musicalNotes['C5']
     ];
     
     // Create audio context
     const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-    
-    // Fixed frequency for paddle sound
     const PADDLE_FREQUENCY = 440.00;
     
     // Function to play bounce sound with musical notes
@@ -715,7 +719,7 @@
         return true;
     }
 
-    // Circle class CON MOVIMIENTO PARA NIVEL 2+
+    // Circle class
     class Circle {
         constructor(x, y, diameter, level = 1, isSpecial = false) {
             this.x = x;
@@ -727,11 +731,11 @@
             this.isSpecial = isSpecial;
             this.activeTime = 0;
             
-            // NUEVO: Propiedades de movimiento para nivel 2+
+            // Propiedades de movimiento para nivel 2+
             if (level >= 2) {
-                this.speedX = (Math.random() - 0.5) * 2;
-                this.speedY = (Math.random() - 0.5) * 1.5;
-                this.maxSpeed = 1.5 + (level * 0.3);
+                this.speedX = (Math.random() - 0.5) * 1.5;
+                this.speedY = (Math.random() - 0.5) * 1.0;
+                this.maxSpeed = 1.2 + (level * 0.2);
             } else {
                 this.speedX = 0;
                 this.speedY = 0;
@@ -745,6 +749,15 @@
         }
         
         getRandomColor() {
+            if (this.isSpecial) {
+                // Colores brillantes para el círculo especial
+                const specialColors = [
+                    '#ffff00', '#ffdd00', '#ffaa00',
+                    '#00ffff', '#ff00ff', '#ffff80'
+                ];
+                return specialColors[Math.floor(Math.random() * specialColors.length)];
+            }
+            
             const colors = [
                 '#e94560', '#ff6b6b', '#ff9e7d',
                 '#0fce7c', '#4cd9a1', '#1dd1a1',
@@ -757,23 +770,23 @@
         }
         
         update(deltaTime) {
-            // NUEVO: Actualizar tiempo para círculo especial
+            // Actualizar tiempo para círculo especial
             if (this.isSpecial) {
                 this.activeTime += deltaTime;
                 
-                // Cambiar color cada medio segundo durante los primeros 10 segundos
+                // Cambiar color cada medio segundo durante los primeros 15 segundos
                 if (this.activeTime <= MULTI_PROJECTILE_DURATION) {
                     if (Math.floor(this.activeTime / COLOR_CHANGE_INTERVAL) !== 
                         Math.floor((this.activeTime - deltaTime) / COLOR_CHANGE_INTERVAL)) {
                         this.color = this.getRandomColor();
                     }
                 } else {
-                    // Después de 10 segundos, color fijo
+                    // Después de 15 segundos, color fijo
                     this.color = '#ffff00';
                 }
             }
             
-            // NUEVO: Mover círculos en niveles 2+
+            // Mover círculos en niveles 2+
             if (this.level >= 2) {
                 this.x += this.speedX;
                 this.y += this.speedY;
@@ -802,20 +815,21 @@
             ctx.beginPath();
             ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
             
-            // NUEVO: Efecto especial para círculo especial
+            // Efecto especial para círculo especial
             if (this.isSpecial) {
                 if (this.activeTime <= MULTI_PROJECTILE_DURATION) {
-                    // Brillar durante los primeros 10 segundos
+                    // Brillar durante los primeros 15 segundos
                     ctx.shadowColor = this.color;
-                    ctx.shadowBlur = 15;
+                    ctx.shadowBlur = 20;
                     ctx.fillStyle = this.color;
                 } else {
                     // Efecto más tenue después
-                    ctx.shadowBlur = 5;
+                    ctx.shadowBlur = 10;
                     ctx.fillStyle = this.color;
                 }
             } else {
                 ctx.fillStyle = this.color;
+                ctx.shadowBlur = 0;
             }
             
             ctx.fill();
@@ -825,22 +839,31 @@
             ctx.lineWidth = 2;
             ctx.stroke();
             
-            // NUEVO: Indicador visual especial para nivel 4
+            // Indicador visual especial para nivel 4
             if (this.isSpecial) {
                 ctx.beginPath();
-                ctx.arc(this.x, this.y, this.radius + 5, 0, Math.PI * 2);
-                ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
-                ctx.lineWidth = 1;
+                ctx.arc(this.x, this.y, this.radius + 8, 0, Math.PI * 2);
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+                ctx.lineWidth = 2;
                 ctx.setLineDash([5, 3]);
                 ctx.stroke();
                 ctx.setLineDash([]);
                 
                 // Dibujar símbolo de multiplicación
                 ctx.fillStyle = '#fff';
-                ctx.font = 'bold 16px Arial';
+                ctx.font = 'bold 18px Arial';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
                 ctx.fillText('×2', this.x, this.y);
+                
+                // Dibujar anillo exterior brillante
+                if (this.activeTime <= MULTI_PROJECTILE_DURATION) {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.radius + 12, 0, Math.PI * 2);
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+                }
             } else if (this.level >= 2) {
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, this.radius + 3, 0, Math.PI * 2);
@@ -873,18 +896,19 @@
         }
     }
 
-    // Projectile class CON VELOCIDAD AJUSTADA
+    // Projectile class - VELOCIDAD AJUSTADA POR NIVEL
     class Projectile {
-        constructor(x, y, angle) {
+        constructor(x, y, angle, isChild = false) {
             this.x = x;
             this.y = y;
             this.radius = 5;
-            this.speed = 4.5; // REDUCIDO de 5 a 4.5 para velocidad consistente
+            this.speed = isChild ? 3.5 : projectileSpeeds[currentLevel] || 4.0; // Más lento para hijos
             this.angle = (180 - angle) * Math.PI / 180;
             this.vx = this.speed * Math.cos(this.angle);
             this.vy = -this.speed * Math.sin(this.angle);
             this.active = true;
-            this.lastTopBounce = 0;
+            this.isChild = isChild;
+            this.color = isChild ? '#ffaa00' : '#ffffff';
             
             this.lastWallCollisionTime = 0;
             this.lastTopCollisionTime = 0;
@@ -893,254 +917,268 @@
             this.collisionCooldown = 50;
             this.lastAnyCollisionTime = 0;
         }
+        
         update() {
-    const currentTime = Date.now();
-    
-    this.x += this.vx;
-    this.y += this.vy;
-    
-    const minSpeed = 3.5;
-    const maxSpeed = 6;
-    const currentSpeed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
-    
-    // Asegurar velocidad mínima
-    if (currentSpeed < minSpeed && currentSpeed > 0) {
-        const ratio = minSpeed / currentSpeed;
-        this.vx *= ratio;
-        this.vy *= ratio;
-    }
-    
-    // Limitar velocidad máxima
-    if (currentSpeed > maxSpeed) {
-        const ratio = maxSpeed / currentSpeed;
-        this.vx *= ratio;
-        this.vy *= ratio;
-    }
-    
-    // Colisión con paredes
-    if ((this.x - this.radius <= 0 || this.x + this.radius >= canvas.width) && 
-        currentTime - this.lastWallCollisionTime > this.minCollisionInterval &&
-        currentTime - this.lastAnyCollisionTime > this.collisionCooldown) {
-        
-        if (this.x - this.radius <= 0) {
-            this.x = this.radius + 1;
-        } else {
-            this.x = canvas.width - this.radius - 1;
-        }
-        
-        this.vx = -this.vx;
-        const randomFactor = (Math.random() * 0.4) - 0.2;
-        this.vy += randomFactor;
-        score++;
-        scoreElement.textContent = score;
-        playBounceSound('wall');
-        
-        this.lastWallCollisionTime = currentTime;
-        this.lastAnyCollisionTime = currentTime;
-    }
-    
-    // Colisión con techo
-    if (this.y - this.radius <= 0 && 
-        currentTime - this.lastTopCollisionTime > this.minCollisionInterval &&
-        currentTime - this.lastAnyCollisionTime > this.collisionCooldown) {
-        
-        this.y = this.radius + 1;
-        this.vy = -this.vy;
-        
-        const centerX = canvas.width / 2;
-        const distanceToCenter = centerX - this.x;
-        const pushStrength = 0.8;
-        const directionToCenter = distanceToCenter > 0 ? 1 : -1;
-        const normalizedDistance = Math.abs(distanceToCenter) / (canvas.width / 2);
-        const pushForce = pushStrength * normalizedDistance * directionToCenter;
-        
-        this.vx += pushForce;
-        
-        if (Math.abs(this.vx) < 0.5) {
-            this.vx = this.vx < 0 ? -0.5 : 0.5;
-        }
-        
-        const maxVX = 4;
-        if (Math.abs(this.vx) > maxVX) {
-            this.vx = this.vx > 0 ? maxVX : -maxVX;
-        }
-        
-        this.y = this.radius + 1;
-        score++;
-        scoreElement.textContent = score;
-        playBounceSound('top');
-        
-        this.lastTopCollisionTime = currentTime;
-        this.lastAnyCollisionTime = currentTime;
-        this.lastTopBounce = currentTime;
-    }
-    
-    // Colisión con paddle
-    if (this.y + this.radius >= paddle.y && 
-        this.y - this.radius <= paddle.y + paddle.height &&
-        this.x + this.radius >= paddle.x && 
-        this.x - this.radius <= paddle.x + paddle.width &&
-        currentTime - this.lastPaddleCollisionTime > this.minCollisionInterval &&
-        currentTime - this.lastAnyCollisionTime > this.collisionCooldown) {
-        
-        this.y = paddle.y - this.radius - 1;
-        
-        const hitPos = (this.x - (paddle.x + paddle.width / 2)) / (paddle.width / 2);
-        this.vy = -Math.abs(this.vy);
-        this.vx = hitPos * 3;
-        
-        if (Math.abs(this.vx) < 1.0) {
-            this.vx = this.vx < 0 ? -1.0 : 1.0;
-        }
-        
-        const speedAfterBounce = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
-        
-        // Asegurar velocidad mínima después del rebote
-        if (speedAfterBounce < minSpeed) {
-            const ratio = minSpeed / speedAfterBounce;
-            this.vx *= ratio;
-            this.vy *= ratio;
-        }
-        
-        // Limitar velocidad máxima después del rebote
-        if (speedAfterBounce > maxSpeed) {
-            const ratio = maxSpeed / speedAfterBounce;
-            this.vx *= ratio;
-            this.vy *= ratio;
-        }
-        
-        score++;
-        scoreElement.textContent = score;
-        playBounceSound('paddle');
-        
-        this.lastPaddleCollisionTime = currentTime;
-        this.lastAnyCollisionTime = currentTime;
-    }
-    
-    // Colisión con círculos
-    for (let i = 0; i < circles.length; i++) {
-        const circle = circles[i];
-        const dx = this.x - circle.x;
-        const dy = this.y - circle.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        
-        if (distance < this.radius + circle.radius) {
-            const angle = Math.atan2(dy, dx);
-            const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+            const currentTime = Date.now();
             
-            // Mantener la velocidad actual pero en dirección de rebote
-            this.vx = speed * Math.cos(angle);
-            this.vy = speed * Math.sin(angle);
+            this.x += this.vx;
+            this.y += this.vy;
             
-            const overlap = this.radius + circle.radius - distance;
-            this.x += overlap * Math.cos(angle);
-            this.y += overlap * Math.sin(angle);
+            const minSpeed = this.isChild ? 2.5 : 3.0;
+            const maxSpeed = this.isChild ? 4.5 : 5.5;
+            const currentSpeed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
             
-            circle.grow();
-            score += 5;
-            scoreElement.textContent = score;
-            playBounceSound('circle');
-            
-            // Lógica para círculo especial en nivel 4
-            if (circle.isSpecial && circle.activeTime <= MULTI_PROJECTILE_DURATION) {
-                if (!multiProjectileActive) {
-                    multiProjectileActive = true;
-                    multiProjectileTimer = Date.now();
-                }
-                splitProjectile(this);
-            }
-            
-            if (circle.y < canvas.height * 0.3) {
-                const centerX = canvas.width / 2;
-                const pushToCenter = (centerX - this.x) * 0.1 / canvas.width;
-                this.vx += pushToCenter;
-            }
-            
-            if (circle.shouldDisappear()) {
-                circles.splice(i, 1);
-                score += 20;
-                scoreElement.textContent = score;
-                i--;
-                
-                // Actualizar círculo especial si se elimina
-                if (circle.isSpecial) {
-                    specialCircle = null;
-                }
-            }
-            
-            // LIMITAR VELOCIDAD DESPUÉS DE LA COLISIÓN CON CÍRCULOS
-            const currentSpeedAfterCollision = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
-            
-            if (currentSpeedAfterCollision > maxSpeed) {
-                const ratio = maxSpeed / currentSpeedAfterCollision;
+            // Asegurar velocidad mínima
+            if (currentSpeed < minSpeed && currentSpeed > 0) {
+                const ratio = minSpeed / currentSpeed;
                 this.vx *= ratio;
                 this.vy *= ratio;
             }
             
-            this.lastAnyCollisionTime = currentTime;
-            break;
+            // Limitar velocidad máxima (MÁS BAJO PARA NIVEL 4)
+            if (currentSpeed > maxSpeed) {
+                const ratio = maxSpeed / currentSpeed;
+                this.vx *= ratio;
+                this.vy *= ratio;
+            }
+            
+            // Colisión con paredes
+            if ((this.x - this.radius <= 0 || this.x + this.radius >= canvas.width) && 
+                currentTime - this.lastWallCollisionTime > this.minCollisionInterval &&
+                currentTime - this.lastAnyCollisionTime > this.collisionCooldown) {
+                
+                if (this.x - this.radius <= 0) {
+                    this.x = this.radius + 1;
+                } else {
+                    this.x = canvas.width - this.radius - 1;
+                }
+                
+                this.vx = -this.vx;
+                const randomFactor = (Math.random() * 0.3) - 0.15;
+                this.vy += randomFactor;
+                score++;
+                scoreElement.textContent = score;
+                playBounceSound('wall');
+                
+                this.lastWallCollisionTime = currentTime;
+                this.lastAnyCollisionTime = currentTime;
+            }
+            
+            // Colisión con techo
+            if (this.y - this.radius <= 0 && 
+                currentTime - this.lastTopCollisionTime > this.minCollisionInterval &&
+                currentTime - this.lastAnyCollisionTime > this.collisionCooldown) {
+                
+                this.y = this.radius + 1;
+                this.vy = -this.vy;
+                
+                const centerX = canvas.width / 2;
+                const distanceToCenter = centerX - this.x;
+                const pushStrength = 0.6;
+                const directionToCenter = distanceToCenter > 0 ? 1 : -1;
+                const normalizedDistance = Math.abs(distanceToCenter) / (canvas.width / 2);
+                const pushForce = pushStrength * normalizedDistance * directionToCenter;
+                
+                this.vx += pushForce;
+                
+                if (Math.abs(this.vx) < 0.4) {
+                    this.vx = this.vx < 0 ? -0.4 : 0.4;
+                }
+                
+                const maxVX = 3.5;
+                if (Math.abs(this.vx) > maxVX) {
+                    this.vx = this.vx > 0 ? maxVX : -maxVX;
+                }
+                
+                score++;
+                scoreElement.textContent = score;
+                playBounceSound('top');
+                
+                this.lastTopCollisionTime = currentTime;
+                this.lastAnyCollisionTime = currentTime;
+            }
+            
+            // Colisión con paddle
+            if (this.y + this.radius >= paddle.y && 
+                this.y - this.radius <= paddle.y + paddle.height &&
+                this.x + this.radius >= paddle.x && 
+                this.x - this.radius <= paddle.x + paddle.width &&
+                currentTime - this.lastPaddleCollisionTime > this.minCollisionInterval &&
+                currentTime - this.lastAnyCollisionTime > this.collisionCooldown) {
+                
+                this.y = paddle.y - this.radius - 1;
+                
+                const hitPos = (this.x - (paddle.x + paddle.width / 2)) / (paddle.width / 2);
+                this.vy = -Math.abs(this.vy);
+                this.vx = hitPos * 2.5;
+                
+                if (Math.abs(this.vx) < 0.8) {
+                    this.vx = this.vx < 0 ? -0.8 : 0.8;
+                }
+                
+                const speedAfterBounce = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+                
+                // Asegurar velocidad mínima después del rebote
+                if (speedAfterBounce < minSpeed) {
+                    const ratio = minSpeed / speedAfterBounce;
+                    this.vx *= ratio;
+                    this.vy *= ratio;
+                }
+                
+                // Limitar velocidad máxima después del rebote
+                if (speedAfterBounce > maxSpeed) {
+                    const ratio = maxSpeed / speedAfterBounce;
+                    this.vx *= ratio;
+                    this.vy *= ratio;
+                }
+                
+                score++;
+                scoreElement.textContent = score;
+                playBounceSound('paddle');
+                
+                this.lastPaddleCollisionTime = currentTime;
+                this.lastAnyCollisionTime = currentTime;
+            }
+            
+            // Colisión con círculos
+            for (let i = 0; i < circles.length; i++) {
+                const circle = circles[i];
+                const dx = this.x - circle.x;
+                const dy = this.y - circle.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                if (distance < this.radius + circle.radius) {
+                    const angle = Math.atan2(dy, dx);
+                    const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+                    
+                    // Mantener la velocidad actual pero en dirección de rebote
+                    this.vx = speed * Math.cos(angle);
+                    this.vy = speed * Math.sin(angle);
+                    
+                    const overlap = this.radius + circle.radius - distance;
+                    this.x += overlap * Math.cos(angle);
+                    this.y += overlap * Math.sin(angle);
+                    
+                    circle.grow();
+                    score += 5;
+                    scoreElement.textContent = score;
+                    playBounceSound('circle');
+                    
+                    // Lógica para círculo especial en nivel 4
+                    if (circle.isSpecial && circle.activeTime <= MULTI_PROJECTILE_DURATION) {
+                        if (!multiProjectileActive) {
+                            multiProjectileActive = true;
+                            multiProjectileTimer = Date.now();
+                        }
+                        splitProjectile(this);
+                    }
+                    
+                    if (circle.y < canvas.height * 0.3) {
+                        const centerX = canvas.width / 2;
+                        const pushToCenter = (centerX - this.x) * 0.1 / canvas.width;
+                        this.vx += pushToCenter;
+                    }
+                    
+                    if (circle.shouldDisappear()) {
+                        circles.splice(i, 1);
+                        score += 20;
+                        scoreElement.textContent = score;
+                        i--;
+                        
+                        // Actualizar círculo especial si se elimina
+                        if (circle.isSpecial) {
+                            specialCircle = null;
+                        }
+                    }
+                    
+                    // Limitar velocidad después de la colisión
+                    const currentSpeedAfterCollision = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+                    
+                    if (currentSpeedAfterCollision > maxSpeed) {
+                        const ratio = maxSpeed / currentSpeedAfterCollision;
+                        this.vx *= ratio;
+                        this.vy *= ratio;
+                    }
+                    
+                    this.lastAnyCollisionTime = currentTime;
+                    break;
+                }
+            }
+            
+            // Añadir impulso aleatorio si está muy lento
+            if (Math.abs(this.vx) < 0.3 && Math.abs(this.vy) > 2) {
+                const randomPush = (Math.random() - 0.5) * 1.0;
+                this.vx += randomPush;
+            }
+            
+            // Verificar si el proyectil cayó al fondo
+            if (this.y + this.radius >= canvas.height && this.active) {
+                this.active = false;
+                lives--;
+                livesElement.textContent = lives;
+                
+                // Permitir nuevo disparo en cualquier nivel
+                setControlsMode('angle');
+                
+                if (lives <= 0) {
+                    endGame();
+                }
+            }
         }
-    }
-    
-    // Añadir impulso aleatorio si está muy lento verticalmente
-    if (Math.abs(this.vx) < 0.3 && Math.abs(this.vy) > 2) {
-        const randomPush = (Math.random() - 0.5) * 1.5;
-        this.vx += randomPush;
-    }
-    
-    // Verificar si el proyectil cayó al fondo
-    if (this.y + this.radius >= canvas.height && this.active) {
-        this.active = false;
-        lives--;
-        livesElement.textContent = lives;
-        
-        // Permitir nuevo disparo en cualquier nivel
-        setControlsMode('angle');
-        
-        if (lives <= 0) {
-            endGame();
-        }
-    }
-}
         
         draw() {
             ctx.beginPath();
             ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-            ctx.fillStyle = '#fff';
+            ctx.fillStyle = this.color;
             ctx.fill();
-            ctx.strokeStyle = '#e94560';
+            
+            if (this.isChild) {
+                ctx.strokeStyle = '#ff6600';
+                ctx.shadowColor = '#ffaa00';
+                ctx.shadowBlur = 10;
+            } else {
+                ctx.strokeStyle = '#e94560';
+                ctx.shadowBlur = 0;
+            }
+            
             ctx.lineWidth = 2;
             ctx.stroke();
+            ctx.shadowBlur = 0;
         }
     }
 
-    // NUEVO: Función para dividir proyectil
-    // NUEVO: Función para dividir proyectil
+    // Función para dividir proyectil - CORREGIDA
     function splitProjectile(originalProjectile) {
-        if (!multiProjectileActive) return;
+        if (!multiProjectileActive || projectiles.length >= 6) return; // Límite de 6 proyectiles
         
-        // Crear dos nuevos proyectiles con ángulos ligeramente diferentes
-        const angle1 = Math.atan2(originalProjectile.vy, originalProjectile.vx) + Math.PI / 12;
-        const angle2 = Math.atan2(originalProjectile.vy, originalProjectile.vx) - Math.PI / 12;
+        // Calcular ángulos para dividir
+        const currentAngle = Math.atan2(originalProjectile.vy, originalProjectile.vx);
+        const angle1 = currentAngle + Math.PI / 8;  // 22.5 grados
+        const angle2 = currentAngle - Math.PI / 8;  // -22.5 grados
         
-        const speed = 4.5; // MISMA velocidad que los proyectiles normales
+        const speed = 3.5; // Velocidad reducida para proyectiles hijos
         
+        // Crear primer proyectil hijo
         const projectile1 = new Projectile(
             originalProjectile.x,
             originalProjectile.y,
-            90 - (angle1 * 180 / Math.PI)
+            90 - (angle1 * 180 / Math.PI),
+            true
         );
         projectile1.vx = speed * Math.cos(angle1);
         projectile1.vy = speed * Math.sin(angle1);
         
+        // Crear segundo proyectil hijo
         const projectile2 = new Projectile(
             originalProjectile.x,
             originalProjectile.y,
-            90 - (angle2 * 180 / Math.PI)
+            90 - (angle2 * 180 / Math.PI),
+            true
         );
         projectile2.vx = speed * Math.cos(angle2);
         projectile2.vy = speed * Math.sin(angle2);
         
+        // Añadir a la lista de proyectiles
         projectiles.push(projectile1, projectile2);
         
         // Reproducir sonido especial
@@ -1152,12 +1190,12 @@
                 oscillator.connect(gainNode);
                 gainNode.connect(audioContext.destination);
                 
-                oscillator.frequency.value = 523.25 * 1.2;
+                oscillator.frequency.value = 523.25 * 1.5;
                 oscillator.type = 'sawtooth';
-                gainNode.gain.value = 0.2;
-                gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.15);
+                gainNode.gain.value = 0.15;
+                gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.2);
                 oscillator.start();
-                oscillator.stop(audioContext.currentTime + 0.15);
+                oscillator.stop(audioContext.currentTime + 0.2);
             } catch (e) {
                 console.log("Audio not available:", e);
             }
@@ -1172,7 +1210,7 @@
         ctx.lineWidth = 2;
         ctx.strokeRect(paddle.x, paddle.y, paddle.width, paddle.height);
         
-        // NUEVO: Indicador visual para paleta pequeña
+        // Indicador visual para paleta pequeña
         if (currentLevel === 3) {
             ctx.fillStyle = 'rgba(233, 69, 96, 0.3)';
             ctx.fillRect(paddle.x - 10, paddle.y, 10, paddle.height);
@@ -1197,7 +1235,7 @@
         const startX = paddle.x + paddle.width / 2;
         const startY = paddle.y - 5;
         const radius = 5;
-        const speed = 4.5; // Actualizado para coincidir con la velocidad del proyectil
+        const speed = projectileSpeeds[currentLevel] || 4.0;
         const angleRad = (180 - angle) * Math.PI / 180;
         
         let x = startX;
@@ -1209,9 +1247,9 @@
         ctx.beginPath();
         ctx.moveTo(x, y);
         
-        for (let i = 0; i < 20; i++) {
-            x += vx * 8;
-            y += vy * 8;
+        for (let i = 0; i < 25; i++) {
+            x += vx * 7;
+            y += vy * 7;
             
             if (x - radius <= 0 || x + radius >= canvas.width) {
                 vx = -vx;
@@ -1224,7 +1262,7 @@
             if (y - radius <= 0) {
                 vy = -vy;
                 const centerX = canvas.width / 2;
-                const pushToCenter = (centerX - x) * 0.1;
+                const pushToCenter = (centerX - x) * 0.08;
                 vx += pushToCenter;
                 
                 ctx.fillStyle = '#ffd166';
@@ -1240,7 +1278,7 @@
                 
                 vy = -Math.abs(vy);
                 const hitPos = (x - (paddle.x + paddle.width / 2)) / (paddle.width / 2);
-                vx = hitPos * 3;
+                vx = hitPos * 2.5;
             }
             
             if (y + radius >= canvas.height) {
@@ -1272,15 +1310,15 @@
         vx = speed * Math.cos(angleRad);
         vy = -speed * Math.sin(angleRad);
         
-        for (let i = 0; i < 20; i++) {
-            x += vx * 8;
-            y += vy * 8;
+        for (let i = 0; i < 25; i++) {
+            x += vx * 7;
+            y += vy * 7;
             
             if (x - radius <= 0 || x + radius >= canvas.width) vx = -vx;
             if (y - radius <= 0) {
                 vy = -vy;
                 const centerX = canvas.width / 2;
-                const pushToCenter = (centerX - x) * 0.1;
+                const pushToCenter = (centerX - x) * 0.08;
                 vx += pushToCenter;
             }
             if (y + radius >= canvas.height) break;
@@ -1303,60 +1341,81 @@
         ctx.stroke();
     }
 
-    // Initialize circles for current level
+    // Initialize circles for current level - CORREGIDA
     function initCirclesForLevel() {
         circles = [];
         specialCircle = null;
         const maxAttempts = 100;
         let circleCount = 4 + Math.floor(currentLevel / 2);
         
-        // NUEVO: Configuración especial para nivel 4
+        // Configuración especial para nivel 4
         if (currentLevel === 4) {
             circleCount = 5;
-        }
-        
-        for (let i = 0; i < circleCount; i++) {
-            let attempts = 0;
-            let validPosition = false;
-            let newCircle;
             
-            while (!validPosition && attempts < maxAttempts) {
-                const diameter = Math.floor(Math.random() * 25) + 30;
-                const x = Math.random() * (canvas.width - diameter * 2) + diameter;
-                const y = Math.random() * (canvas.height * 0.4) + 40;
+            // Primero crear el círculo especial en una posición visible
+            const specialDiameter = 40;
+            const specialX = canvas.width / 2;
+            const specialY = canvas.height * 0.3;
+            
+            const special = new Circle(specialX, specialY, specialDiameter, currentLevel, true);
+            circles.push(special);
+            specialCircle = special;
+            
+            // Crear círculos normales
+            for (let i = 1; i < circleCount; i++) {
+                let attempts = 0;
+                let validPosition = false;
+                let newCircle;
                 
-                const isSpecial = (currentLevel === 4 && i === 0);
-                
-                newCircle = new Circle(x, y, diameter, currentLevel, isSpecial);
-                
-                if (isValidPosition(newCircle, circles)) {
-                    validPosition = true;
-                    circles.push(newCircle);
+                while (!validPosition && attempts < maxAttempts) {
+                    const diameter = Math.floor(Math.random() * 25) + 30;
+                    const x = Math.random() * (canvas.width - diameter * 2) + diameter;
+                    const y = Math.random() * (canvas.height * 0.3) + 60;
                     
-                    if (isSpecial) {
-                        specialCircle = newCircle;
+                    newCircle = new Circle(x, y, diameter, currentLevel, false);
+                    
+                    if (isValidPosition(newCircle, circles)) {
+                        validPosition = true;
+                        circles.push(newCircle);
                     }
+                    
+                    attempts++;
+                }
+            }
+        } else {
+            // Niveles normales 1-3
+            for (let i = 0; i < circleCount; i++) {
+                let attempts = 0;
+                let validPosition = false;
+                let newCircle;
+                
+                while (!validPosition && attempts < maxAttempts) {
+                    const diameter = Math.floor(Math.random() * 25) + 30;
+                    const x = Math.random() * (canvas.width - diameter * 2) + diameter;
+                    const y = Math.random() * (canvas.height * 0.4) + 40;
+                    
+                    newCircle = new Circle(x, y, diameter, currentLevel, false);
+                    
+                    if (isValidPosition(newCircle, circles)) {
+                        validPosition = true;
+                        circles.push(newCircle);
+                    }
+                    
+                    attempts++;
                 }
                 
-                attempts++;
-            }
-            
-            if (!validPosition) {
-                const diameter = 30;
-                const x = (i % 2) * (canvas.width / 2) + canvas.width / 4;
-                const y = Math.floor(i / 2) * (canvas.height / 4) + canvas.height / 6;
-                const isSpecial = (currentLevel === 4 && i === 0);
-                
-                newCircle = new Circle(x, y, diameter, currentLevel, isSpecial);
-                circles.push(newCircle);
-                
-                if (isSpecial) {
-                    specialCircle = newCircle;
+                if (!validPosition) {
+                    const diameter = 30;
+                    const x = (i % 2) * (canvas.width / 2) + canvas.width / 4;
+                    const y = Math.floor(i / 2) * (canvas.height / 4) + canvas.height / 6;
+                    
+                    newCircle = new Circle(x, y, diameter, currentLevel, false);
+                    circles.push(newCircle);
                 }
             }
         }
         
-        // NUEVO: Resetear temporizadores para nivel 4
+        // Resetear temporizadores para nivel 4
         if (currentLevel === 4) {
             multiProjectileActive = false;
             multiProjectileTimer = 0;
@@ -1430,7 +1489,7 @@
         animate();
     }
 
-    // Animation loop
+    // Animation loop - CORREGIDA
     let lastTime = 0;
     function animate(currentTime = 0) {
         const deltaTime = currentTime - lastTime;
@@ -1453,52 +1512,74 @@
         updatePaddle();
         drawPaddle();
         
-        // NUEVO: Actualizar múltiples proyectiles en nivel 4
-// NUEVO: Actualizar múltiples proyectiles en nivel 4
-if (currentLevel === 4 && projectiles.length > 0) {
-    for (let i = projectiles.length - 1; i >= 0; i--) {
-        const proj = projectiles[i];
-        if (proj.active) {
-            proj.update();
-            proj.draw();
+        // Actualizar múltiples proyectiles en nivel 4
+        if (currentLevel === 4) {
+            for (let i = projectiles.length - 1; i >= 0; i--) {
+                const proj = projectiles[i];
+                if (proj.active) {
+                    proj.update();
+                    proj.draw();
+                    
+                    if (!proj.active) {
+                        projectiles.splice(i, 1);
+                    }
+                } else {
+                    projectiles.splice(i, 1);
+                }
+            }
             
-            if (!proj.active) {
-                projectiles.splice(i, 1);
-                // Verificar si todos los proyectiles se perdieron
-                if (projectiles.length === 0 && (!projectile || !projectile.active)) {
+            // Verificar si hay proyectil principal activo
+            if (projectile && projectile.active) {
+                projectile.update();
+                projectile.draw();
+                
+                if (!projectile.active) {
+                    projectile = null;
+                    // Solo cambiar modo si no hay proyectiles hijos activos
+                    if (projectiles.length === 0) {
+                        setControlsMode('angle');
+                    }
+                }
+            } else if (projectiles.length === 0) {
+                setControlsMode('angle');
+            }
+        } else {
+            // Niveles normales 1-3
+            if (projectile && projectile.active && !allCirclesCleared) {
+                projectile.update();
+                projectile.draw();
+                
+                if (!projectile.active) {
+                    projectile = null;
                     setControlsMode('angle');
                 }
             }
         }
-    }
-}
-
-if (projectile && projectile.active && !allCirclesCleared) {
-    projectile.update();
-    projectile.draw();
-    
-    const speed = Math.sqrt(projectile.vx * projectile.vx + projectile.vy * projectile.vy);
-    if (speed < 2.0 && speed > 0) {
-        const boost = 1.5;
-        projectile.vx += (Math.random() - 0.5) * boost;
-        projectile.vy += (Math.random() - 0.5) * boost;
-    }
-    
-    if (!projectile.active) {
-        projectile = null;
-        setControlsMode('angle');
-    }
-}
         
-        // NUEVO: Dibujar indicador de tiempo para círculo especial
+        // Dibujar indicador de tiempo para círculo especial
         if (currentLevel === 4 && specialCircle && specialCircle.activeTime <= MULTI_PROJECTILE_DURATION) {
             const timeLeft = MULTI_PROJECTILE_DURATION - specialCircle.activeTime;
             const secondsLeft = Math.ceil(timeLeft / 1000);
             
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-            ctx.font = 'bold 12px Arial';
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+            ctx.font = 'bold 14px Arial';
             ctx.textAlign = 'center';
-            ctx.fillText(`×2 active: ${secondsLeft}s`, canvas.width / 2, 20);
+            ctx.fillText(`×2 Power: ${secondsLeft}s`, canvas.width / 2, 25);
+            
+            // Dibujar barra de tiempo
+            const barWidth = 200;
+            const barHeight = 8;
+            const barX = (canvas.width - barWidth) / 2;
+            const barY = 35;
+            const progress = timeLeft / MULTI_PROJECTILE_DURATION;
+            
+            // Fondo de la barra
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+            ctx.fillRect(barX, barY, barWidth, barHeight);
+            
+            // Barra de progreso
+            ctx.fillStyle = progress > 0.5 ? '#0fce7c' : progress > 0.2 ? '#ffd166' : '#e94560';
+            ctx.fillRect(barX, barY, barWidth * progress, barHeight);
         }
         
         if (circles.length === 0 && !allCirclesCleared && gameActive) {
@@ -1680,7 +1761,8 @@ if (projectile && projectile.active && !allCirclesCleared) {
                 projectile = new Projectile(
                     paddle.x + paddle.width / 2,
                     paddle.y - 5,
-                    currentAngle
+                    currentAngle,
+                    false
                 );
                 
                 if (currentLevel === 4) {
