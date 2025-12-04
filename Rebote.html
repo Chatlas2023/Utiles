@@ -348,6 +348,25 @@
             border-radius: 20px;
             display: inline-block;
         }
+        
+        .debug-buttons {
+            position: fixed;
+            bottom: 10px;
+            left: 10px;
+            display: flex;
+            gap: 10px;
+            z-index: 100;
+        }
+        .debug-btn {
+            background: rgba(155, 93, 229, 0.8);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
     </style>
 </head>
 <body>
@@ -406,6 +425,11 @@
         <p>Lives remaining: <span id="remainingLives">10</span></p>
         <button class="next-level-btn" id="nextLevelBtn">NEXT LEVEL</button>
         <button class="restart-btn" style="margin-top: 10px;" id="menuBtn">LEVEL SELECT</button>
+    </div>
+    
+    <div class="debug-buttons">
+        <button class="debug-btn" onclick="skipLevel()">Skip Level</button>
+        <button class="debug-btn" onclick="restartLevel()">Restart</button>
     </div>
 
 <script>
@@ -849,13 +873,13 @@
         }
     }
 
-    // Projectile class
+    // Projectile class CON VELOCIDAD AJUSTADA
     class Projectile {
         constructor(x, y, angle) {
             this.x = x;
             this.y = y;
             this.radius = 5;
-            this.speed = 5;
+            this.speed = 4.5; // REDUCIDO de 5 a 4.5 para velocidad consistente
             this.angle = (180 - angle) * Math.PI / 180;
             this.vx = this.speed * Math.cos(this.angle);
             this.vy = -this.speed * Math.sin(this.angle);
@@ -877,10 +901,19 @@
             this.y += this.vy;
             
             const minSpeed = 3.5;
+            const maxSpeed = 6; // Velocidad máxima
             const currentSpeed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
             
+            // Asegurar velocidad mínima
             if (currentSpeed < minSpeed && currentSpeed > 0) {
                 const ratio = minSpeed / currentSpeed;
+                this.vx *= ratio;
+                this.vy *= ratio;
+            }
+            
+            // Limitar velocidad máxima
+            if (currentSpeed > maxSpeed) {
+                const ratio = maxSpeed / currentSpeed;
                 this.vx *= ratio;
                 this.vy *= ratio;
             }
@@ -952,15 +985,24 @@
                 
                 const hitPos = (this.x - (paddle.x + paddle.width / 2)) / (paddle.width / 2);
                 this.vy = -Math.abs(this.vy);
-                this.vx = hitPos * 4;
+                this.vx = hitPos * 3; // REDUCIDO de 4 a 3 para velocidad más controlada
                 
                 if (Math.abs(this.vx) < 1.0) {
                     this.vx = this.vx < 0 ? -1.0 : 1.0;
                 }
                 
                 const speedAfterBounce = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+                
+                // Asegurar velocidad mínima después del rebote
                 if (speedAfterBounce < minSpeed) {
                     const ratio = minSpeed / speedAfterBounce;
+                    this.vx *= ratio;
+                    this.vy *= ratio;
+                }
+                
+                // Limitar velocidad máxima después del rebote
+                if (speedAfterBounce > maxSpeed) {
+                    const ratio = maxSpeed / speedAfterBounce;
                     this.vx *= ratio;
                     this.vy *= ratio;
                 }
@@ -1064,7 +1106,7 @@
         const angle1 = Math.atan2(originalProjectile.vy, originalProjectile.vx) + Math.PI / 12;
         const angle2 = Math.atan2(originalProjectile.vy, originalProjectile.vx) - Math.PI / 12;
         
-        const speed = Math.sqrt(originalProjectile.vx * originalProjectile.vx + originalProjectile.vy * originalProjectile.vy);
+        const speed = 5; // Velocidad fija para proyectiles divididos
         
         const projectile1 = new Projectile(
             originalProjectile.x,
@@ -1138,7 +1180,7 @@
         const startX = paddle.x + paddle.width / 2;
         const startY = paddle.y - 5;
         const radius = 5;
-        const speed = 5;
+        const speed = 4.5; // Actualizado para coincidir con la velocidad del proyectil
         const angleRad = (180 - angle) * Math.PI / 180;
         
         let x = startX;
@@ -1181,7 +1223,7 @@
                 
                 vy = -Math.abs(vy);
                 const hitPos = (x - (paddle.x + paddle.width / 2)) / (paddle.width / 2);
-                vx = hitPos * 4;
+                vx = hitPos * 3;
             }
             
             if (y + radius >= canvas.height) {
@@ -1395,7 +1437,6 @@
         drawPaddle();
         
         // NUEVO: Actualizar múltiples proyectiles en nivel 4
-        // NUEVO: Actualizar múltiples proyectiles en nivel 4
         if (currentLevel === 4 && projectiles.length > 0) {
             for (let i = projectiles.length - 1; i >= 0; i--) {
                 const proj = projectiles[i];
@@ -1580,12 +1621,13 @@
     window.addEventListener('keydown', function(e) {
         if (e.key === 'ArrowLeft') keys.left = true;
         if (e.key === 'ArrowRight') keys.right = true;
-        if (e.key === 'n' || e.key === 'N') {e.preventDefault();
-        if (gameActive && !allCirclesCleared) {
-            allCirclesCleared = true;
-            completeLevel();
+        if (e.key === 'n' || e.key === 'N') {
+            e.preventDefault();
+            if (gameActive && !allCirclesCleared) {
+                allCirclesCleared = true;
+                completeLevel();
+            }
         }
-    }
     });
 
     window.addEventListener('keyup', function(e) {
@@ -1638,6 +1680,18 @@
         initGame(currentLevel);
     });
 
+    // Funciones para debug
+    function skipLevel() {
+        if (gameActive && !allCirclesCleared) {
+            allCirclesCleared = true;
+            completeLevel();
+        }
+    }
+
+    function restartLevel() {
+        initGame(currentLevel);
+    }
+
     window.addEventListener('load', function() {
         resizeCanvas();
         initGame(currentLevel);
@@ -1652,46 +1706,6 @@
     });
     
     window.addEventListener('resize', resizeCanvas);
-</script>
-    <!-- Añade esto antes de </body> -->
-<div class="debug-buttons">
-    <button class="debug-btn" onclick="skipLevel()">Skip Level</button>
-    <button class="debug-btn" onclick="restartLevel()">Restart</button>
-</div>
-
-<style>
-.debug-buttons {
-    position: fixed;
-    bottom: 10px;
-    left: 10px;
-    display: flex;
-    gap: 10px;
-    z-index: 100;
-}
-.debug-btn {
-    background: rgba(155, 93, 229, 0.8);
-    color: white;
-    border: none;
-    padding: 10px 15px;
-    border-radius: 20px;
-    cursor: pointer;
-    font-size: 0.9rem;
-    opacity: 0.7;
-}
-</style>
-
-<script>
-// Añade esto al final del script
-function skipLevel() {
-    if (gameActive && !allCirclesCleared) {
-        allCirclesCleared = true;
-        completeLevel();
-    }
-}
-
-function restartLevel() {
-    initGame(currentLevel);
-}
 </script>
 </body>
 </html>
