@@ -1036,9 +1036,8 @@
                 lives--;
                 livesElement.textContent = lives;
                 
-                if (currentLevel !== 4) {
-                    setControlsMode('angle');
-                }
+                // Permitir nuevo disparo en cualquier nivel
+                setControlsMode('angle');
                 
                 if (lives <= 0) {
                     endGame();
@@ -1396,6 +1395,7 @@
         drawPaddle();
         
         // NUEVO: Actualizar múltiples proyectiles en nivel 4
+        // NUEVO: Actualizar múltiples proyectiles en nivel 4
         if (currentLevel === 4 && projectiles.length > 0) {
             for (let i = projectiles.length - 1; i >= 0; i--) {
                 const proj = projectiles[i];
@@ -1405,6 +1405,10 @@
                     
                     if (!proj.active) {
                         projectiles.splice(i, 1);
+                        // Verificar si todos los proyectiles se perdieron
+                        if (projectiles.length === 0 && projectile && !projectile.active) {
+                            setControlsMode('angle');
+                        }
                     }
                 }
             }
@@ -1421,7 +1425,7 @@
                 projectile.vy += (Math.random() - 0.5) * boost;
             }
             
-            if (!projectile.active && currentLevel === 4) {
+            if (!projectile.active) {
                 projectile = null;
                 setControlsMode('angle');
             }
