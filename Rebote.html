@@ -90,7 +90,7 @@
         
         .game-area {
             position: relative;
-            margin-bottom: 80px;
+            margin-bottom: 20px;
         }
         
         canvas {
@@ -102,11 +102,11 @@
             touch-action: none;
             width: 100%;
             max-width: 400px;
-            height: 380px;
+            height: 480px;
         }
         
         .controls {
-            margin-top: 90px;
+            margin-top: 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -576,7 +576,7 @@
         width: 50,
         height: 10,
         x: 175,
-        y: 370,
+        y: 470,
         speed: 5,
         color: '#ffffff'
     };
@@ -697,11 +697,11 @@
         const containerWidth = canvas.parentElement.clientWidth;
         const maxWidth = Math.min(400, containerWidth);
         canvas.width = maxWidth;
-        canvas.height = 380;
+        canvas.height = 480;
         
         paddle.width = paddleSizes[currentLevel] || 50;
         paddle.x = (canvas.width - paddle.width) / 2;
-        paddle.y = canvas.height - 10;
+        paddle.y = canvas.height - - 10;
     }
 
     // Check if circles overlap
