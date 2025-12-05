@@ -1123,19 +1123,30 @@
             }
             
             // Verificar si el proyectil cayó al fondo
-            if (this.y + this.radius >= canvas.height && this.active) {
-                this.active = false;
-                lives--;
-                livesElement.textContent = lives;
-                
-                // Permitir nuevo disparo en cualquier nivel
-                setControlsMode('angle');
-                
-                if (lives <= 0) {
-                    endGame();
-                }
-            }
+// Verificar si el proyectil cayó al fondo
+if (this.y + this.radius >= canvas.height && this.active) {
+    this.active = false;
+    
+    // NO restar vida inmediatamente en nivel 4 durante multi-proyectil
+    // Solo restar vida cuando TODOS los proyectiles hayan caído
+    if (currentLevel === 4) {
+        // Marcamos el proyectil como inactivo, pero no restamos vida todavía
+        this.active = false;
+        
+        // En nivel 4, solo restaremos vidas al final del ciclo de proyectiles
+        // Esta lógica se manejará en otra parte
+    } else {
+        lives--;
+        livesElement.textContent = lives;
+        
+        // Permitir nuevo disparo en cualquier nivel excepto 4
+        setControlsMode('angle');
+        
+        if (lives <= 0) {
+            endGame();
         }
+    }
+}
         
         draw() {
             ctx.beginPath();
@@ -1159,9 +1170,21 @@
     }
 
     // Función para dividir proyectil - CORREGIDA
-    function splitProjectile(originalProjectile) {
-        if (!multiProjectileActive || projectiles.length >= 6) return; // Límite de 6 proyectiles
-        
+function splitProjectile(originalProjectile) {
+    if (!multiProjectileActive || projectiles.length >= 6) return; // Límite de 6 proyectiles
+    
+    // Activar multi-proyectil
+    multiProjectileActive = true;
+    multiProjectileTimer = Date.now();
+    
+    // Forzar modo paleta
+    controlsMode = 'paddle';
+    angleSlider.min = 0;
+    angleSlider.max = canvas.width - paddle.width;
+    angleSlider.value = paddle.x;
+    angleLabel.innerHTML = '<span id="angleValue">Move</span>';
+    fireBtn.textContent = 'WAITING';
+    fireBtn.disabled = true;
         // Calcular ángulos para dividir
         const currentAngle = Math.atan2(originalProjectile.vy, originalProjectile.vx);
         const angle1 = currentAngle + Math.PI / 8;  // 22.5 grados
@@ -1212,6 +1235,19 @@
             }
         }
     }
+        function checkAllProjectilesGone() {
+    if (currentLevel !== 4 || !multiProjectileActive) return false;
+    
+    // Verificar proyectil principal
+    if (projectile && projectile.active) return false;
+    
+    // Verificar proyectiles hijos
+    for (let i = 0; i < projectiles.length; i++) {
+        if (projectiles[i].active) return false;
+    }
+    
+    return true;
+}
 
     // Draw paddle
     function drawPaddle() {
@@ -1435,6 +1471,10 @@
 
     // Function to change control mode
     function setControlsMode(mode) {
+            if (currentLevel === 4 && mode === 'angle' && 
+        ((projectile && projectile.active) || projectiles.length > 0)) {
+        return; // No cambiar el modo si hay proyectiles activos
+    }
         controlsMode = mode;
         if (mode === 'angle') {
             angleSlider.min = 0;
@@ -1475,6 +1515,10 @@
         score = 0;
         gameActive = true;
         allCirclesCleared = false;
+            // Reset variables específicas del nivel 4
+    multiProjectileActive = false;
+    multiProjectileTimer = 0;
+    projectiles = [];
         
         livesElement.textContent = lives;
         scoreElement.textContent = score;
