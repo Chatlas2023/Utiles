@@ -348,11 +348,30 @@
             border-radius: 20px;
             display: inline-block;
         }
+        
+        .debug-buttons {
+            position: fixed;
+            bottom: 10px;
+            left: 10px;
+            display: flex;
+            gap: 10px;
+            z-index: 100;
+        }
+        .debug-btn {
+            background: rgba(155, 93, 229, 0.8);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="level-indicator" id="levelIndicator">Level 1</div>
+        <div class="level-indicator" id="levelIndicator">Level 1: Classic</div>
         
         <div class="game-info">
             <div class="info-item">
@@ -407,6 +426,11 @@
         <button class="next-level-btn" id="nextLevelBtn">NEXT LEVEL</button>
         <button class="restart-btn" style="margin-top: 10px;" id="menuBtn">LEVEL SELECT</button>
     </div>
+    
+    <div class="debug-buttons">
+        <button class="debug-btn" onclick="skipLevel()">Skip Level</button>
+        <button class="debug-btn" onclick="restartLevel()">Restart</button>
+    </div>
 
 <script>
     // Get DOM elements
@@ -446,90 +470,102 @@
     let controlsMode = 'angle';
     let allCirclesCleared = false;
     let soundEnabled = true;
-    // NUEVO: Verificación de fecha de expiración
-const expirationDate = new Date('2026-3-1'); // CAMBIA ESTA FECHA A LA QUE DESEES
-const currentDate = new Date();
+    
+    // Variables para nivel 4
+    let specialCircle = null;
+    let multiProjectileActive = false;
+    let multiProjectileTimer = 0;
+    let projectiles = [];
+    let colorChangeTimer = 0;
+    const MULTI_PROJECTILE_DURATION = 15000; // 15 segundos
+    const COLOR_CHANGE_INTERVAL = 500;
 
-if (currentDate > expirationDate) {
-    // Mostrar mensaje de prueba vencida y deshabilitar el juego
-    const trialExpired = document.createElement('div');
-    trialExpired.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.95);
-        color: #e94560;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        z-index: 1000;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        text-align: center;
-        padding: 20px;
-    `;
-    
-    trialExpired.innerHTML = `
-        <h2 style="font-size: 2.5rem; margin-bottom: 20px; color: #e94560;">⏰ Periodo de Prueba Vencido</h2>
-        <p style="font-size: 1.2rem; margin-bottom: 30px; color: #fff;">
-            Esta versión de prueba ha expirado.<br>
-            Fecha límite: ${expirationDate.toLocaleDateString()}
-        </p>
-        <p style="font-size: 1rem; color: #ffd166;">
-            Contacta al desarrollador para obtener la versión completa.
-        </p>
-    `;
-    
-    document.body.appendChild(trialExpired);
-    
-    // Deshabilitar todos los controles del juego
-    gameActive = false;
-    
-    // Detener cualquier animación en curso
-    if (animationId) {
-        cancelAnimationFrame(animationId);
+    // Verificación de fecha de expiración (deshabilitada temporalmente)
+    const expirationDate = new Date('2026-3-1');
+    const currentDate = new Date();
+
+    if (false) { // Deshabilitado para pruebas
+        // Mostrar mensaje de prueba vencida y deshabilitar el juego
+        const trialExpired = document.createElement('div');
+        trialExpired.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            color: #e94560;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            text-align: center;
+            padding: 20px;
+        `;
+        
+        trialExpired.innerHTML = `
+            <h2 style="font-size: 2.5rem; margin-bottom: 20px; color: #e94560;">⏰ Periodo de Prueba Vencido</h2>
+            <p style="font-size: 1.2rem; margin-bottom: 30px; color: #fff;">
+                Esta versión de prueba ha expirado.<br>
+                Fecha límite: ${expirationDate.toLocaleDateString()}
+            </p>
+            <p style="font-size: 1rem; color: #ffd166;">
+                Contacta al desarrollador para obtener la versión completa.
+            </p>
+        `;
+        
+        document.body.appendChild(trialExpired);
+        
+        // Deshabilitar todos los controles del juego
+        gameActive = false;
+        
+        // Detener cualquier animación en curso
+        if (animationId) {
+            cancelAnimationFrame(animationId);
+        }
+        
+        // Deshabilitar botones y controles
+        const disableElement = (element) => {
+            if (element) {
+                element.disabled = true;
+                element.style.opacity = '0.5';
+                element.style.cursor = 'not-allowed';
+            }
+        };
+        
+        disableElement(fireBtn);
+        disableElement(angleSlider);
+        disableElement(restartBtn);
+        disableElement(continueBtn);
+        disableElement(nextLevelBtn);
+        disableElement(menuBtn);
+        disableElement(soundToggle);
+        
+        // También puedes deshabilitar el canvas
+        canvas.style.opacity = '0.3';
+        canvas.style.pointerEvents = 'none';
     }
     
-    // Deshabilitar botones y controles
-    const disableElement = (element) => {
-        if (element) {
-            element.disabled = true;
-            element.style.opacity = '0.5';
-            element.style.cursor = 'not-allowed';
-        }
-    };
-    
-    disableElement(fireBtn);
-    disableElement(angleSlider);
-    disableElement(restartBtn);
-    disableElement(continueBtn);
-    disableElement(nextLevelBtn);
-    disableElement(menuBtn);
-    disableElement(soundToggle);
-    
-    // También puedes deshabilitar el canvas
-    canvas.style.opacity = '0.3';
-    canvas.style.pointerEvents = 'none';
-    
-}
-    // NUEVO: Variables para niveles
+    // Variables para niveles
     let currentLevel = 1;
-    const maxLevels = 3;
+    const maxLevels = 4;
     
     // Temas de fondo por nivel
     const levelThemes = {
         1: ['#1a1a2e', '#16213e'], // Azul oscuro
         2: ['#2d1b3d', '#4a235a'], // Púrpura oscuro
-        3: ['#1b3d2d', '#235a4a']  // Verde oscuro
+        3: ['#1b3d2d', '#235a4a'], // Verde oscuro
+        4: ['#5d1b3d', '#8a235a']  // Magenta oscuro para nivel 4
     };
     
     // Nombres de niveles
     const levelNames = {
         1: "Classic",
         2: "Moving Circles",
-        3: "Small Paddle Challenge"
+        3: "Small Paddle",
+        4: "Multi-Projectile"
     };
     
     // Paddle variables
@@ -546,7 +582,16 @@ if (currentDate > expirationDate) {
     const paddleSizes = {
         1: 50,
         2: 50,
-        3: 35  // Paleta más pequeña en nivel 3
+        3: 35,
+        4: 50
+    };
+    
+    // Velocidades de proyectil por nivel
+    const projectileSpeeds = {
+        1: 4.0,
+        2: 4.2,
+        3: 4.5,
+        4: 3.8  // Nivel 4 más lento
     };
     
     // Controls
@@ -560,26 +605,23 @@ if (currentDate > expirationDate) {
     levelElement.textContent = currentLevel;
     levelIndicator.textContent = `Level ${currentLevel}: ${levelNames[currentLevel]}`;
 
-    // Musical notes frequencies (G4 to C5 scale)
+    // Musical notes frequencies
     const musicalNotes = {
-        'G4': 392.00,  // Sol
-        'A4': 440.00,  // La
-        'B4': 493.88,  // Si
-        'C5': 523.25   // Do (high)
+        'G4': 392.00,
+        'A4': 440.00,
+        'B4': 493.88,
+        'C5': 523.25
     };
     
-    // Select notes within 400-600Hz range
     const bounceNotes = [
-        musicalNotes['G4'],  // 392 Hz
-        musicalNotes['A4'],  // 440 Hz  
-        musicalNotes['B4'],  // 494 Hz
-        musicalNotes['C5']   // 523 Hz
+        musicalNotes['G4'],
+        musicalNotes['A4'],
+        musicalNotes['B4'],
+        musicalNotes['C5']
     ];
     
     // Create audio context
     const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-    
-    // Fixed frequency for paddle sound
     const PADDLE_FREQUENCY = 440.00;
     
     // Function to play bounce sound with musical notes
@@ -677,21 +719,23 @@ if (currentDate > expirationDate) {
         return true;
     }
 
-    // Circle class CON MOVIMIENTO PARA NIVEL 2+
+    // Circle class
     class Circle {
-        constructor(x, y, diameter, level = 1) {
+        constructor(x, y, diameter, level = 1, isSpecial = false) {
             this.x = x;
             this.y = y;
             this.diameter = diameter;
             this.radius = diameter / 2;
             this.color = this.getRandomColor();
             this.level = level;
+            this.isSpecial = isSpecial;
+            this.activeTime = 0;
             
-            // NUEVO: Propiedades de movimiento para nivel 2+
+            // Propiedades de movimiento para nivel 2+
             if (level >= 2) {
-                this.speedX = (Math.random() - 0.5) * 2; // Velocidad aleatoria entre -1 y 1
-                this.speedY = (Math.random() - 0.5) * 1.5;
-                this.maxSpeed = 1.5 + (level * 0.3);
+                this.speedX = (Math.random() - 0.5) * 1.5;
+                this.speedY = (Math.random() - 0.5) * 1.0;
+                this.maxSpeed = 1.2 + (level * 0.2);
             } else {
                 this.speedX = 0;
                 this.speedY = 0;
@@ -705,6 +749,15 @@ if (currentDate > expirationDate) {
         }
         
         getRandomColor() {
+            if (this.isSpecial) {
+                // Colores brillantes para el círculo especial
+                const specialColors = [
+                    '#ffff00', '#ffdd00', '#ffaa00',
+                    '#00ffff', '#ff00ff', '#ffff80'
+                ];
+                return specialColors[Math.floor(Math.random() * specialColors.length)];
+            }
+            
             const colors = [
                 '#e94560', '#ff6b6b', '#ff9e7d',
                 '#0fce7c', '#4cd9a1', '#1dd1a1',
@@ -716,8 +769,24 @@ if (currentDate > expirationDate) {
             return colors[Math.floor(Math.random() * colors.length)];
         }
         
-        update() {
-            // NUEVO: Mover círculos en niveles 2+
+        update(deltaTime) {
+            // Actualizar tiempo para círculo especial
+            if (this.isSpecial) {
+                this.activeTime += deltaTime;
+                
+                // Cambiar color cada medio segundo durante los primeros 15 segundos
+                if (this.activeTime <= MULTI_PROJECTILE_DURATION) {
+                    if (Math.floor(this.activeTime / COLOR_CHANGE_INTERVAL) !== 
+                        Math.floor((this.activeTime - deltaTime) / COLOR_CHANGE_INTERVAL)) {
+                        this.color = this.getRandomColor();
+                    }
+                } else {
+                    // Después de 15 segundos, color fijo
+                    this.color = '#ffff00';
+                }
+            }
+            
+            // Mover círculos en niveles 2+
             if (this.level >= 2) {
                 this.x += this.speedX;
                 this.y += this.speedY;
@@ -745,14 +814,57 @@ if (currentDate > expirationDate) {
         draw() {
             ctx.beginPath();
             ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-            ctx.fillStyle = this.color;
+            
+            // Efecto especial para círculo especial
+            if (this.isSpecial) {
+                if (this.activeTime <= MULTI_PROJECTILE_DURATION) {
+                    // Brillar durante los primeros 15 segundos
+                    ctx.shadowColor = this.color;
+                    ctx.shadowBlur = 20;
+                    ctx.fillStyle = this.color;
+                } else {
+                    // Efecto más tenue después
+                    ctx.shadowBlur = 10;
+                    ctx.fillStyle = this.color;
+                }
+            } else {
+                ctx.fillStyle = this.color;
+                ctx.shadowBlur = 0;
+            }
+            
             ctx.fill();
+            ctx.shadowBlur = 0;
+            
             ctx.strokeStyle = '#fff';
             ctx.lineWidth = 2;
             ctx.stroke();
             
-            // NUEVO: Indicador visual para círculos en movimiento
-            if (this.level >= 2) {
+            // Indicador visual especial para nivel 4
+            if (this.isSpecial) {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius + 8, 0, Math.PI * 2);
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([5, 3]);
+                ctx.stroke();
+                ctx.setLineDash([]);
+                
+                // Dibujar símbolo de multiplicación
+                ctx.fillStyle = '#fff';
+                ctx.font = 'bold 18px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('×2', this.x, this.y);
+                
+                // Dibujar anillo exterior brillante
+                if (this.activeTime <= MULTI_PROJECTILE_DURATION) {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.radius + 12, 0, Math.PI * 2);
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+                }
+            } else if (this.level >= 2) {
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, this.radius + 3, 0, Math.PI * 2);
                 ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
@@ -784,18 +896,19 @@ if (currentDate > expirationDate) {
         }
     }
 
-    // Projectile class
+    // Projectile class - VELOCIDAD AJUSTADA POR NIVEL
     class Projectile {
-        constructor(x, y, angle) {
+        constructor(x, y, angle, isChild = false) {
             this.x = x;
             this.y = y;
             this.radius = 5;
-            this.speed = 5;
+            this.speed = isChild ? 3.5 : projectileSpeeds[currentLevel] || 4.0; // Más lento para hijos
             this.angle = (180 - angle) * Math.PI / 180;
             this.vx = this.speed * Math.cos(this.angle);
             this.vy = -this.speed * Math.sin(this.angle);
             this.active = true;
-            this.lastTopBounce = 0;
+            this.isChild = isChild;
+            this.color = isChild ? '#ffaa00' : '#ffffff';
             
             this.lastWallCollisionTime = 0;
             this.lastTopCollisionTime = 0;
@@ -811,15 +924,25 @@ if (currentDate > expirationDate) {
             this.x += this.vx;
             this.y += this.vy;
             
-            const minSpeed = 3.5;
+            const minSpeed = this.isChild ? 2.5 : 3.0;
+            const maxSpeed = this.isChild ? 4.5 : 5.5;
             const currentSpeed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
             
+            // Asegurar velocidad mínima
             if (currentSpeed < minSpeed && currentSpeed > 0) {
                 const ratio = minSpeed / currentSpeed;
                 this.vx *= ratio;
                 this.vy *= ratio;
             }
             
+            // Limitar velocidad máxima (MÁS BAJO PARA NIVEL 4)
+            if (currentSpeed > maxSpeed) {
+                const ratio = maxSpeed / currentSpeed;
+                this.vx *= ratio;
+                this.vy *= ratio;
+            }
+            
+            // Colisión con paredes
             if ((this.x - this.radius <= 0 || this.x + this.radius >= canvas.width) && 
                 currentTime - this.lastWallCollisionTime > this.minCollisionInterval &&
                 currentTime - this.lastAnyCollisionTime > this.collisionCooldown) {
@@ -831,7 +954,7 @@ if (currentDate > expirationDate) {
                 }
                 
                 this.vx = -this.vx;
-                const randomFactor = (Math.random() * 0.4) - 0.2;
+                const randomFactor = (Math.random() * 0.3) - 0.15;
                 this.vy += randomFactor;
                 score++;
                 scoreElement.textContent = score;
@@ -841,6 +964,7 @@ if (currentDate > expirationDate) {
                 this.lastAnyCollisionTime = currentTime;
             }
             
+            // Colisión con techo
             if (this.y - this.radius <= 0 && 
                 currentTime - this.lastTopCollisionTime > this.minCollisionInterval &&
                 currentTime - this.lastAnyCollisionTime > this.collisionCooldown) {
@@ -850,32 +974,31 @@ if (currentDate > expirationDate) {
                 
                 const centerX = canvas.width / 2;
                 const distanceToCenter = centerX - this.x;
-                const pushStrength = 0.8;
+                const pushStrength = 0.6;
                 const directionToCenter = distanceToCenter > 0 ? 1 : -1;
                 const normalizedDistance = Math.abs(distanceToCenter) / (canvas.width / 2);
                 const pushForce = pushStrength * normalizedDistance * directionToCenter;
                 
                 this.vx += pushForce;
                 
-                if (Math.abs(this.vx) < 0.5) {
-                    this.vx = this.vx < 0 ? -0.5 : 0.5;
+                if (Math.abs(this.vx) < 0.4) {
+                    this.vx = this.vx < 0 ? -0.4 : 0.4;
                 }
                 
-                const maxVX = 4;
+                const maxVX = 3.5;
                 if (Math.abs(this.vx) > maxVX) {
                     this.vx = this.vx > 0 ? maxVX : -maxVX;
                 }
                 
-                this.y = this.radius + 1;
                 score++;
                 scoreElement.textContent = score;
                 playBounceSound('top');
                 
                 this.lastTopCollisionTime = currentTime;
                 this.lastAnyCollisionTime = currentTime;
-                this.lastTopBounce = currentTime;
             }
             
+            // Colisión con paddle
             if (this.y + this.radius >= paddle.y && 
                 this.y - this.radius <= paddle.y + paddle.height &&
                 this.x + this.radius >= paddle.x && 
@@ -887,15 +1010,24 @@ if (currentDate > expirationDate) {
                 
                 const hitPos = (this.x - (paddle.x + paddle.width / 2)) / (paddle.width / 2);
                 this.vy = -Math.abs(this.vy);
-                this.vx = hitPos * 4;
+                this.vx = hitPos * 2.5;
                 
-                if (Math.abs(this.vx) < 1.0) {
-                    this.vx = this.vx < 0 ? -1.0 : 1.0;
+                if (Math.abs(this.vx) < 0.8) {
+                    this.vx = this.vx < 0 ? -0.8 : 0.8;
                 }
                 
                 const speedAfterBounce = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+                
+                // Asegurar velocidad mínima después del rebote
                 if (speedAfterBounce < minSpeed) {
                     const ratio = minSpeed / speedAfterBounce;
+                    this.vx *= ratio;
+                    this.vy *= ratio;
+                }
+                
+                // Limitar velocidad máxima después del rebote
+                if (speedAfterBounce > maxSpeed) {
+                    const ratio = maxSpeed / speedAfterBounce;
                     this.vx *= ratio;
                     this.vy *= ratio;
                 }
@@ -908,6 +1040,7 @@ if (currentDate > expirationDate) {
                 this.lastAnyCollisionTime = currentTime;
             }
             
+            // Colisión con círculos
             for (let i = 0; i < circles.length; i++) {
                 const circle = circles[i];
                 const dx = this.x - circle.x;
@@ -917,6 +1050,8 @@ if (currentDate > expirationDate) {
                 if (distance < this.radius + circle.radius) {
                     const angle = Math.atan2(dy, dx);
                     const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+                    
+                    // Mantener la velocidad actual pero en dirección de rebote
                     this.vx = speed * Math.cos(angle);
                     this.vy = speed * Math.sin(angle);
                     
@@ -929,6 +1064,15 @@ if (currentDate > expirationDate) {
                     scoreElement.textContent = score;
                     playBounceSound('circle');
                     
+                    // Lógica para círculo especial en nivel 4
+                    if (circle.isSpecial && circle.activeTime <= MULTI_PROJECTILE_DURATION) {
+                        if (!multiProjectileActive) {
+                            multiProjectileActive = true;
+                            multiProjectileTimer = Date.now();
+                        }
+                        splitProjectile(this);
+                    }
+                    
                     if (circle.y < canvas.height * 0.3) {
                         const centerX = canvas.width / 2;
                         const pushToCenter = (centerX - this.x) * 0.1 / canvas.width;
@@ -940,6 +1084,20 @@ if (currentDate > expirationDate) {
                         score += 20;
                         scoreElement.textContent = score;
                         i--;
+                        
+                        // Actualizar círculo especial si se elimina
+                        if (circle.isSpecial) {
+                            specialCircle = null;
+                        }
+                    }
+                    
+                    // Limitar velocidad después de la colisión
+                    const currentSpeedAfterCollision = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+                    
+                    if (currentSpeedAfterCollision > maxSpeed) {
+                        const ratio = maxSpeed / currentSpeedAfterCollision;
+                        this.vx *= ratio;
+                        this.vy *= ratio;
                     }
                     
                     this.lastAnyCollisionTime = currentTime;
@@ -947,15 +1105,19 @@ if (currentDate > expirationDate) {
                 }
             }
             
+            // Añadir impulso aleatorio si está muy lento
             if (Math.abs(this.vx) < 0.3 && Math.abs(this.vy) > 2) {
-                const randomPush = (Math.random() - 0.5) * 1.5;
+                const randomPush = (Math.random() - 0.5) * 1.0;
                 this.vx += randomPush;
             }
             
+            // Verificar si el proyectil cayó al fondo
             if (this.y + this.radius >= canvas.height && this.active) {
                 this.active = false;
                 lives--;
                 livesElement.textContent = lives;
+                
+                // Permitir nuevo disparo en cualquier nivel
                 setControlsMode('angle');
                 
                 if (lives <= 0) {
@@ -967,11 +1129,76 @@ if (currentDate > expirationDate) {
         draw() {
             ctx.beginPath();
             ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-            ctx.fillStyle = '#fff';
+            ctx.fillStyle = this.color;
             ctx.fill();
-            ctx.strokeStyle = '#e94560';
+            
+            if (this.isChild) {
+                ctx.strokeStyle = '#ff6600';
+                ctx.shadowColor = '#ffaa00';
+                ctx.shadowBlur = 10;
+            } else {
+                ctx.strokeStyle = '#e94560';
+                ctx.shadowBlur = 0;
+            }
+            
             ctx.lineWidth = 2;
             ctx.stroke();
+            ctx.shadowBlur = 0;
+        }
+    }
+
+    // Función para dividir proyectil - CORREGIDA
+    function splitProjectile(originalProjectile) {
+        if (!multiProjectileActive || projectiles.length >= 6) return; // Límite de 6 proyectiles
+        
+        // Calcular ángulos para dividir
+        const currentAngle = Math.atan2(originalProjectile.vy, originalProjectile.vx);
+        const angle1 = currentAngle + Math.PI / 8;  // 22.5 grados
+        const angle2 = currentAngle - Math.PI / 8;  // -22.5 grados
+        
+        const speed = 3.5; // Velocidad reducida para proyectiles hijos
+        
+        // Crear primer proyectil hijo
+        const projectile1 = new Projectile(
+            originalProjectile.x,
+            originalProjectile.y,
+            90 - (angle1 * 180 / Math.PI),
+            true
+        );
+        projectile1.vx = speed * Math.cos(angle1);
+        projectile1.vy = speed * Math.sin(angle1);
+        
+        // Crear segundo proyectil hijo
+        const projectile2 = new Projectile(
+            originalProjectile.x,
+            originalProjectile.y,
+            90 - (angle2 * 180 / Math.PI),
+            true
+        );
+        projectile2.vx = speed * Math.cos(angle2);
+        projectile2.vy = speed * Math.sin(angle2);
+        
+        // Añadir a la lista de proyectiles
+        projectiles.push(projectile1, projectile2);
+        
+        // Reproducir sonido especial
+        if (soundEnabled) {
+            try {
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.value = 523.25 * 1.5;
+                oscillator.type = 'sawtooth';
+                gainNode.gain.value = 0.15;
+                gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.2);
+                oscillator.start();
+                oscillator.stop(audioContext.currentTime + 0.2);
+            } catch (e) {
+                console.log("Audio not available:", e);
+            }
         }
     }
 
@@ -983,7 +1210,7 @@ if (currentDate > expirationDate) {
         ctx.lineWidth = 2;
         ctx.strokeRect(paddle.x, paddle.y, paddle.width, paddle.height);
         
-        // NUEVO: Indicador visual para paleta pequeña
+        // Indicador visual para paleta pequeña
         if (currentLevel === 3) {
             ctx.fillStyle = 'rgba(233, 69, 96, 0.3)';
             ctx.fillRect(paddle.x - 10, paddle.y, 10, paddle.height);
@@ -1008,7 +1235,7 @@ if (currentDate > expirationDate) {
         const startX = paddle.x + paddle.width / 2;
         const startY = paddle.y - 5;
         const radius = 5;
-        const speed = 5;
+        const speed = projectileSpeeds[currentLevel] || 4.0;
         const angleRad = (180 - angle) * Math.PI / 180;
         
         let x = startX;
@@ -1020,9 +1247,9 @@ if (currentDate > expirationDate) {
         ctx.beginPath();
         ctx.moveTo(x, y);
         
-        for (let i = 0; i < 20; i++) {
-            x += vx * 8;
-            y += vy * 8;
+        for (let i = 0; i < 25; i++) {
+            x += vx * 7;
+            y += vy * 7;
             
             if (x - radius <= 0 || x + radius >= canvas.width) {
                 vx = -vx;
@@ -1035,7 +1262,7 @@ if (currentDate > expirationDate) {
             if (y - radius <= 0) {
                 vy = -vy;
                 const centerX = canvas.width / 2;
-                const pushToCenter = (centerX - x) * 0.1;
+                const pushToCenter = (centerX - x) * 0.08;
                 vx += pushToCenter;
                 
                 ctx.fillStyle = '#ffd166';
@@ -1051,7 +1278,7 @@ if (currentDate > expirationDate) {
                 
                 vy = -Math.abs(vy);
                 const hitPos = (x - (paddle.x + paddle.width / 2)) / (paddle.width / 2);
-                vx = hitPos * 4;
+                vx = hitPos * 2.5;
             }
             
             if (y + radius >= canvas.height) {
@@ -1083,15 +1310,15 @@ if (currentDate > expirationDate) {
         vx = speed * Math.cos(angleRad);
         vy = -speed * Math.sin(angleRad);
         
-        for (let i = 0; i < 20; i++) {
-            x += vx * 8;
-            y += vy * 8;
+        for (let i = 0; i < 25; i++) {
+            x += vx * 7;
+            y += vy * 7;
             
             if (x - radius <= 0 || x + radius >= canvas.width) vx = -vx;
             if (y - radius <= 0) {
                 vy = -vy;
                 const centerX = canvas.width / 2;
-                const pushToCenter = (centerX - x) * 0.1;
+                const pushToCenter = (centerX - x) * 0.08;
                 vx += pushToCenter;
             }
             if (y + radius >= canvas.height) break;
@@ -1114,38 +1341,86 @@ if (currentDate > expirationDate) {
         ctx.stroke();
     }
 
-    // Initialize circles for current level
+    // Initialize circles for current level - CORREGIDA
     function initCirclesForLevel() {
         circles = [];
+        specialCircle = null;
         const maxAttempts = 100;
-        const circleCount = 4 + Math.floor(currentLevel / 2); // Más círculos en niveles altos
+        let circleCount = 4 + Math.floor(currentLevel / 2);
         
-        for (let i = 0; i < circleCount; i++) {
-            let attempts = 0;
-            let validPosition = false;
-            let newCircle;
+        // Configuración especial para nivel 4
+        if (currentLevel === 4) {
+            circleCount = 5;
             
-            while (!validPosition && attempts < maxAttempts) {
-                const diameter = Math.floor(Math.random() * 25) + 30;
-                const x = Math.random() * (canvas.width - diameter * 2) + diameter;
-                const y = Math.random() * (canvas.height * 0.4) + 40;
+            // Primero crear el círculo especial en una posición visible
+            const specialDiameter = 40;
+            const specialX = canvas.width / 2;
+            const specialY = canvas.height * 0.3;
+            
+            const special = new Circle(specialX, specialY, specialDiameter, currentLevel, true);
+            circles.push(special);
+            specialCircle = special;
+            
+            // Crear círculos normales
+            for (let i = 1; i < circleCount; i++) {
+                let attempts = 0;
+                let validPosition = false;
+                let newCircle;
                 
-                newCircle = new Circle(x, y, diameter, currentLevel);
+                while (!validPosition && attempts < maxAttempts) {
+                    const diameter = Math.floor(Math.random() * 25) + 30;
+                    const x = Math.random() * (canvas.width - diameter * 2) + diameter;
+                    const y = Math.random() * (canvas.height * 0.3) + 60;
+                    
+                    newCircle = new Circle(x, y, diameter, currentLevel, false);
+                    
+                    if (isValidPosition(newCircle, circles)) {
+                        validPosition = true;
+                        circles.push(newCircle);
+                    }
+                    
+                    attempts++;
+                }
+            }
+        } else {
+            // Niveles normales 1-3
+            for (let i = 0; i < circleCount; i++) {
+                let attempts = 0;
+                let validPosition = false;
+                let newCircle;
                 
-                if (isValidPosition(newCircle, circles)) {
-                    validPosition = true;
-                    circles.push(newCircle);
+                while (!validPosition && attempts < maxAttempts) {
+                    const diameter = Math.floor(Math.random() * 25) + 30;
+                    const x = Math.random() * (canvas.width - diameter * 2) + diameter;
+                    const y = Math.random() * (canvas.height * 0.4) + 40;
+                    
+                    newCircle = new Circle(x, y, diameter, currentLevel, false);
+                    
+                    if (isValidPosition(newCircle, circles)) {
+                        validPosition = true;
+                        circles.push(newCircle);
+                    }
+                    
+                    attempts++;
                 }
                 
-                attempts++;
+                if (!validPosition) {
+                    const diameter = 30;
+                    const x = (i % 2) * (canvas.width / 2) + canvas.width / 4;
+                    const y = Math.floor(i / 2) * (canvas.height / 4) + canvas.height / 6;
+                    
+                    newCircle = new Circle(x, y, diameter, currentLevel, false);
+                    circles.push(newCircle);
+                }
             }
-            
-            if (!validPosition) {
-                const diameter = 30;
-                const x = (i % 2) * (canvas.width / 2) + canvas.width / 4;
-                const y = Math.floor(i / 2) * (canvas.height / 4) + canvas.height / 6;
-                circles.push(new Circle(x, y, diameter, currentLevel));
-            }
+        }
+        
+        // Resetear temporizadores para nivel 4
+        if (currentLevel === 4) {
+            multiProjectileActive = false;
+            multiProjectileTimer = 0;
+            colorChangeTimer = 0;
+            projectiles = [];
         }
     }
 
@@ -1174,11 +1449,9 @@ if (currentDate > expirationDate) {
         const theme = levelThemes[currentLevel] || levelThemes[1];
         document.body.style.background = `linear-gradient(135deg, ${theme[0]}, ${theme[1]})`;
         
-        // Actualizar indicador de nivel
         levelElement.textContent = currentLevel;
         levelIndicator.textContent = `Level ${currentLevel}: ${levelNames[currentLevel]}`;
         
-        // Actualizar tamaño de paleta
         paddle.width = paddleSizes[currentLevel] || 50;
         paddle.x = (canvas.width - paddle.width) / 2;
     }
@@ -1197,14 +1470,11 @@ if (currentDate > expirationDate) {
         livesElement.textContent = lives;
         scoreElement.textContent = score;
         
-        // Aplicar tema del nivel
         applyLevelTheme();
         
-        // Configurar paleta
         paddle.width = paddleSizes[currentLevel] || 50;
         paddle.x = (canvas.width - paddle.width) / 2;
         
-        // Inicializar círculos
         initCirclesForLevel();
         
         gameOverElement.style.display = 'none';
@@ -1214,11 +1484,17 @@ if (currentDate > expirationDate) {
         if (animationId) {
             cancelAnimationFrame(animationId);
         }
+        
+        lastTime = 0;
         animate();
     }
 
-    // Animation loop
-    function animate() {
+    // Animation loop - CORREGIDA
+    let lastTime = 0;
+    function animate(currentTime = 0) {
+        const deltaTime = currentTime - lastTime;
+        lastTime = currentTime;
+        
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         
         ctx.fillStyle = '#000';
@@ -1228,25 +1504,82 @@ if (currentDate > expirationDate) {
             drawTrajectory(currentAngle);
         }
         
-        // NUEVO: Actualizar círculos (para movimiento en nivel 2+)
         for (let circle of circles) {
-            circle.update();
+            circle.update(deltaTime);
             circle.draw();
         }
         
         updatePaddle();
         drawPaddle();
         
-        if (projectile && projectile.active && !allCirclesCleared) {
-            projectile.update();
-            projectile.draw();
-            
-            const speed = Math.sqrt(projectile.vx * projectile.vx + projectile.vy * projectile.vy);
-            if (speed < 2.0 && speed > 0) {
-                const boost = 1.5;
-                projectile.vx += (Math.random() - 0.5) * boost;
-                projectile.vy += (Math.random() - 0.5) * boost;
+        // Actualizar múltiples proyectiles en nivel 4
+        if (currentLevel === 4) {
+            for (let i = projectiles.length - 1; i >= 0; i--) {
+                const proj = projectiles[i];
+                if (proj.active) {
+                    proj.update();
+                    proj.draw();
+                    
+                    if (!proj.active) {
+                        projectiles.splice(i, 1);
+                    }
+                } else {
+                    projectiles.splice(i, 1);
+                }
             }
+            
+            // Verificar si hay proyectil principal activo
+            if (projectile && projectile.active) {
+                projectile.update();
+                projectile.draw();
+                
+                if (!projectile.active) {
+                    projectile = null;
+                    // Solo cambiar modo si no hay proyectiles hijos activos
+                    if (projectiles.length === 0) {
+                        setControlsMode('angle');
+                    }
+                }
+            } else if (projectiles.length === 0) {
+                setControlsMode('angle');
+            }
+        } else {
+            // Niveles normales 1-3
+            if (projectile && projectile.active && !allCirclesCleared) {
+                projectile.update();
+                projectile.draw();
+                
+                if (!projectile.active) {
+                    projectile = null;
+                    setControlsMode('angle');
+                }
+            }
+        }
+        
+        // Dibujar indicador de tiempo para círculo especial
+        if (currentLevel === 4 && specialCircle && specialCircle.activeTime <= MULTI_PROJECTILE_DURATION) {
+            const timeLeft = MULTI_PROJECTILE_DURATION - specialCircle.activeTime;
+            const secondsLeft = Math.ceil(timeLeft / 1000);
+            
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+            ctx.font = 'bold 14px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(`×2 Power: ${secondsLeft}s`, canvas.width / 2, 25);
+            
+            // Dibujar barra de tiempo
+            const barWidth = 200;
+            const barHeight = 8;
+            const barX = (canvas.width - barWidth) / 2;
+            const barY = 35;
+            const progress = timeLeft / MULTI_PROJECTILE_DURATION;
+            
+            // Fondo de la barra
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+            ctx.fillRect(barX, barY, barWidth, barHeight);
+            
+            // Barra de progreso
+            ctx.fillStyle = progress > 0.5 ? '#0fce7c' : progress > 0.2 ? '#ffd166' : '#e94560';
+            ctx.fillRect(barX, barY, barWidth * progress, barHeight);
         }
         
         if (circles.length === 0 && !allCirclesCleared && gameActive) {
@@ -1260,48 +1593,41 @@ if (currentDate > expirationDate) {
     }
 
     // Complete level
-    // Complete level
-// Complete level
-function completeLevel() {
-    gameActive = false;
-    
-    // Actualizar mejor puntuación si es necesario
-    if (score > bestScore) {
-        bestScore = score;
-        localStorage.setItem('bestScore', bestScore);
-        bestElement.textContent = bestScore;
-    }
-    
-    // Lanzar confeti
-    launchConfetti();
-    
-    // Si es el último nivel, mostrar mensaje especial
-    if (currentLevel === maxLevels) {
-        levelCompleteElement.innerHTML = `
-            <h2>🎉 Congratulations! 🎉</h2>
-            <p>You've completed all levels!</p>
-            <p>Final score: <strong>${score}</strong></p>
-            <p>Total lives remaining: <strong>${lives}</strong></p>
-            <button class="next-level-btn" id="playAgainBtn">PLAY AGAIN FROM LEVEL 1</button>
-        `;
+    function completeLevel() {
+        gameActive = false;
         
-        levelCompleteElement.style.display = 'block';
+        if (score > bestScore) {
+            bestScore = score;
+            localStorage.setItem('bestScore', bestScore);
+            bestElement.textContent = bestScore;
+        }
         
-        // Agregar event listener después de actualizar el HTML
-        setTimeout(() => {
-            document.getElementById('playAgainBtn').addEventListener('click', function() {
-                currentLevel = 1;
-                initGame(currentLevel);
-            });
-        }, 100);
-    } else {
-        // Mostrar pantalla normal de nivel completado
-        completedLevelElement.textContent = currentLevel;
-        levelScoreElement.textContent = score;
-        remainingLivesElement.textContent = lives;
-        levelCompleteElement.style.display = 'block';
+        launchConfetti();
+        
+        if (currentLevel === maxLevels) {
+            levelCompleteElement.innerHTML = `
+                <h2>🎉 Congratulations! 🎉</h2>
+                <p>You've completed all levels!</p>
+                <p>Final score: <strong>${score}</strong></p>
+                <p>Total lives remaining: <strong>${lives}</strong></p>
+                <button class="next-level-btn" id="playAgainBtn">PLAY AGAIN FROM LEVEL 1</button>
+            `;
+            
+            levelCompleteElement.style.display = 'block';
+            
+            setTimeout(() => {
+                document.getElementById('playAgainBtn').addEventListener('click', function() {
+                    currentLevel = 1;
+                    initGame(currentLevel);
+                });
+            }, 100);
+        } else {
+            completedLevelElement.textContent = currentLevel;
+            levelScoreElement.textContent = score;
+            remainingLivesElement.textContent = lives;
+            levelCompleteElement.style.display = 'block';
+        }
     }
-}
 
     // End game
     function endGame() {
@@ -1368,28 +1694,25 @@ function completeLevel() {
             gameOverElement.style.display = 'none';
             gameActive = true;
             setControlsMode('angle');
+            lastTime = 0;
             animate();
         }
     });
 
-nextLevelBtn.addEventListener('click', function() {
-    levelCompleteElement.style.display = 'none';
-    
-    // Si no es el último nivel, pasar al siguiente
-    if (currentLevel < maxLevels) {
-        currentLevel++;
-        initGame(currentLevel);
-    } else {
-        // Si es el último nivel, reiniciar desde el nivel 1
-        currentLevel = 1;
-        initGame(currentLevel);
-    }
-});
+    nextLevelBtn.addEventListener('click', function() {
+        levelCompleteElement.style.display = 'none';
+        
+        if (currentLevel < maxLevels) {
+            currentLevel++;
+            initGame(currentLevel);
+        } else {
+            currentLevel = 1;
+            initGame(currentLevel);
+        }
+    });
 
     menuBtn.addEventListener('click', function() {
-        // Para futura implementación de selección de niveles
         levelCompleteElement.style.display = 'none';
-        // Por ahora, reiniciar desde nivel 1
         currentLevel = 1;
         initGame(currentLevel);
     });
@@ -1397,6 +1720,13 @@ nextLevelBtn.addEventListener('click', function() {
     window.addEventListener('keydown', function(e) {
         if (e.key === 'ArrowLeft') keys.left = true;
         if (e.key === 'ArrowRight') keys.right = true;
+        if (e.key === 'n' || e.key === 'N') {
+            e.preventDefault();
+            if (gameActive && !allCirclesCleared) {
+                allCirclesCleared = true;
+                completeLevel();
+            }
+        }
     });
 
     window.addEventListener('keyup', function(e) {
@@ -1431,8 +1761,15 @@ nextLevelBtn.addEventListener('click', function() {
                 projectile = new Projectile(
                     paddle.x + paddle.width / 2,
                     paddle.y - 5,
-                    currentAngle
+                    currentAngle,
+                    false
                 );
+                
+                if (currentLevel === 4) {
+                    projectiles = [];
+                    projectiles.push(projectile);
+                }
+                
                 setControlsMode('paddle');
             }
         }
@@ -1443,12 +1780,23 @@ nextLevelBtn.addEventListener('click', function() {
         initGame(currentLevel);
     });
 
+    // Funciones para debug
+    function skipLevel() {
+        if (gameActive && !allCirclesCleared) {
+            allCirclesCleared = true;
+            completeLevel();
+        }
+    }
+
+    function restartLevel() {
+        initGame(currentLevel);
+    }
+
     window.addEventListener('load', function() {
         resizeCanvas();
         initGame(currentLevel);
         setControlsMode('angle');
         
-        // Initialize audio context on user interaction
         document.body.addEventListener('click', function initAudio() {
             if (audioContext.state === 'suspended') {
                 audioContext.resume();
