@@ -102,11 +102,11 @@
             touch-action: none;
             width: 100%;
             max-width: 400px;
-            height: 380px;
+            height: 450px;
         }
         
         .controls {
-            margin-top: 90px;
+            margin-top: 40px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -576,7 +576,7 @@
         width: 50,
         height: 10,
         x: 175,
-        y: 370,
+        y: 440,
         speed: 5,
         color: '#ffffff'
     };
@@ -697,7 +697,7 @@
         const containerWidth = canvas.parentElement.clientWidth;
         const maxWidth = Math.min(400, containerWidth);
         canvas.width = maxWidth;
-        canvas.height = 380;
+        canvas.height = 450;
         
         paddle.width = paddleSizes[currentLevel] || 50;
         paddle.x = (canvas.width - paddle.width) / 2;
@@ -891,7 +891,7 @@
             this.minX = this.radius;
             this.maxX = canvas.width - this.radius;
             this.minY = this.radius + 20;
-            this.maxY = canvas.height * 0.5;
+            this.maxY = canvas.height * 0.7;
         }
         
         shouldDisappear() {
@@ -1374,7 +1374,7 @@
                 while (!validPosition && attempts < maxAttempts) {
                     const diameter = Math.floor(Math.random() * 25) + 30;
                     const x = Math.random() * (canvas.width - diameter * 2) + diameter;
-                    const y = Math.random() * (canvas.height * 0.3) + 60;
+                    const y = Math.random() * (canvas.height * 0.5) + 60;
                     
                     newCircle = new Circle(x, y, diameter, currentLevel, false);
                     
@@ -1401,7 +1401,7 @@
                 while (!validPosition && attempts < maxAttempts) {
                     const diameter = Math.floor(Math.random() * 25) + 30;
                     const x = Math.random() * (canvas.width - diameter * 2) + diameter;
-                    const y = Math.random() * (canvas.height * 0.4) + 40;
+                    const y = Math.random() * (canvas.height * 0.6) + 40;
                     
                     newCircle = new Circle(x, y, diameter, currentLevel, false);
                     
@@ -1711,7 +1711,7 @@
                 <h2>🎉 Congratulations! 🎉</h2>
                 <p>You've completed all levels!</p>
                 <p>Final score: <strong>${score}</strong></p>
-                <p>Total lives remaining: <strong>${lives}</strong></p>
+               
                 <button class="next-level-btn" id="playAgainBtn">PLAY AGAIN FROM LEVEL 1</button>
             `;
             
