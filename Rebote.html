@@ -221,7 +221,7 @@
             border: none;
             padding: 12px 25px;
             font-size: 1rem;
-            border-radius: 50px;
+            border-radius = 50px;
             cursor: pointer;
             transition: all 0.3s ease;
             box-shadow: 0 5px 15px rgba(255, 209, 102, 0.4);
@@ -325,7 +325,7 @@
             background: rgba(0, 0, 0, 0.3);
             border: none;
             color: white;
-            width: 35px;
+            width = 35px;
             height: 35px;
             border-radius: 50%;
             cursor: pointer;
@@ -480,8 +480,8 @@
     const MULTI_PROJECTILE_DURATION = 15000; // 15 segundos
     const COLOR_CHANGE_INTERVAL = 500;
     const SPECIAL_CIRCLE_RESPAWN_TIME = 8000; // 8 segundos para reaparecer
-    let specialCircleRespawnTimer = 0; // AÑADE ESTA LÍNEA
-    let specialCircleActive = false; // AÑADE ESTA LÍNEA
+    let specialCircleRespawnTimer = 0;
+    let specialCircleActive = false;
 
     // Verificación de fecha de expiración (deshabilitada temporalmente)
     const expirationDate = new Date('2026-3-1');
@@ -1074,15 +1074,14 @@
                             multiProjectileTimer = Date.now();
                         }
                         splitProjectile(this);
-                            circles.splice(i, 1);
-    specialCircle = null;
-    specialCircleActive = false;
-    specialCircleRespawnTimer = 0;
-    score += 30; // Puntos extra por golpear el círculo especial
-    scoreElement.textContent = score;
-    i--;
-    
-    break; // Salir después de golpear el círculo especial
+                        circles.splice(i, 1);
+                        specialCircle = null;
+                        specialCircleActive = false;
+                        specialCircleRespawnTimer = 0;
+                        score += 30; // Puntos extra por golpear el círculo especial
+                        scoreElement.textContent = score;
+                        i--;
+                        break; // Salir después de golpear el círculo especial
                     }
                     
                     if (circle.y < canvas.height * 0.3) {
@@ -1354,58 +1353,85 @@
     }
 
     // Initialize circles for current level - CORREGIDA
-   // Initialize circles for current level - CORREGIDA
-function initCirclesForLevel() {
-    circles = [];
-    specialCircle = null;
-    specialCircleActive = false; // RESET ESTADO
-    specialCircleRespawnTimer = 0; // RESET TEMPORIZADOR
-    const maxAttempts = 100;
-    let circleCount = 4 + Math.floor(currentLevel / 2);
-    
-    // Configuración especial para nivel 4
-    if (currentLevel === 4) {
-        circleCount = 5;
+    function initCirclesForLevel() {
+        circles = [];
+        specialCircle = null;
+        specialCircleActive = false; // RESET ESTADO
+        specialCircleRespawnTimer = 0; // RESET TEMPORIZADOR
+        const maxAttempts = 100;
+        let circleCount = 4 + Math.floor(currentLevel / 2);
         
-        // Primero crear círculos normales
-        for (let i = 0; i < circleCount - 1; i++) {
-            let attempts = 0;
-            let validPosition = false;
-            let newCircle;
+        // Configuración especial para nivel 4
+        if (currentLevel === 4) {
+            circleCount = 5;
             
-            while (!validPosition && attempts < maxAttempts) {
-                const diameter = Math.floor(Math.random() * 25) + 30;
-                const x = Math.random() * (canvas.width - diameter * 2) + diameter;
-                const y = Math.random() * (canvas.height * 0.3) + 60;
+            // Primero crear círculos normales
+            for (let i = 0; i < circleCount - 1; i++) {
+                let attempts = 0;
+                let validPosition = false;
+                let newCircle;
                 
-                newCircle = new Circle(x, y, diameter, currentLevel, false);
+                while (!validPosition && attempts < maxAttempts) {
+                    const diameter = Math.floor(Math.random() * 25) + 30;
+                    const x = Math.random() * (canvas.width - diameter * 2) + diameter;
+                    const y = Math.random() * (canvas.height * 0.3) + 60;
+                    
+                    newCircle = new Circle(x, y, diameter, currentLevel, false);
+                    
+                    if (isValidPosition(newCircle, circles)) {
+                        validPosition = true;
+                        circles.push(newCircle);
+                    }
+                    
+                    attempts++;
+                }
+            }
+            
+            // Crear el círculo especial después de un breve retraso
+            setTimeout(() => {
+                createSpecialCircle();
+            }, 1000);
+        } else {
+            // Niveles normales 1-3
+            for (let i = 0; i < circleCount; i++) {
+                let attempts = 0;
+                let validPosition = false;
+                let newCircle;
                 
-                if (isValidPosition(newCircle, circles)) {
-                    validPosition = true;
-                    circles.push(newCircle);
+                while (!validPosition && attempts < maxAttempts) {
+                    const diameter = Math.floor(Math.random() * 25) + 30;
+                    const x = Math.random() * (canvas.width - diameter * 2) + diameter;
+                    const y = Math.random() * (canvas.height * 0.4) + 40;
+                    
+                    newCircle = new Circle(x, y, diameter, currentLevel, false);
+                    
+                    if (isValidPosition(newCircle, circles)) {
+                        validPosition = true;
+                        circles.push(newCircle);
+                    }
+                    
+                    attempts++;
                 }
                 
-                attempts++;
+                if (!validPosition) {
+                    const diameter = 30;
+                    const x = (i % 2) * (canvas.width / 2) + canvas.width / 4;
+                    const y = Math.floor(i / 2) * (canvas.height / 4) + canvas.height / 6;
+                    
+                    newCircle = new Circle(x, y, diameter, currentLevel, false);
+                    circles.push(newCircle);
+                }
             }
         }
         
-        // Crear el círculo especial después de un breve retraso
-        setTimeout(() => {
-            createSpecialCircle();
-        }, 1000);
-    } else {
-        // Niveles normales 1-3 (código existente)
-        // ... (mantén el código existente para niveles 1-3)
+        // Resetear temporizadores para nivel 4
+        if (currentLevel === 4) {
+            multiProjectileActive = false;
+            multiProjectileTimer = 0;
+            colorChangeTimer = 0;
+            projectiles = [];
+        }
     }
-    
-    // Resetear temporizadores para nivel 4
-    if (currentLevel === 4) {
-        multiProjectileActive = false;
-        multiProjectileTimer = 0;
-        colorChangeTimer = 0;
-        projectiles = [];
-    }
-}
 
     // Function to change control mode
     function setControlsMode(mode) {
@@ -1472,92 +1498,188 @@ function initCirclesForLevel() {
         animate();
     }
 
-    // Animation loop - CORREGIDA
-// Animation loop - CORREGIDA
-let lastTime = 0;
-function animate(currentTime = 0) {
-    const deltaTime = currentTime - lastTime;
-    lastTime = currentTime;
-    
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-    ctx.fillStyle = '#000';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    
-    // ... (código existente de dibujo)
-    
-    // Lógica de respawn del círculo especial en nivel 4
-    if (currentLevel === 4 && gameActive && !allCirclesCleared) {
-        if (!specialCircleActive && specialCircleRespawnTimer < SPECIAL_CIRCLE_RESPAWN_TIME) {
-            specialCircleRespawnTimer += deltaTime;
+    // Función para crear el círculo especial
+    function createSpecialCircle() {
+        if (currentLevel !== 4 || !gameActive || allCirclesCleared) return;
+        
+        const specialDiameter = 40;
+        let validPosition = false;
+        let attempts = 0;
+        
+        while (!validPosition && attempts < 50) {
+            const x = Math.random() * (canvas.width - specialDiameter * 2) + specialDiameter;
+            const y = Math.random() * (canvas.height * 0.3) + 60;
             
-            // Dibujar indicador de respawn
-            if (specialCircleRespawnTimer > 1000) { // Mostrar después de 1 segundo
-                const timeLeft = SPECIAL_CIRCLE_RESPAWN_TIME - specialCircleRespawnTimer;
+            const newSpecialCircle = new Circle(x, y, specialDiameter, currentLevel, true);
+            
+            if (isValidPosition(newSpecialCircle, circles)) {
+                validPosition = true;
+                circles.push(newSpecialCircle);
+                specialCircle = newSpecialCircle;
+                specialCircleActive = true;
+                specialCircleRespawnTimer = 0;
+                
+                // Reproducir sonido de aparición
+                if (soundEnabled) {
+                    try {
+                        const oscillator = audioContext.createOscillator();
+                        const gainNode = audioContext.createGain();
+                        
+                        oscillator.connect(gainNode);
+                        gainNode.connect(audioContext.destination);
+                        
+                        oscillator.frequency.value = 659.25; // Mi alto
+                        oscillator.type = 'sine';
+                        gainNode.gain.value = 0.2;
+                        gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.3);
+                        oscillator.start();
+                        oscillator.stop(audioContext.currentTime + 0.3);
+                    } catch (e) {
+                        console.log("Audio not available:", e);
+                    }
+                }
+            }
+            
+            attempts++;
+        }
+    }
+
+    // Animation loop - CORREGIDA
+    let lastTime = 0;
+    function animate(currentTime = 0) {
+        if (!gameActive) return;
+        
+        const deltaTime = currentTime - lastTime;
+        lastTime = currentTime;
+        
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        ctx.fillStyle = '#000';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // Dibujar trayectoria si está en modo ángulo
+        if ((!projectile || !projectile.active) && controlsMode === 'angle' && !allCirclesCleared) {
+            drawTrajectory(currentAngle);
+        }
+        
+        // Actualizar y dibujar círculos
+        for (let circle of circles) {
+            circle.update(deltaTime);
+            circle.draw();
+        }
+        
+        updatePaddle();
+        drawPaddle();
+        
+        // Actualizar múltiples proyectiles en nivel 4
+        if (currentLevel === 4) {
+            for (let i = projectiles.length - 1; i >= 0; i--) {
+                const proj = projectiles[i];
+                if (proj && proj.active) {
+                    proj.update();
+                    proj.draw();
+                    
+                    if (!proj.active) {
+                        projectiles.splice(i, 1);
+                    }
+                } else {
+                    projectiles.splice(i, 1);
+                }
+            }
+            
+            // Verificar si hay proyectil principal activo
+            if (projectile && projectile.active) {
+                projectile.update();
+                projectile.draw();
+                
+                if (!projectile.active) {
+                    projectile = null;
+                    // Solo cambiar modo si no hay proyectiles hijos activos
+                    if (projectiles.length === 0) {
+                        setControlsMode('angle');
+                    }
+                }
+            } else if (projectiles.length === 0 && controlsMode === 'paddle') {
+                setControlsMode('angle');
+            }
+        } else {
+            // Niveles normales 1-3
+            if (projectile && projectile.active && !allCirclesCleared) {
+                projectile.update();
+                projectile.draw();
+                
+                if (!projectile.active) {
+                    projectile = null;
+                    setControlsMode('angle');
+                }
+            }
+        }
+        
+        // Lógica de respawn del círculo especial en nivel 4
+        if (currentLevel === 4 && gameActive && !allCirclesCleared) {
+            if (!specialCircleActive && specialCircleRespawnTimer < SPECIAL_CIRCLE_RESPAWN_TIME) {
+                specialCircleRespawnTimer += deltaTime;
+                
+                // Dibujar indicador de respawn
+                if (specialCircleRespawnTimer > 1000) { // Mostrar después de 1 segundo
+                    const timeLeft = SPECIAL_CIRCLE_RESPAWN_TIME - specialCircleRespawnTimer;
+                    const secondsLeft = Math.ceil(timeLeft / 1000);
+                    
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+                    ctx.font = 'bold 14px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(`×2 Power reappears in: ${secondsLeft}s`, canvas.width / 2, canvas.height - 50);
+                    
+                    // Barra de progreso del respawn
+                    const barWidth = 200;
+                    const barHeight = 6;
+                    const barX = (canvas.width - barWidth) / 2;
+                    const barY = canvas.height - 35;
+                    const progress = specialCircleRespawnTimer / SPECIAL_CIRCLE_RESPAWN_TIME;
+                    
+                    // Fondo de la barra
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+                    ctx.fillRect(barX, barY, barWidth, barHeight);
+                    
+                    // Barra de progreso
+                    ctx.fillStyle = '#9b5de5';
+                    ctx.fillRect(barX, barY, barWidth * progress, barHeight);
+                }
+            } else if (!specialCircleActive && specialCircleRespawnTimer >= SPECIAL_CIRCLE_RESPAWN_TIME) {
+                // Crear nuevo círculo especial
+                createSpecialCircle();
+            }
+            
+            // Actualizar estado del círculo especial
+            if (specialCircle) {
+                specialCircleActive = true;
+            }
+            
+            // Dibujar indicador de tiempo para círculo especial activo
+            if (specialCircle && specialCircle.activeTime <= MULTI_PROJECTILE_DURATION) {
+                const timeLeft = MULTI_PROJECTILE_DURATION - specialCircle.activeTime;
                 const secondsLeft = Math.ceil(timeLeft / 1000);
                 
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
                 ctx.font = 'bold 14px Arial';
                 ctx.textAlign = 'center';
-                ctx.fillText(`×2 Power reappears in: ${secondsLeft}s`, canvas.width / 2, canvas.height - 50);
+                ctx.fillText(`×2 Power: ${secondsLeft}s`, canvas.width / 2, 25);
                 
-                // Barra de progreso del respawn
+                // Dibujar barra de tiempo
                 const barWidth = 200;
-                const barHeight = 6;
+                const barHeight = 8;
                 const barX = (canvas.width - barWidth) / 2;
-                const barY = canvas.height - 35;
-                const progress = specialCircleRespawnTimer / SPECIAL_CIRCLE_RESPAWN_TIME;
+                const barY = 35;
+                const progress = timeLeft / MULTI_PROJECTILE_DURATION;
                 
                 // Fondo de la barra
                 ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
                 ctx.fillRect(barX, barY, barWidth, barHeight);
                 
                 // Barra de progreso
-                ctx.fillStyle = '#9b5de5';
+                ctx.fillStyle = progress > 0.5 ? '#0fce7c' : progress > 0.2 ? '#ffd166' : '#e94560';
                 ctx.fillRect(barX, barY, barWidth * progress, barHeight);
             }
-        } else if (!specialCircleActive && specialCircleRespawnTimer >= SPECIAL_CIRCLE_RESPAWN_TIME) {
-            // Crear nuevo círculo especial
-            createSpecialCircle();
-        }
-        
-        // Actualizar estado del círculo especial
-        if (specialCircle) {
-            specialCircleActive = true;
-        }
-    }
-    
-    // ... (resto del código existente)
-    
-    if (gameActive) {
-        animationId = requestAnimationFrame(animate);
-    }
-}
-        
-        // Dibujar indicador de tiempo para círculo especial
-        if (currentLevel === 4 && specialCircle && specialCircle.activeTime <= MULTI_PROJECTILE_DURATION) {
-            const timeLeft = MULTI_PROJECTILE_DURATION - specialCircle.activeTime;
-            const secondsLeft = Math.ceil(timeLeft / 1000);
-            
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-            ctx.font = 'bold 14px Arial';
-            ctx.textAlign = 'center';
-            ctx.fillText(`×2 Power: ${secondsLeft}s`, canvas.width / 2, 25);
-            
-            // Dibujar barra de tiempo
-            const barWidth = 200;
-            const barHeight = 8;
-            const barX = (canvas.width - barWidth) / 2;
-            const barY = 35;
-            const progress = timeLeft / MULTI_PROJECTILE_DURATION;
-            
-            // Fondo de la barra
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
-            ctx.fillRect(barX, barY, barWidth, barHeight);
-            
-            // Barra de progreso
-            ctx.fillStyle = progress > 0.5 ? '#0fce7c' : progress > 0.2 ? '#ffd166' : '#e94560';
-            ctx.fillRect(barX, barY, barWidth * progress, barHeight);
         }
         
         if (circles.length === 0 && !allCirclesCleared && gameActive) {
@@ -1569,57 +1691,12 @@ function animate(currentTime = 0) {
             animationId = requestAnimationFrame(animate);
         }
     }
-    // Función para crear el círculo especial
-function createSpecialCircle() {
-    if (currentLevel !== 4 || !gameActive || allCirclesCleared) return;
-    
-    const specialDiameter = 40;
-    let validPosition = false;
-    let attempts = 0;
-    
-    while (!validPosition && attempts < 50) {
-        const x = Math.random() * (canvas.width - specialDiameter * 2) + specialDiameter;
-        const y = Math.random() * (canvas.height * 0.3) + 60;
-        
-        const newSpecialCircle = new Circle(x, y, specialDiameter, currentLevel, true);
-        
-        if (isValidPosition(newSpecialCircle, circles)) {
-            validPosition = true;
-            circles.push(newSpecialCircle);
-            specialCircle = newSpecialCircle;
-            specialCircleActive = true;
-            specialCircleRespawnTimer = 0;
-            
-            // Reproducir sonido de aparición
-            if (soundEnabled) {
-                try {
-                    const oscillator = audioContext.createOscillator();
-                    const gainNode = audioContext.createGain();
-                    
-                    oscillator.connect(gainNode);
-                    gainNode.connect(audioContext.destination);
-                    
-                    oscillator.frequency.value = 659.25; // Mi alto
-                    oscillator.type = 'sine';
-                    gainNode.gain.value = 0.2;
-                    gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.3);
-                    oscillator.start();
-                    oscillator.stop(audioContext.currentTime + 0.3);
-                } catch (e) {
-                    console.log("Audio not available:", e);
-                }
-            }
-        }
-        
-        attempts++;
-    }
-}
 
     // Complete level
     function completeLevel() {
         gameActive = false;
-            specialCircleActive = false; // AÑADE ESTA LÍNEA
-    specialCircleRespawnTimer = 0; // AÑADE ESTA LÍNEA
+        specialCircleActive = false;
+        specialCircleRespawnTimer = 0;
         
         if (score > bestScore) {
             bestScore = score;
@@ -1657,8 +1734,8 @@ function createSpecialCircle() {
     // End game
     function endGame() {
         gameActive = false;
-            specialCircleActive = false; // AÑADE ESTA LÍNEA
-    specialCircleRespawnTimer = 0; // AÑADE ESTA LÍNEA
+        specialCircleActive = false;
+        specialCircleRespawnTimer = 0;
         
         if (score > bestScore) {
             bestScore = score;
