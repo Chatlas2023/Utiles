@@ -1123,28 +1123,24 @@
             }
             
             // Verificar si el proyectil cayó al fondo
-            if (this.y + this.radius >= canvas.height && this.active) {
-                this.active = false;
-                
-                // NO restar vida inmediatamente en nivel 4 durante multi-proyectil
-                // Solo restar vida cuando TODOS los proyectiles hayan caído
-                if (currentLevel === 4) {
-                    // Marcamos el proyectil como inactivo, pero no restamos vida todavía
-                    this.active = false;
-                    
-                    // En nivel 4, solo restaremos vidas al final del ciclo de proyectiles
-                    // Esta lógica se manejará en otra parte
-                } else {
-                    lives--;
-                    livesElement.textContent = lives;
-                    
-                    // Permitir nuevo disparo en cualquier nivel excepto 4
-                    setControlsMode('angle');
-                    
-                    if (lives <= 0) {
-                        endGame();
-                    }
-                }
+       // Verificar si el proyectil cayó al fondo
+if (this.y + this.radius >= canvas.height && this.active) {
+    this.active = false;
+    
+    // Para nivel 4, marcar como inactivo pero NO restar vida aquí
+    // La vida se restará cuando TODOS los proyectiles hayan caído
+    if (currentLevel !== 4) {
+        lives--;
+        livesElement.textContent = lives;
+        
+        // Permitir nuevo disparo en niveles normales
+        setControlsMode('angle');
+        
+        if (lives <= 0) {
+            endGame();
+        }
+    }
+    // En nivel 4, la vida se restará en checkAllProjectilesGone()
             }
         }
         
@@ -1171,7 +1167,9 @@
 
     // Función para dividir proyectil - CORREGIDA
 function splitProjectile(originalProjectile) {
-    if (!multiProjectileActive || projectiles.length >= 6) return; // Límite de 6 proyectiles
+    // Cambiamos la condición: permitir dividir si hay menos de 6 proyectiles
+    // y (multiProjectileActive es true O estamos en nivel 4)
+    if (currentLevel !== 4 || projectiles.length >= 6) return;
     
     // Activar multi-proyectil
     multiProjectileActive = true;
@@ -1241,9 +1239,6 @@ function splitProjectile(originalProjectile) {
 function checkAllProjectilesGone() {
     if (currentLevel !== 4) return false;
     
-    // Si no se ha activado el multi-proyectil, no verificar
-    if (!multiProjectileActive) return false;
-    
     // Verificar proyectil principal
     if (projectile && projectile.active) return false;
     
@@ -1252,8 +1247,14 @@ function checkAllProjectilesGone() {
         if (projectiles[i].active) return false;
     }
     
-    // Si llegamos aquí, todos los proyectiles han caído DESPUÉS de activar multi-proyectil
-    return true;
+    // Si llegamos aquí, todos los proyectiles han caído
+    // IMPORTANTE: También verificamos si se disparó alguna vez en nivel 4
+    // (proyectile fue creado o projectiles tiene elementos)
+    if ((projectile !== null || projectiles.length > 0) && !allCirclesCleared) {
+        return true;
+    }
+    
+    return false;
 }
 
     // Draw paddle
@@ -1662,23 +1663,33 @@ if (currentLevel === 4) {
         fireBtn.disabled = true;
     }
     
-    // Verificar si todos los proyectiles han caído
-    if (checkAllProjectilesGone() && !allCirclesCleared) {
-        // Solo restar una vida por turno completo
-        lives--;
-        livesElement.textContent = lives;
-        
-        // Resetear multi-proyectil
-        multiProjectileActive = false;
-        multiProjectileTimer = 0;
-        
-        // Permitir nuevo disparo
-        setControlsMode('angle');
-        
-        if (lives <= 0) {
-            endGame();
-        }
+
+if (checkAllProjectilesGone() && !allCirclesCleared) {
+    console.log("Todos los proyectiles han caído, restando vida");
+    
+    // Solo restar una vida por turno completo
+    lives--;
+    livesElement.textContent = lives;
+    
+    // IMPORTANTE: Resetear estado del proyectil principal
+    if (projectile && !projectile.active) {
+        projectile = null;
     }
+    
+    // Resetear multi-proyectil
+    multiProjectileActive = false;
+    multiProjectileTimer = 0;
+    
+    // Limpiar lista de proyectiles
+    projectiles = [];
+    
+    // Permitir nuevo disparo
+    setControlsMode('angle');
+    
+    if (lives <= 0) {
+        endGame();
+    }
+}
 } else {
     // Niveles normales 1-3 (código existente)
     if (projectile && projectile.active && !allCirclesCleared) {
