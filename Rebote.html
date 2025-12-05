@@ -102,11 +102,11 @@
             touch-action: none;
             width: 100%;
             max-width: 400px;
-            height: 380px;
+            height: 450px;
         }
         
         .controls {
-            margin-top: 90px;
+            margin-top: 40px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -396,7 +396,7 @@
         </div>
         
         <div class="game-area">
-            <canvas id="gameCanvas" width="400" height="380"></canvas>
+            <canvas id="gameCanvas" width="400" height="450"></canvas>
         </div>
         
         <div class="controls">
@@ -576,7 +576,7 @@
         width: 50,
         height: 10,
         x: 175,
-        y: 370,
+         y: canvas.height - 10,
         speed: 5,
         color: '#ffffff'
     };
@@ -697,7 +697,7 @@
         const containerWidth = canvas.parentElement.clientWidth;
         const maxWidth = Math.min(400, containerWidth);
         canvas.width = maxWidth;
-        canvas.height = 380;
+        canvas.height = 450;
         
         paddle.width = paddleSizes[currentLevel] || 50;
         paddle.x = (canvas.width - paddle.width) / 2;
@@ -748,7 +748,7 @@
             this.minX = this.radius;
             this.maxX = canvas.width - this.radius;
             this.minY = this.radius + 20;
-            this.maxY = canvas.height * 0.5;
+            this.maxY = canvas.height * 0.6;
         }
         
         getRandomColor() {
