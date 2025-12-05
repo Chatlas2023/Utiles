@@ -1170,21 +1170,21 @@
     }
 
     // Función para dividir proyectil - CORREGIDA
-    function splitProjectile(originalProjectile) {
-        if (!multiProjectileActive || projectiles.length >= 6) return; // Límite de 6 proyectiles
-        
-        // Activar multi-proyectil
-        multiProjectileActive = true;
-        multiProjectileTimer = Date.now();
-        
-        // Forzar modo paleta
-        controlsMode = 'paddle';
-        angleSlider.min = 0;
-        angleSlider.max = canvas.width - paddle.width;
-        angleSlider.value = paddle.x;
-        angleLabel.innerHTML = '<span id="angleValue">Move</span>';
-        fireBtn.textContent = 'WAITING';
-        fireBtn.disabled = true;
+function splitProjectile(originalProjectile) {
+    if (!multiProjectileActive || projectiles.length >= 6) return; // Límite de 6 proyectiles
+    
+    // Activar multi-proyectil
+    multiProjectileActive = true;
+    multiProjectileTimer = Date.now();
+    
+    // Forzar modo paleta
+    controlsMode = 'paddle';
+    angleSlider.min = 0;
+    angleSlider.max = canvas.width - paddle.width;
+    angleSlider.value = paddle.x;
+    angleLabel.innerHTML = '<span id="angleValue">Move</span>';
+    fireBtn.textContent = 'WAITING';
+    fireBtn.disabled = true;
         
         // Calcular ángulos para dividir
         const currentAngle = Math.atan2(originalProjectile.vy, originalProjectile.vx);
@@ -1241,6 +1241,9 @@
 function checkAllProjectilesGone() {
     if (currentLevel !== 4) return false;
     
+    // Si no se ha activado el multi-proyectil, no verificar
+    if (!multiProjectileActive) return false;
+    
     // Verificar proyectil principal
     if (projectile && projectile.active) return false;
     
@@ -1249,7 +1252,7 @@ function checkAllProjectilesGone() {
         if (projectiles[i].active) return false;
     }
     
-    // Si llegamos aquí, todos los proyectiles han caído
+    // Si llegamos aquí, todos los proyectiles han caído DESPUÉS de activar multi-proyectil
     return true;
 }
 
