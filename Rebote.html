@@ -429,7 +429,6 @@
     
     <div class="debug-buttons">
         <button class="debug-btn" onclick="skipLevel()">Skip Level</button>
-        <button class="debug-btn" onclick="restartLevel()">Restart</button>
     </div>
 
 <script>
@@ -1978,11 +1977,6 @@ if (checkAllProjectilesGone() && !allCirclesCleared) {
             completeLevel();
         }
     }
-
-    function restartLevel() {
-        initGame(currentLevel);
-    }
-
     window.addEventListener('load', function() {
         resizeCanvas();
         initGame(currentLevel);
