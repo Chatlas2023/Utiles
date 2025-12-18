@@ -48,11 +48,11 @@
             gap: 15px;
         }
         
-        .subtitle {
-            color: #7f8c8d;
+        .instrucciones {
+            text-align: center;
+            color: #666;
+            margin: 10px 0 30px 0;
             font-size: 16px;
-            max-width: 600px;
-            margin: 0 auto;
         }
         
         /* SECCIONES */
@@ -95,18 +95,17 @@
             font-weight: 600;
             color: #2c3e50;
             margin-bottom: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
         }
         
         .food-category {
+            display: inline-block;
             background: #e3f2fd;
             color: #1565c0;
             padding: 3px 10px;
             border-radius: 20px;
             font-size: 12px;
             font-weight: 600;
+            margin-bottom: 10px;
         }
         
         /* SISTEMA DE RATING */
@@ -174,29 +173,6 @@
             border-color: #2ecc71;
             background: #d5f4e6;
             color: #27ae60;
-        }
-        
-        /* CHECKBOX DE PEDIDO */
-        .order-check {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-top: 15px;
-            padding: 12px;
-            background: #f8f9fa;
-            border-radius: 8px;
-        }
-        
-        .order-check input {
-            width: 20px;
-            height: 20px;
-            cursor: pointer;
-        }
-        
-        .order-check label {
-            font-weight: 500;
-            cursor: pointer;
-            color: #555;
         }
         
         /* BOTONES */
@@ -272,14 +248,24 @@
             box-shadow: 0 5px 15px rgba(37, 211, 102, 0.3);
         }
         
+        /* CONTADOR DE CALIFICACIONES */
+        .counter-badge {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #2c3e50;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 50px;
+            font-weight: 600;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            z-index: 100;
+        }
+        
         /* RESPONSIVE */
         @media (max-width: 768px) {
             .container {
                 padding: 20px;
-            }
-            
-            .personal-data {
-                grid-template-columns: 1fr;
             }
             
             .rating-buttons {
@@ -297,6 +283,13 @@
             .btn {
                 width: 100%;
             }
+            
+            .counter-badge {
+                top: 10px;
+                right: 10px;
+                font-size: 14px;
+                padding: 8px 12px;
+            }
         }
         
         /* ANIMACIONES */
@@ -309,29 +302,18 @@
             animation: fadeIn 0.5s ease-out;
         }
         
-        /* CONTADOR */
-        .counter {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: rgba(255,255,255,0.9);
-            padding: 10px 20px;
-            border-radius: 50px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            font-weight: 600;
-            color: #2c3e50;
-        }
-        
-        /* INSTRUCCIONES SIMPLES */
-        .instrucciones {
-            text-align: center;
-            color: #666;
-            margin: 10px 0 30px 0;
-            font-size: 16px;
+        /* ESTILO PARA COMIDA CALIFICADA */
+        .food-item.calificada {
+            border-color: #2ecc71;
+            background: #f8fff9;
         }
     </style>
 </head>
 <body>
+    <div class="counter-badge">
+        <i class="fas fa-star"></i> Calificadas: <span id="contador-calificaciones">0</span>
+    </div>
+    
     <div class="container">
         <header>
             <h1>
@@ -341,6 +323,7 @@
             </h1>
             <div class="instrucciones">
                 <p>Califica las comidas.</p>
+                <p style="font-size: 14px; color: #888; margin-top: 5px;">Selecciona al menos una calificación para enviar</p>
             </div>
         </header>
         
@@ -365,30 +348,29 @@
         <!-- BOTONES -->
         <div class="buttons">
             <button class="btn btn-secondary" onclick="resetEncuesta()">
-                <i class="fas fa-redo"></i> Reiniciar
+                <i class="fas fa-redo"></i> Limpiar Todo
             </button>
-            <button class="btn btn-primary" onclick="enviarEncuesta()">
-                <i class="fas fa-paper-plane"></i> Enviar
+            <button class="btn btn-primary" onclick="enviarEncuesta()" id="btn-enviar">
+                <i class="fas fa-paper-plane"></i> Enviar Calificaciones
             </button>
         </div>
         
         <!-- RESULTADOS Y WHATSAPP -->
         <div id="resultados" class="results-section">
-            <h2 class="section-title"><i class="fas fa-check-circle" style="color:#2ecc71"></i> ¡Encuesta completada!</h2>
-            <p><strong>Resumen de calificaciones:</strong></p>
+            <h2 class="section-title"><i class="fas fa-check-circle" style="color:#2ecc71"></i> ¡Gracias por tu opinión!</h2>
+            <p><strong>Resumen de tus calificaciones:</strong></p>
             <div id="resumen-calificaciones"></div>
-            <p style="margin-top: 15px;">Para enviar los resultados:</p>
+            <p style="margin-top: 15px;">Puedes enviar estos resultados:</p>
             <a id="whatsapp-link" class="whatsapp-link" target="_blank">
-                <i class="fab fa-whatsapp"></i> Enviar por WhatsApp
+                <i class="fab fa-whatsapp"></i> Compartir por WhatsApp
             </a>
             <p style="margin-top: 15px; font-size: 14px; color: #666;">
-                <i class="fas fa-info-circle"></i> Respuesta anónima guardada localmente.
+                <i class="fas fa-info-circle"></i> Tus respuestas han sido guardadas anónimamente.
             </p>
+            <button onclick="nuevaEncuesta()" class="btn-secondary" style="margin-top: 15px; padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer;">
+                <i class="fas fa-plus"></i> Hacer otra encuesta
+            </button>
         </div>
-    </div>
-    
-    <div class="counter">
-        <i class="fas fa-poll"></i> Respuestas: <span id="contador">0</span>
     </div>
     
     <script>
@@ -467,7 +449,7 @@
             4: { texto: "Excelente", icono: "😍", color: "#2ecc71" }
         };
 
-        // ALMACENAMIENTO LOCAL
+        // ALMACENAMIENTO
         let respuestas = JSON.parse(localStorage.getItem('encuestaBrooklyn')) || {};
         let calificacionesActuales = {};
 
@@ -475,7 +457,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             cargarComidas();
             cargarRespuestasGuardadas();
-            actualizarContador();
+            actualizarContadorCalificaciones();
         });
 
         // CARGAR LISTA DE COMIDAS
@@ -501,13 +483,11 @@
             div.id = `comida-${id}`;
             
             div.innerHTML = `
-                <div class="food-name">
-                    ${nombre}
-                    <span class="food-category">${tipo.toUpperCase()}</span>
-                </div>
+                <div class="food-category">${tipo.toUpperCase()}</div>
+                <div class="food-name">${nombre}</div>
                 
                 <div class="rating-section">
-                    <span class="rating-label">Calificación:</span>
+                    <span class="rating-label">¿Qué opinas?</span>
                     <div class="rating-buttons">
                         <button type="button" class="rating-btn" data-value="1" onclick="seleccionarCalificacion(${id}, 1)">
                             😞 Mejorar
@@ -522,11 +502,6 @@
                             😍 Excelente
                         </button>
                     </div>
-                </div>
-                
-                <div class="order-check">
-                    <input type="checkbox" id="pedido-${id}" onchange="marcarPedido(${id}, this.checked)">
-                    <label for="pedido-${id}">Sí, pedí esta comida hoy</label>
                 </div>
             `;
             
@@ -545,6 +520,7 @@
             const botonSeleccionado = comidaDiv.querySelector(`.rating-btn[data-value="${valor}"]`);
             if (botonSeleccionado) {
                 botonSeleccionado.classList.add('selected');
+                comidaDiv.classList.add('calificada');
             }
             
             // Guardar en memoria
@@ -552,15 +528,12 @@
                 nombre: obtenerNombreComida(id),
                 calificacion: valor,
                 texto: calificaciones[valor].texto,
-                pedido: document.getElementById(`pedido-${id}`)?.checked || false
+                icono: calificaciones[valor].icono,
+                color: calificaciones[valor].color
             };
-        }
-
-        // MARCAR PEDIDO
-        function marcarPedido(id, pedido) {
-            if (calificacionesActuales[id]) {
-                calificacionesActuales[id].pedido = pedido;
-            }
+            
+            // Actualizar contador
+            actualizarContadorCalificaciones();
         }
 
         // OBTENER NOMBRE DE COMIDA POR ID
@@ -572,21 +545,42 @@
             }
         }
 
+        // ACTUALIZAR CONTADOR DE CALIFICACIONES
+        function actualizarContadorCalificaciones() {
+            const total = Object.values(calificacionesActuales).filter(c => c.calificacion).length;
+            document.getElementById('contador-calificaciones').textContent = total;
+            
+            // Actualizar estado del botón de enviar
+            const btnEnviar = document.getElementById('btn-enviar');
+            if (total > 0) {
+                btnEnviar.disabled = false;
+                btnEnviar.style.opacity = '1';
+                btnEnviar.style.cursor = 'pointer';
+                btnEnviar.innerHTML = `<i class="fas fa-paper-plane"></i> Enviar (${total})`;
+            } else {
+                btnEnviar.disabled = true;
+                btnEnviar.style.opacity = '0.6';
+                btnEnviar.style.cursor = 'not-allowed';
+                btnEnviar.innerHTML = `<i class="fas fa-paper-plane"></i> Enviar`;
+            }
+        }
+
         // ENVIAR ENCUESTA
         function enviarEncuesta() {
             // Validar que haya al menos una calificación
-            const calificacionesHechas = Object.values(calificacionesActuales).filter(c => c.calificacion && c.pedido);
+            const calificacionesHechas = Object.values(calificacionesActuales).filter(c => c.calificacion);
             
             if (calificacionesHechas.length === 0) {
-                alert('Por favor, selecciona al menos una comida que hayas pedido y califícala.');
+                alert('Por favor, califica al menos una comida antes de enviar.');
                 return;
             }
             
-            // Recolectar datos (ANÓNIMO - solo calificaciones)
+            // Recolectar datos (ANÓNIMO)
             const datos = {
                 calificaciones: calificacionesActuales,
                 timestamp: new Date().toISOString(),
-                fecha: new Date().toLocaleDateString('es-AR')
+                fecha: new Date().toLocaleDateString('es-AR'),
+                hora: new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })
             };
             
             // Guardar en localStorage
@@ -596,9 +590,6 @@
             
             // Mostrar resultados
             mostrarResultados(datos);
-            
-            // Actualizar contador
-            actualizarContador();
             
             // Scroll a resultados
             document.getElementById('resultados').scrollIntoView({ behavior: 'smooth' });
@@ -618,13 +609,12 @@
             let contCalificaciones = 0;
             
             Object.values(datos.calificaciones).forEach(item => {
-                if (item.calificacion && item.pedido) {
-                    const calif = calificaciones[item.calificacion];
+                if (item.calificacion) {
                     html += `
-                        <li style="margin: 8px 0; padding: 8px; background: white; border-radius: 8px; border-left: 4px solid ${calif.color}">
+                        <li style="margin: 8px 0; padding: 8px; background: white; border-radius: 8px; border-left: 4px solid ${item.color}">
                             <strong>${item.nombre}</strong><br>
-                            <span style="color: ${calif.color}; font-weight: 600;">
-                                ${calif.icono} ${calif.texto} (${item.calificacion}/4)
+                            <span style="color: ${item.color}; font-weight: 600;">
+                                ${item.icono} ${item.texto} (${item.calificacion}/4)
                             </span>
                         </li>
                     `;
@@ -638,7 +628,7 @@
             if (contCalificaciones > 0) {
                 const promedio = (totalCalificacion / contCalificaciones).toFixed(1);
                 html += `<p style="margin-top: 15px; font-weight: 600; color: #2c3e50;">
-                    <i class="fas fa-chart-line"></i> Promedio: ${promedio}/4
+                    <i class="fas fa-chart-line"></i> Promedio: ${promedio}/4 (${contCalificaciones} calificaciones)
                 </p>`;
             }
             
@@ -652,20 +642,19 @@
 
         // GENERAR MENSAJE PARA WHATSAPP
         function generarMensajeWhatsApp(datos) {
-            let mensaje = `📊 ENCUESTA DE COMIDAS\n`;
+            let mensaje = `📊 CALIFICACIÓN DE COMIDAS\n`;
             mensaje += `──────────────\n\n`;
-            mensaje += `*CALIFICACIONES:*\n\n`;
             
+            // Calificaciones individuales
             Object.values(datos.calificaciones).forEach(item => {
-                if (item.calificacion && item.pedido) {
-                    const calif = calificaciones[item.calificacion];
+                if (item.calificacion) {
                     mensaje += `🍽️ ${item.nombre}\n`;
-                    mensaje += `   ${calif.icono} ${calif.texto} (${item.calificacion}/4)\n\n`;
+                    mensaje += `   ${item.icono} ${item.texto} (${item.calificacion}/4)\n\n`;
                 }
             });
             
-            // Calcular estadísticas
-            const calificacionesHechas = Object.values(datos.calificaciones).filter(c => c.calificacion && c.pedido);
+            // Estadísticas
+            const calificacionesHechas = Object.values(datos.calificaciones).filter(c => c.calificacion);
             if (calificacionesHechas.length > 0) {
                 const promedio = (calificacionesHechas.reduce((sum, c) => sum + c.calificacion, 0) / calificacionesHechas.length).toFixed(1);
                 
@@ -675,8 +664,8 @@
                 const regulares = calificacionesHechas.filter(c => c.calificacion === 2).length;
                 const mejorar = calificacionesHechas.filter(c => c.calificacion === 1).length;
                 
-                mensaje += `📈 *RESUMEN:*\n`;
-                mensaje += `• Total calificado: ${calificacionesHechas.length}\n`;
+                mensaje += `📈 RESUMEN:\n`;
+                mensaje += `• Total: ${calificacionesHechas.length} calificaciones\n`;
                 mensaje += `• Promedio: ${promedio}/4\n`;
                 mensaje += `• Excelente (😍): ${excelentes}\n`;
                 mensaje += `• Bueno (🙂): ${buenos}\n`;
@@ -685,7 +674,8 @@
             }
             
             mensaje += `\n──────────────\n`;
-            mensaje += `📅 ${datos.fecha}`;
+            mensaje += `📅 ${datos.fecha} - ${datos.hora}\n`;
+            mensaje += `🏷️ Brooklyn Catering`;
             
             return mensaje;
         }
@@ -693,84 +683,87 @@
         // CARGAR RESPUESTAS GUARDADAS
         function cargarRespuestasGuardadas() {
             if (Object.keys(respuestas).length > 0) {
-                console.log('Respuestas cargadas:', respuestas);
+                console.log('Respuestas previas cargadas:', Object.keys(respuestas).length);
             }
-        }
-
-        // ACTUALIZAR CONTADOR
-        function actualizarContador() {
-            document.getElementById('contador').textContent = Object.keys(respuestas).length;
         }
 
         // REINICIAR ENCUESTA
         function resetEncuesta() {
-            if (confirm('¿Reiniciar todas las calificaciones?')) {
-                // Limpiar selecciones
+            if (calificacionesActuales.length === 0 || confirm('¿Limpiar todas las calificaciones?')) {
+                // Limpiar selecciones visuales
                 document.querySelectorAll('.rating-btn').forEach(btn => {
                     btn.classList.remove('selected');
                 });
                 
-                document.querySelectorAll('.order-check input').forEach(cb => {
-                    cb.checked = false;
+                document.querySelectorAll('.food-item').forEach(item => {
+                    item.classList.remove('calificada');
                 });
                 
                 // Limpiar memoria
                 calificacionesActuales = {};
                 
-                // Ocultar resultados
+                // Actualizar contador
+                actualizarContadorCalificaciones();
+                
+                // Ocultar resultados si están visibles
                 document.getElementById('resultados').style.display = 'none';
+                
+                if (calificacionesActuales.length > 0) {
+                    alert('Calificaciones limpiadas. Puedes comenzar de nuevo.');
+                }
             }
         }
 
-        // EXPORTAR DATOS (para análisis)
-        function exportarDatos() {
-            const dataStr = JSON.stringify(respuestas, null, 2);
-            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-            
-            const exportFileDefaultName = `encuesta-brooklyn-${new Date().toISOString().split('T')[0]}.json`;
-            
-            const linkElement = document.createElement('a');
-            linkElement.setAttribute('href', dataUri);
-            linkElement.setAttribute('download', exportFileDefaultName);
-            linkElement.click();
+        // NUEVA ENCUESTA
+        function nuevaEncuesta() {
+            resetEncuesta();
+            document.getElementById('resultados').style.display = 'none';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        // Función para administrador (ejecutar en consola)
-        window.mostrarDatos = function() {
-            console.log('=== DATOS DE ENCUESTA ===');
-            console.log('Total respuestas:', Object.keys(respuestas).length);
-            console.log('Respuestas:', respuestas);
+        // ===== FUNCIONES PARA ADMINISTRADOR =====
+        
+        // Ver todas las respuestas en consola
+        window.mostrarEstadisticas = function() {
+            console.log('=== ESTADÍSTICAS DE ENCUESTA ===');
+            console.log('Total de respuestas:', Object.keys(respuestas).length);
             
             // Estadísticas generales
             let totalCalificaciones = 0;
             let sumaCalificaciones = 0;
             let porComida = {};
+            let porValor = {1: 0, 2: 0, 3: 0, 4: 0};
             
             Object.values(respuestas).forEach(resp => {
                 Object.values(resp.calificaciones).forEach(calif => {
-                    if (calif.calificacion && calif.pedido) {
+                    if (calif.calificacion) {
                         totalCalificaciones++;
                         sumaCalificaciones += calif.calificacion;
+                        porValor[calif.calificacion]++;
                         
                         // Agrupar por comida
                         if (!porComida[calif.nombre]) {
                             porComida[calif.nombre] = {
                                 total: 0,
                                 suma: 0,
-                                calificaciones: []
+                                promedio: 0
                             };
                         }
                         porComida[calif.nombre].total++;
                         porComida[calif.nombre].suma += calif.calificacion;
-                        porComida[calif.nombre].calificaciones.push(calif.calificacion);
                     }
                 });
             });
             
             if (totalCalificaciones > 0) {
-                console.log('=== ESTADÍSTICAS GENERALES ===');
+                console.log('=== GENERAL ===');
                 console.log('Total calificaciones:', totalCalificaciones);
                 console.log('Promedio general:', (sumaCalificaciones / totalCalificaciones).toFixed(2));
+                console.log('Distribución:');
+                console.log('  Excelente (4):', porValor[4]);
+                console.log('  Bueno (3):', porValor[3]);
+                console.log('  Regular (2):', porValor[2]);
+                console.log('  Mejorar (1):', porValor[1]);
                 
                 console.log('=== POR COMIDA ===');
                 Object.keys(porComida).forEach(comida => {
@@ -785,23 +778,51 @@
         
         // Descargar todos los datos en CSV
         window.descargarCSV = function() {
-            let csv = 'Fecha,Comida,Calificacion,Texto\n';
+            let csv = 'Fecha,Hora,Comida,Calificacion,Texto\n';
             
             Object.values(respuestas).forEach(resp => {
                 Object.values(resp.calificaciones).forEach(calif => {
-                    if (calif.calificacion && calif.pedido) {
+                    if (calif.calificacion) {
                         const fecha = new Date(resp.timestamp).toLocaleDateString('es-AR');
-                        csv += `"${fecha}","${calif.nombre}",${calif.calificacion},"${calif.texto}"\n`;
+                        const hora = new Date(resp.timestamp).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
+                        csv += `"${fecha}","${hora}","${calif.nombre}",${calif.calificacion},"${calif.texto}"\n`;
                     }
                 });
             });
             
-            const blob = new Blob([csv], { type: 'text/csv' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `encuesta_comidas_${new Date().toISOString().split('T')[0]}.csv`;
-            a.click();
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `calificaciones_comidas_${new Date().toISOString().split('T')[0]}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        };
+        
+        // Exportar a JSON
+        window.exportarJSON = function() {
+            const dataStr = JSON.stringify(respuestas, null, 2);
+            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+            
+            const link = document.createElement('a');
+            link.setAttribute('href', dataUri);
+            link.setAttribute('download', `encuesta_comidas_${new Date().toISOString().split('T')[0]}.json`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        };
+        
+        // Limpiar todas las respuestas (solo admin)
+        window.limpiarTodo = function() {
+            if (confirm('¿Eliminar TODAS las respuestas almacenadas? Esto no se puede deshacer.')) {
+                localStorage.removeItem('encuestaBrooklyn');
+                respuestas = {};
+                alert('Todas las respuestas han sido eliminadas.');
+                location.reload();
+            }
         };
     </script>
 </body>
