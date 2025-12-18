@@ -199,59 +199,6 @@
             color: #555;
         }
         
-        /* SECCIÓN DATOS PERSONALES */
-        .personal-data {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-top: 15px;
-        }
-        
-        .input-group {
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .input-group label {
-            margin-bottom: 8px;
-            font-weight: 500;
-            color: #555;
-        }
-        
-        .input-group input, .input-group select {
-            padding: 12px;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            font-size: 16px;
-            transition: border-color 0.3s;
-        }
-        
-        .input-group input:focus, .input-group select:focus {
-            outline: none;
-            border-color: #3498db;
-        }
-        
-        /* COMENTARIOS */
-        .comments {
-            margin-top: 15px;
-        }
-        
-        .comments textarea {
-            width: 100%;
-            padding: 15px;
-            border: 2px solid #ddd;
-            border-radius: 10px;
-            font-size: 16px;
-            resize: vertical;
-            min-height: 120px;
-            transition: border-color 0.3s;
-        }
-        
-        .comments textarea:focus {
-            outline: none;
-            border-color: #3498db;
-        }
-        
         /* BOTONES */
         .buttons {
             display: flex;
@@ -374,6 +321,14 @@
             font-weight: 600;
             color: #2c3e50;
         }
+        
+        /* INSTRUCCIONES SIMPLES */
+        .instrucciones {
+            text-align: center;
+            color: #666;
+            margin: 10px 0 30px 0;
+            font-size: 16px;
+        }
     </style>
 </head>
 <body>
@@ -381,39 +336,13 @@
         <header>
             <h1>
                 <i class="fas fa-utensils"></i>
-                Encuesta de Satisfacción
+                Encuesta de Comidas
                 <i class="fas fa-star"></i>
             </h1>
-            <p class="subtitle">Califica las comidas que pediste hoy. Tu opinión nos ayuda a mejorar nuestro servicio.</p>
-        </header>
-        
-        <!-- DATOS PERSONALES -->
-        <div class="section">
-            <h2 class="section-title"><i class="fas fa-user"></i> Tus datos</h2>
-            <div class="personal-data">
-                <div class="input-group">
-                    <label for="nombre">Nombre (opcional):</label>
-                    <input type="text" id="nombre" placeholder="Ej: Carlos Marmolejo">
-                </div>
-                <div class="input-group">
-                    <label for="fecha">Fecha del pedido:</label>
-                    <input type="date" id="fecha" value="<?php echo date('Y-m-d'); ?>">
-                </div>
-                <div class="input-group">
-                    <label for="horario">Horario del pedido:</label>
-                    <select id="horario">
-                        <option value="">Seleccionar</option>
-                        <option value="almuerzo">Almuerzo</option>
-                        <option value="cena">Cena</option>
-                        <option value="otro">Otro horario</option>
-                    </select>
-                </div>
-                <div class="input-group">
-                    <label for="sucursal">Sucursal/Entrega:</label>
-                    <input type="text" id="sucursal" placeholder="Ej: HAITI" value="HAITI">
-                </div>
+            <div class="instrucciones">
+                <p>Califica las comidas.</p>
             </div>
-        </div>
+        </header>
         
         <!-- LISTA DE COMIDAS - VIANDAS -->
         <div class="section">
@@ -433,41 +362,33 @@
             </div>
         </div>
         
-        <!-- COMENTARIOS -->
-        <div class="section">
-            <h2 class="section-title"><i class="fas fa-comment-dots"></i> Comentarios adicionales</h2>
-            <div class="comments">
-                <textarea id="comentarios" placeholder="¿Alguna sugerencia? ¿Algo que mejorar? ¿Algo que te encantó? ¡Tu opinión es muy valiosa para nosotros!"></textarea>
-            </div>
-        </div>
-        
         <!-- BOTONES -->
         <div class="buttons">
             <button class="btn btn-secondary" onclick="resetEncuesta()">
                 <i class="fas fa-redo"></i> Reiniciar
             </button>
             <button class="btn btn-primary" onclick="enviarEncuesta()">
-                <i class="fas fa-paper-plane"></i> Enviar Encuesta
+                <i class="fas fa-paper-plane"></i> Enviar
             </button>
         </div>
         
         <!-- RESULTADOS Y WHATSAPP -->
         <div id="resultados" class="results-section">
             <h2 class="section-title"><i class="fas fa-check-circle" style="color:#2ecc71"></i> ¡Encuesta completada!</h2>
-            <p><strong>Resumen de tus calificaciones:</strong></p>
+            <p><strong>Resumen de calificaciones:</strong></p>
             <div id="resumen-calificaciones"></div>
-            <p style="margin-top: 15px;">Para enviar los resultados al equipo de Brooklyn Catering:</p>
+            <p style="margin-top: 15px;">Para enviar los resultados:</p>
             <a id="whatsapp-link" class="whatsapp-link" target="_blank">
                 <i class="fab fa-whatsapp"></i> Enviar por WhatsApp
             </a>
             <p style="margin-top: 15px; font-size: 14px; color: #666;">
-                <i class="fas fa-info-circle"></i> También se guardaron localmente en tu navegador.
+                <i class="fas fa-info-circle"></i> Respuesta anónima guardada localmente.
             </p>
         </div>
     </div>
     
     <div class="counter">
-        <i class="fas fa-poll"></i> Respuestas guardadas: <span id="contador">0</span>
+        <i class="fas fa-poll"></i> Respuestas: <span id="contador">0</span>
     </div>
     
     <script>
@@ -555,12 +476,6 @@
             cargarComidas();
             cargarRespuestasGuardadas();
             actualizarContador();
-            
-            // Establecer fecha actual si está vacía
-            if (!document.getElementById('fecha').value) {
-                const hoy = new Date();
-                document.getElementById('fecha').value = hoy.toISOString().split('T')[0];
-            }
         });
 
         // CARGAR LISTA DE COMIDAS
@@ -660,22 +575,18 @@
         // ENVIAR ENCUESTA
         function enviarEncuesta() {
             // Validar que haya al menos una calificación
-            const calificacionesHechas = Object.values(calificacionesActuales).filter(c => c.calificacion);
+            const calificacionesHechas = Object.values(calificacionesActuales).filter(c => c.calificacion && c.pedido);
             
             if (calificacionesHechas.length === 0) {
-                alert('Por favor, califica al menos una comida antes de enviar.');
+                alert('Por favor, selecciona al menos una comida que hayas pedido y califícala.');
                 return;
             }
             
-            // Recolectar datos
+            // Recolectar datos (ANÓNIMO - solo calificaciones)
             const datos = {
-                nombre: document.getElementById('nombre').value,
-                fecha: document.getElementById('fecha').value,
-                horario: document.getElementById('horario').value,
-                sucursal: document.getElementById('sucursal').value,
-                comentarios: document.getElementById('comentarios').value,
                 calificaciones: calificacionesActuales,
-                timestamp: new Date().toISOString()
+                timestamp: new Date().toISOString(),
+                fecha: new Date().toLocaleDateString('es-AR')
             };
             
             // Guardar en localStorage
@@ -727,7 +638,7 @@
             if (contCalificaciones > 0) {
                 const promedio = (totalCalificacion / contCalificaciones).toFixed(1);
                 html += `<p style="margin-top: 15px; font-weight: 600; color: #2c3e50;">
-                    <i class="fas fa-chart-line"></i> Promedio de satisfacción: ${promedio}/4
+                    <i class="fas fa-chart-line"></i> Promedio: ${promedio}/4
                 </p>`;
             }
             
@@ -741,13 +652,9 @@
 
         // GENERAR MENSAJE PARA WHATSAPP
         function generarMensajeWhatsApp(datos) {
-            let mensaje = `📊 ENCUESTA BROOKLYN CATERING\n\n`;
-            mensaje += `*Cliente:* ${datos.nombre || 'No especificado'}\n`;
-            mensaje += `*Fecha:* ${datos.fecha}\n`;
-            mensaje += `*Horario:* ${datos.horario || 'No especificado'}\n`;
-            mensaje += `*Sucursal:* ${datos.sucursal}\n\n`;
-            mensaje += `*CALIFICACIONES:*\n`;
-            mensaje += `────────────────\n`;
+            let mensaje = `📊 ENCUESTA DE COMIDAS\n`;
+            mensaje += `──────────────\n\n`;
+            mensaje += `*CALIFICACIONES:*\n\n`;
             
             Object.values(datos.calificaciones).forEach(item => {
                 if (item.calificacion && item.pedido) {
@@ -757,21 +664,28 @@
                 }
             });
             
-            if (datos.comentarios) {
-                mensaje += `*COMENTARIOS:*\n`;
-                mensaje += `"${datos.comentarios}"\n\n`;
+            // Calcular estadísticas
+            const calificacionesHechas = Object.values(datos.calificaciones).filter(c => c.calificacion && c.pedido);
+            if (calificacionesHechas.length > 0) {
+                const promedio = (calificacionesHechas.reduce((sum, c) => sum + c.calificacion, 0) / calificacionesHechas.length).toFixed(1);
+                
+                // Contar por categoría
+                const excelentes = calificacionesHechas.filter(c => c.calificacion === 4).length;
+                const buenos = calificacionesHechas.filter(c => c.calificacion === 3).length;
+                const regulares = calificacionesHechas.filter(c => c.calificacion === 2).length;
+                const mejorar = calificacionesHechas.filter(c => c.calificacion === 1).length;
+                
+                mensaje += `📈 *RESUMEN:*\n`;
+                mensaje += `• Total calificado: ${calificacionesHechas.length}\n`;
+                mensaje += `• Promedio: ${promedio}/4\n`;
+                mensaje += `• Excelente (😍): ${excelentes}\n`;
+                mensaje += `• Bueno (🙂): ${buenos}\n`;
+                mensaje += `• Regular (😐): ${regulares}\n`;
+                mensaje += `• Mejorar (😞): ${mejorar}\n`;
             }
             
-            mensaje += `📈 *RESUMEN:*\n`;
-            const calificacionesHechas = Object.values(datos.calificaciones).filter(c => c.calificacion && c.pedido);
-            const promedio = calificacionesHechas.length > 0 
-                ? (calificacionesHechas.reduce((sum, c) => sum + c.calificacion, 0) / calificacionesHechas.length).toFixed(1)
-                : 0;
-            
-            mensaje += `• Total calificado: ${calificacionesHechas.length} productos\n`;
-            mensaje += `• Satisfacción promedio: ${promedio}/4\n`;
-            mensaje += `• Fecha encuesta: ${new Date().toLocaleDateString('es-AR')}\n\n`;
-            mensaje += `_Enviado desde Encuesta Web Brooklyn Catering_`;
+            mensaje += `\n──────────────\n`;
+            mensaje += `📅 ${datos.fecha}`;
             
             return mensaje;
         }
@@ -790,7 +704,7 @@
 
         // REINICIAR ENCUESTA
         function resetEncuesta() {
-            if (confirm('¿Estás seguro de reiniciar la encuesta? Se perderán las calificaciones no enviadas.')) {
+            if (confirm('¿Reiniciar todas las calificaciones?')) {
                 // Limpiar selecciones
                 document.querySelectorAll('.rating-btn').forEach(btn => {
                     btn.classList.remove('selected');
@@ -800,14 +714,11 @@
                     cb.checked = false;
                 });
                 
-                // Limpiar campos
-                document.getElementById('comentarios').value = '';
+                // Limpiar memoria
                 calificacionesActuales = {};
                 
                 // Ocultar resultados
                 document.getElementById('resultados').style.display = 'none';
-                
-                alert('Encuesta reiniciada. Puedes comenzar de nuevo.');
             }
         }
 
@@ -830,26 +741,67 @@
             console.log('Total respuestas:', Object.keys(respuestas).length);
             console.log('Respuestas:', respuestas);
             
-            // Estadísticas
+            // Estadísticas generales
             let totalCalificaciones = 0;
             let sumaCalificaciones = 0;
+            let porComida = {};
             
             Object.values(respuestas).forEach(resp => {
                 Object.values(resp.calificaciones).forEach(calif => {
                     if (calif.calificacion && calif.pedido) {
                         totalCalificaciones++;
                         sumaCalificaciones += calif.calificacion;
+                        
+                        // Agrupar por comida
+                        if (!porComida[calif.nombre]) {
+                            porComida[calif.nombre] = {
+                                total: 0,
+                                suma: 0,
+                                calificaciones: []
+                            };
+                        }
+                        porComida[calif.nombre].total++;
+                        porComida[calif.nombre].suma += calif.calificacion;
+                        porComida[calif.nombre].calificaciones.push(calif.calificacion);
                     }
                 });
             });
             
             if (totalCalificaciones > 0) {
-                console.log('=== ESTADÍSTICAS ===');
+                console.log('=== ESTADÍSTICAS GENERALES ===');
                 console.log('Total calificaciones:', totalCalificaciones);
                 console.log('Promedio general:', (sumaCalificaciones / totalCalificaciones).toFixed(2));
+                
+                console.log('=== POR COMIDA ===');
+                Object.keys(porComida).forEach(comida => {
+                    const data = porComida[comida];
+                    const promedio = (data.suma / data.total).toFixed(2);
+                    console.log(`${comida}: ${data.total} calificaciones, Promedio: ${promedio}/4`);
+                });
             }
             
             return respuestas;
+        };
+        
+        // Descargar todos los datos en CSV
+        window.descargarCSV = function() {
+            let csv = 'Fecha,Comida,Calificacion,Texto\n';
+            
+            Object.values(respuestas).forEach(resp => {
+                Object.values(resp.calificaciones).forEach(calif => {
+                    if (calif.calificacion && calif.pedido) {
+                        const fecha = new Date(resp.timestamp).toLocaleDateString('es-AR');
+                        csv += `"${fecha}","${calif.nombre}",${calif.calificacion},"${calif.texto}"\n`;
+                    }
+                });
+            });
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `encuesta_comidas_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
         };
     </script>
 </body>
