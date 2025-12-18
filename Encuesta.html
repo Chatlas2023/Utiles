@@ -94,32 +94,14 @@
             font-size: 18px;
             font-weight: 600;
             color: #2c3e50;
-            margin-bottom: 15px;
-        }
-        
-        .food-category {
-            display: inline-block;
-            background: #e3f2fd;
-            color: #1565c0;
-            padding: 3px 10px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
             margin-bottom: 10px;
         }
-        
+            
         /* SISTEMA DE RATING */
         .rating-section {
             margin: 15px 0;
         }
-        
-        .rating-label {
-            display: block;
-            margin-bottom: 8px;
-            color: #555;
-            font-weight: 500;
-        }
-        
+               
         .rating-buttons {
             display: flex;
             gap: 10px;
@@ -483,11 +465,9 @@
             div.id = `comida-${id}`;
             
             div.innerHTML = `
-                <div class="food-category">${tipo.toUpperCase()}</div>
                 <div class="food-name">${nombre}</div>
                 
                 <div class="rating-section">
-                    <span class="rating-label">¿Qué opinas?</span>
                     <div class="rating-buttons">
                         <button type="button" class="rating-btn" data-value="1" onclick="seleccionarCalificacion(${id}, 1)">
                             😞 Mejorar
