@@ -2,13 +2,15 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bounce Game - Levels</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Bounce Game - Triple Shot & Explode 200</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
         }
         
         body {
@@ -72,21 +74,10 @@
             color: #fff;
         }
         
-        .lives {
-            color: #e94560;
-        }
-        
-        .score {
-            color: #0fce7c;
-        }
-        
-        .best {
-            color: #ffd166;
-        }
-        
-        .level {
-            color: #9b5de5;
-        }
+        .lives { color: #e94560; }
+        .score { color: #0fce7c; }
+        .best { color: #ffd166; }
+        .level { color: #9b5de5; }
         
         .game-area {
             position: relative;
@@ -161,11 +152,7 @@
             margin-top: 20px;
         }
         
-        .fire-btn:active {
-            transform: scale(0.95);
-            box-shadow: 0 2px 10px rgba(15, 206, 124, 0.6);
-        }
-        
+        .fire-btn:active { transform: scale(0.95); }
         .game-over {
             position: absolute;
             top: 50%;
@@ -181,55 +168,19 @@
             width: 80%;
             max-width: 350px;
         }
-        
-        .game-over h2 {
-            color: #e94560;
-            font-size: 1.7rem;
-            margin-bottom: 12px;
-        }
-        
-        .game-over p {
-            margin-bottom: 18px;
-            font-size: 1.1rem;
-        }
-        
-        .restart-btn {
-            background: linear-gradient(to right, #0fce7c, #4cd9a1);
-            color: white;
+        .game-over h2 { color: #e94560; font-size: 1.7rem; margin-bottom: 12px; }
+        .restart-btn, .continue-btn, .next-level-btn {
             border: none;
             padding: 12px 25px;
             font-size: 1rem;
             border-radius: 50px;
             cursor: pointer;
             transition: all 0.3s ease;
-            box-shadow: 0 5px 15px rgba(15, 206, 124, 0.4);
         }
-        
-        .restart-btn:active {
-            transform: scale(0.95);
-        }
-        
-        .game-over-buttons {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .continue-btn {
-            background: linear-gradient(to right, #ffd166, #ffed99);
-            color: #333;
-            border: none;
-            padding: 12px 25px;
-            font-size: 1rem;
-            border-radius = 50px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 5px 15px rgba(255, 209, 102, 0.4);
-        }
-
-        .continue-btn:active {
-            transform: scale(0.95);
-        }
+        .restart-btn { background: linear-gradient(to right, #0fce7c, #4cd9a1); color: white; }
+        .continue-btn { background: linear-gradient(to right, #ffd166, #ffed99); color: #333; }
+        .next-level-btn { background: linear-gradient(to right, #9b5de5, #c77dff); color: white; margin-top: 10px; width: 100%; }
+        .game-over-buttons { display: flex; flex-direction: column; gap: 10px; }
         
         .level-complete {
             position: absolute;
@@ -248,1749 +199,547 @@
             border: 3px solid #0fce7c;
             animation: pulse 2s infinite;
         }
-        
         @keyframes pulse {
             0% { box-shadow: 0 0 40px rgba(15, 206, 124, 0.7); }
-            50% { box-shadow: 0 0 60px rgba(15, 206, 124, 0.9); }
-            100% { box-shadow: 0 0 40px rgba(15, 206, 124, 0.7); }
+            100% { box-shadow: 0 0 60px rgba(15, 206, 124, 0.9); }
         }
-        
-        .level-complete h2 {
-            color: #0fce7c;
-            font-size: 1.8rem;
-            margin-bottom: 15px;
-        }
-        
-        .level-complete p {
-            margin-bottom: 10px;
-            font-size: 1.1rem;
-        }
-        
-        .next-level-btn {
-            background: linear-gradient(to right, #9b5de5, #c77dff);
-            color: white;
-            border: none;
-            padding: 12px 25px;
-            font-size: 1rem;
-            border-radius: 50px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 5px 15px rgba(155, 93, 229, 0.4);
-            margin-top: 10px;
-            width: 100%;
-        }
-        
-        .next-level-btn:active {
-            transform: scale(0.95);
-        }
-        
-        @media (max-width: 500px) {
-            .game-info {
-                flex-direction: row;
-                gap: 5px;
-                font-size: 12px;
-            }
-            
-            .info-item {
-                flex-direction: column;
-                width: auto;
-            }
-            
-            .info-label {
-                font-size: 0.65rem;
-            }
-            
-            .info-value {
-                font-size: 1rem;
-            }
-            
-            canvas {
-                height: 350px;
-            }
-            
-            .level-complete {
-                padding: 20px;
-                width: 90%;
-            }
-        }
-        .confetti {
-            position: fixed;
-            width: 10px;
-            height: 10px;
-            pointer-events: none;
-            z-index: 15;
-        }
-        
-        .sound-toggle {
-            background: rgba(0, 0, 0, 0.3);
-            border: none;
-            color: white;
-            width = 35px;
-            height: 35px;
-            border-radius: 50%;
-            cursor: pointer;
-            font-size: 1.2rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 10px;
-            flex-shrink: 0;
-            order: 5;
-        }
-        
-        .level-indicator {
-            margin-top: 5px;
-            font-size: 1rem;
-            color: #9b5de5;
-            font-weight: bold;
-            background: rgba(0, 0, 0, 0.2);
-            padding: 5px 15px;
-            border-radius: 20px;
-            display: inline-block;
-        }
-        
-        .debug-buttons {
-            position: fixed;
-            bottom: 10px;
-            left: 10px;
-            display: flex;
-            gap: 10px;
-            z-index: 100;
-        }
+        .level-complete h2 { color: #0fce7c; font-size: 1.8rem; }
         .debug-btn {
             background: rgba(155, 93, 229, 0.8);
             color: white;
             border: none;
-            padding: 10px 15px;
+            padding: 8px 12px;
             border-radius: 20px;
-            cursor: pointer;
-            font-size: 0.9rem;
+            font-size: 0.8rem;
             opacity: 0.7;
+            cursor: pointer;
+        }
+        .debug-buttons { position: fixed; bottom: 10px; left: 10px; display: flex; gap: 10px; z-index: 100; }
+        .sound-toggle { background: rgba(0,0,0,0.3); border: none; color: white; width: 35px; height: 35px; border-radius: 50%; cursor: pointer; font-size: 1.2rem; }
+        @media (max-width: 500px) {
+            canvas { height: 350px; }
+            .info-value { font-size: 1rem; }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="level-indicator" id="levelIndicator">Level 1: Classic</div>
-        
-        <div class="game-info">
-            <div class="info-item">
-                <span class="info-label">LIVES</span>
-                <span class="info-value lives" id="lives">10</span>
-            </div>
-            <div class="info-item">
-                <span class="info-label">SCORE</span>
-                <span class="info-value score" id="score">0</span>
-            </div>
-            <div class="info-item">
-                <span class="info-label">BEST</span>
-                <span class="info-value best" id="best">0</span>
-            </div>
-            <div class="info-item">
-                <span class="info-label">LEVEL</span>
-                <span class="info-value level" id="level">1</span>
-            </div>
-            <div class="sound-toggle-container">
-                <button class="sound-toggle" id="soundToggle">🔊</button>
-            </div>
-        </div>
-        
-        <div class="game-area">
-            <canvas id="gameCanvas" width="400" height="450"></canvas>
-        </div>
-        
-        <div class="controls">
-            <div class="angle-control">
-                <div class="angle-label"><span id="angleValue">45°</span></div>
-                <input type="range" min="0" max="180" value="135" class="angle-slider" id="angleSlider">
-            </div>
-            <button class="fire-btn" id="fireBtn">GO!</button>
-        </div>
+<div class="container">
+    <div class="level-indicator" id="levelIndicator">Level 1: Classic</div>
+    <div class="game-info">
+        <div class="info-item"><span class="info-label">LIVES</span><span class="info-value lives" id="lives">10</span></div>
+        <div class="info-item"><span class="info-label">SCORE</span><span class="info-value score" id="score">0</span></div>
+        <div class="info-item"><span class="info-label">BEST</span><span class="info-value best" id="best">0</span></div>
+        <div class="info-item"><span class="info-label">LEVEL</span><span class="info-value level" id="level">1</span></div>
+        <div class="sound-toggle-container"><button class="sound-toggle" id="soundToggle">🔊</button></div>
     </div>
-    
-    <div class="game-over" id="gameOver">
-        <h2>Game Over!</h2>
-        <p>Your score: <span id="finalScore">0</span></p>
-        <p>Best score: <span id="finalBest">0</span></p>
-        <div class="game-over-buttons">
-            <button class="restart-btn" id="restartBtn">PLAY AGAIN</button>
-            <button class="continue-btn" id="continueBtn">CONTINUE (+2 LIVES)</button>
-        </div>
+    <div class="game-area"><canvas id="gameCanvas" width="400" height="450"></canvas></div>
+    <div class="controls">
+        <div class="angle-control"><div class="angle-label"><span id="angleValue">45°</span></div><input type="range" min="0" max="180" value="135" class="angle-slider" id="angleSlider"></div>
+        <button class="fire-btn" id="fireBtn">GO!</button>
     </div>
-    
-    <div class="level-complete" id="levelComplete">
-        <h2>Level Complete!</h2>
-        <p>Level <span id="completedLevel">1</span> Completed</p>
-        <p>Score: <span id="levelScore">0</span></p>
-        <p>Lives remaining: <span id="remainingLives">10</span></p>
-        <button class="next-level-btn" id="nextLevelBtn">NEXT LEVEL</button>
-        <button class="restart-btn" style="margin-top: 10px;" id="menuBtn">LEVEL SELECT</button>
-    </div>
-    
-    <div class="debug-buttons">
-        <button class="debug-btn" onclick="skipLevel()">Skip Level</button>
-    </div>
+</div>
+<div class="game-over" id="gameOver"><h2>Game Over!</h2><p>Your score: <span id="finalScore">0</span></p><p>Best: <span id="finalBest">0</span></p><div class="game-over-buttons"><button class="restart-btn" id="restartBtn">PLAY AGAIN</button><button class="continue-btn" id="continueBtn">CONTINUE (+2 LIVES)</button></div></div>
+<div class="level-complete" id="levelComplete"><h2>Level Complete!</h2><p>Level <span id="completedLevel">1</span> Completed</p><p>Score: <span id="levelScore">0</span></p><button class="next-level-btn" id="nextLevelBtn">NEXT LEVEL</button><button class="restart-btn" style="margin-top:10px;" id="menuBtn">LEVEL SELECT</button></div>
+<div class="debug-buttons"><button class="debug-btn" id="skipBtn">Skip Level</button></div>
 
 <script>
-    // Get DOM elements
-    const canvas = document.getElementById('gameCanvas');
-    const ctx = canvas.getContext('2d');
-    const angleSlider = document.getElementById('angleSlider');
-    const angleLabel = document.querySelector('.angle-label');
-    const angleValue = document.getElementById('angleValue');
-    const fireBtn = document.getElementById('fireBtn');
-    const livesElement = document.getElementById('lives');
-    const scoreElement = document.getElementById('score');
-    const bestElement = document.getElementById('best');
-    const levelElement = document.getElementById('level');
-    const levelIndicator = document.getElementById('levelIndicator');
-    const gameOverElement = document.getElementById('gameOver');
-    const finalScoreElement = document.getElementById('finalScore');
-    const finalBestElement = document.getElementById('finalBest');
-    const restartBtn = document.getElementById('restartBtn');
-    const continueBtn = document.getElementById('continueBtn');
-    const soundToggle = document.getElementById('soundToggle');
-    const levelCompleteElement = document.getElementById('levelComplete');
-    const completedLevelElement = document.getElementById('completedLevel');
-    const levelScoreElement = document.getElementById('levelScore');
-    const remainingLivesElement = document.getElementById('remainingLives');
-    const nextLevelBtn = document.getElementById('nextLevelBtn');
-    const menuBtn = document.getElementById('menuBtn');
+    (function(){
+        // DOM elements
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const angleSlider = document.getElementById('angleSlider');
+        const angleValue = document.getElementById('angleValue');
+        const fireBtn = document.getElementById('fireBtn');
+        const livesElement = document.getElementById('lives');
+        const scoreElement = document.getElementById('score');
+        const bestElement = document.getElementById('best');
+        const levelElement = document.getElementById('level');
+        const levelIndicator = document.getElementById('levelIndicator');
+        const gameOverElement = document.getElementById('gameOver');
+        const finalScoreElement = document.getElementById('finalScore');
+        const finalBestElement = document.getElementById('finalBest');
+        const restartBtn = document.getElementById('restartBtn');
+        const continueBtn = document.getElementById('continueBtn');
+        const soundToggle = document.getElementById('soundToggle');
+        const levelCompleteElement = document.getElementById('levelComplete');
+        const completedLevelElement = document.getElementById('completedLevel');
+        const levelScoreElement = document.getElementById('levelScore');
+        const nextLevelBtn = document.getElementById('nextLevelBtn');
+        const menuBtn = document.getElementById('menuBtn');
+        const skipBtn = document.getElementById('skipBtn');
 
-    // Game variables
-    let circles = [];
-    let projectile = null;
-    let lives = 10;
-    let score = 0;
-    let bestScore = localStorage.getItem('bestScore') || 0;
-    let gameActive = true;
-    let animationId = null;
-    let currentAngle = 135;
-    let controlsMode = 'angle';
-    let allCirclesCleared = false;
-    let soundEnabled = true;
-    
-    // Variables para nivel 4
-    let specialCircle = null;
-    let multiProjectileActive = false;
-    let multiProjectileTimer = 0;
-    let projectiles = [];
-    let colorChangeTimer = 0;
-    const MULTI_PROJECTILE_DURATION = 15000; // 15 segundos
-    const COLOR_CHANGE_INTERVAL = 500;
-    const SPECIAL_CIRCLE_RESPAWN_TIME = 8000; // 8 segundos para reaparecer
-    let specialCircleRespawnTimer = 0;
-    let specialCircleActive = false;
-
-    // Verificación de fecha de expiración (deshabilitada temporalmente)
-    const expirationDate = new Date('2026-6-1');
-    const currentDate = new Date();
-
-    if (currentDate > expirationDate) { // Verificar si la fecha actual es posterior a la de expiración
-        // Mostrar mensaje de prueba vencida y deshabilitar el juego
-        const trialExpired = document.createElement('div');
-        trialExpired.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.95);
-            color: #e94560;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            text-align: center;
-            padding: 20px;
-        `;
+        // GAME STATE
+        let circles = [];
+        let projectiles = [];      // array of active projectiles (supports multiple balls)
+        let lives = 10;
+        let score = 0;
+        let bestScore = localStorage.getItem('bestScore') || 0;
+        let gameActive = true;
+        let animationId = null;
+        let currentAngle = 135;
+        let controlsMode = 'angle';   // 'angle' or 'paddle'
+        let allCirclesCleared = false;
+        let soundEnabled = true;
         
-        trialExpired.innerHTML = `
-            <h2 style="font-size: 2.5rem; margin-bottom: 20px; color: #e94560;">⏰ Periodo de Prueba Vencido</h2>
-            <p style="font-size: 1.2rem; margin-bottom: 30px; color: #fff;">
-                Esta versión de prueba ha expirado.<br>
-                Fecha límite: ${expirationDate.toLocaleDateString()}
-            </p>
-            <p style="font-size: 1rem; color: #ffd166;">
-                Contacta al desarrollador para obtener la versión completa.
-            </p>
-        `;
+        // Triple shot queue: when firing, we launch 3 balls sequentially with small delay
+        let pendingShots = 0;          // number of remaining balls to launch
+        let shotTimer = null;           // timer between sequential shots
         
-        document.body.appendChild(trialExpired);
+        // Level specific
+        let currentLevel = 1;
+        const maxLevels = 4;
+        const levelThemes = { 1: ['#1a1a2e', '#16213e'], 2: ['#2d1b3d', '#4a235a'], 3: ['#1b3d2d', '#235a4a'], 4: ['#5d1b3d', '#8a235a'] };
+        const levelNames = { 1: "Classic", 2: "Moving Circles", 3: "Small Paddle", 4: "Multi-Projectile" };
+        const paddleSizes = { 1: 50, 2: 50, 3: 35, 4: 50 };
+        const projectileSpeeds = { 1: 4.0, 2: 4.2, 3: 4.5, 4: 3.8 };
         
-        // Deshabilitar todos los controles del juego
-        gameActive = false;
+        // Nivel 4 specials
+        let specialCircle = null;
+        let multiProjectileActive = false;
+        let multiProjectileTimer = 0;
+        let specialCircleRespawnTimer = 0;
+        let specialCircleActive = false;
+        const MULTI_PROJECTILE_DURATION = 15000;
+        const SPECIAL_CIRCLE_RESPAWN_TIME = 8000;
+        const COLOR_CHANGE_INTERVAL = 500;
         
-        // Detener cualquier animación en curso
-        if (animationId) {
-            cancelAnimationFrame(animationId);
+        // Paddle
+        let paddle = { width: 50, height: 10, x: 175, y: canvas.height - 10, speed: 5, color: '#ffffff' };
+        
+        // Audio
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const bounceNotes = [392.00, 440.00, 493.88, 523.25];
+        function playBounceSound(type = 'wall') {
+            if (!soundEnabled) return;
+            try {
+                const osc = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+                osc.connect(gain); gain.connect(audioContext.destination);
+                let freq = bounceNotes[Math.floor(Math.random() * bounceNotes.length)];
+                if(type === 'paddle') { osc.type = 'square'; freq = 440; gain.gain.value = 0.12; }
+                else if(type === 'circle') { osc.type = 'triangle'; freq *= 0.85; gain.gain.value = 0.16; }
+                else { osc.type = 'sine'; gain.gain.value = 0.15; }
+                osc.frequency.value = freq + (Math.random() * 20 - 10);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.12);
+                osc.start(); osc.stop(audioContext.currentTime + 0.12);
+            } catch(e) {}
         }
         
-        // Deshabilitar botones y controles
-        const disableElement = (element) => {
-            if (element) {
-                element.disabled = true;
-                element.style.opacity = '0.5';
-                element.style.cursor = 'not-allowed';
+        function toggleSound() { soundEnabled = !soundEnabled; soundToggle.textContent = soundEnabled ? '🔊' : '🔇'; localStorage.setItem('soundEnabled', soundEnabled); }
+        if(localStorage.getItem('soundEnabled') !== null) { soundEnabled = localStorage.getItem('soundEnabled') === 'true'; soundToggle.textContent = soundEnabled ? '🔊' : '🔇'; }
+        
+        // Helper: resize & paddle pos
+        function resizeCanvas() {
+            const containerWidth = canvas.parentElement.clientWidth;
+            const maxWidth = Math.min(400, containerWidth);
+            canvas.width = maxWidth;
+            canvas.height = 450;
+            paddle.width = paddleSizes[currentLevel] || 50;
+            paddle.x = (canvas.width - paddle.width) / 2;
+            paddle.y = canvas.height - 10;
+        }
+        
+        function circlesOverlap(c1, c2) { return Math.hypot(c1.x - c2.x, c1.y - c2.y) < (c1.radius + c2.radius + 10); }
+        function isValidPosition(newCircle, existing) { return !existing.some(c => circlesOverlap(newCircle, c)); }
+        
+        // Circle class
+        class Circle {
+            constructor(x, y, diameter, level, isSpecial = false) {
+                this.x = x; this.y = y; this.diameter = diameter; this.radius = diameter/2;
+                this.level = level; this.isSpecial = isSpecial; this.activeTime = 0;
+                this.color = this.getColor();
+                if(level >= 2) { this.speedX = (Math.random() - 0.5)*1.5; this.speedY = (Math.random() - 0.5)*1.0; this.maxSpeed = 1.2 + level*0.2; }
+                else { this.speedX = 0; this.speedY = 0; }
+                this.minX = this.radius; this.maxX = canvas.width - this.radius;
+                this.minY = this.radius + 20; this.maxY = canvas.height * 0.6;
             }
-        };
-        
-        disableElement(fireBtn);
-        disableElement(angleSlider);
-        disableElement(restartBtn);
-        disableElement(continueBtn);
-        disableElement(nextLevelBtn);
-        disableElement(menuBtn);
-        disableElement(soundToggle);
-        
-        // También puedes deshabilitar el canvas
-        canvas.style.opacity = '0.3';
-        canvas.style.pointerEvents = 'none';
-    }
-    
-    // Variables para niveles
-    let currentLevel = 1;
-    const maxLevels = 4;
-    
-    // Temas de fondo por nivel
-    const levelThemes = {
-        1: ['#1a1a2e', '#16213e'], // Azul oscuro
-        2: ['#2d1b3d', '#4a235a'], // Púrpura oscuro
-        3: ['#1b3d2d', '#235a4a'], // Verde oscuro
-        4: ['#5d1b3d', '#8a235a']  // Magenta oscuro para nivel 4
-    };
-    
-    // Nombres de niveles
-    const levelNames = {
-        1: "Classic",
-        2: "Moving Circles",
-        3: "Small Paddle",
-        4: "Multi-Projectile"
-    };
-    
-    // Paddle variables
-    let paddle = {
-        width: 50,
-        height: 10,
-        x: 175,
-        y: canvas.height - 10,
-        speed: 5,
-        color: '#ffffff'
-    };
-    
-    // Tamaño de paleta por nivel
-    const paddleSizes = {
-        1: 50,
-        2: 50,
-        3: 35,
-        4: 50
-    };
-    
-    // Velocidades de proyectil por nivel
-    const projectileSpeeds = {
-        1: 4.0,
-        2: 4.2,
-        3: 4.5,
-        4: 3.8  // Nivel 4 más lento
-    };
-    
-    // Controls
-    let keys = {
-        left: false,
-        right: false
-    };
-
-    // Initial setup
-    bestElement.textContent = bestScore;
-    levelElement.textContent = currentLevel;
-    levelIndicator.textContent = `Level ${currentLevel}: ${levelNames[currentLevel]}`;
-
-    // Musical notes frequencies
-    const musicalNotes = {
-        'G4': 392.00,
-        'A4': 440.00,
-        'B4': 493.88,
-        'C5': 523.25
-    };
-    
-    const bounceNotes = [
-        musicalNotes['G4'],
-        musicalNotes['A4'],
-        musicalNotes['B4'],
-        musicalNotes['C5']
-    ];
-    
-    // Create audio context
-    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-    const PADDLE_FREQUENCY = 440.00;
-    
-    // Function to play bounce sound with musical notes
-    function playBounceSound(type = 'wall') {
-        if (!soundEnabled) return;
-        
-        try {
-            const oscillator = audioContext.createOscillator();
-            const gainNode = audioContext.createGain();
-            
-            oscillator.connect(gainNode);
-            gainNode.connect(audioContext.destination);
-            
-            if (type === 'paddle') {
-                oscillator.frequency.value = PADDLE_FREQUENCY;
-                oscillator.type = 'square';
-                gainNode.gain.value = 0.12;
-                gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.12);
-                oscillator.start();
-                oscillator.stop(audioContext.currentTime + 0.12);
-            } else {
-                const noteIndex = Math.floor(Math.random() * bounceNotes.length);
-                const baseFrequency = bounceNotes[noteIndex];
-                const frequency = baseFrequency + (Math.random() * 20 - 10);
-                
-                if (type === 'wall') {
-                    oscillator.frequency.value = frequency;
-                    oscillator.type = 'sine';
-                    gainNode.gain.value = 0.15;
-                    gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.08);
-                    oscillator.start();
-                    oscillator.stop(audioContext.currentTime + 0.08);
-                } else if (type === 'top') {
-                    oscillator.frequency.value = frequency * 1.05;
-                    oscillator.type = 'sine';
-                    gainNode.gain.value = 0.14;
-                    gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.09);
-                    oscillator.start();
-                    oscillator.stop(audioContext.currentTime + 0.09);
-                } else if (type === 'circle') {
-                    oscillator.frequency.value = frequency * 0.85;
-                    oscillator.type = 'triangle';
-                    gainNode.gain.value = 0.16;
-                    gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.1);
-                    oscillator.start();
-                    oscillator.stop(audioContext.currentTime + 0.1);
+            getColor() {
+                if(this.isSpecial) return ['#ffff00','#ffdd00','#ffaa00','#00ffff'][Math.floor(Math.random()*4)];
+                const colors = ['#e94560','#ff6b6b','#0fce7c','#ffd166','#9b5de5','#f15bb5'];
+                return colors[Math.floor(Math.random()*colors.length)];
+            }
+            update(deltaTime) {
+                if(this.isSpecial) {
+                    this.activeTime += deltaTime;
+                    if(this.activeTime <= MULTI_PROJECTILE_DURATION && Math.floor(this.activeTime/COLOR_CHANGE_INTERVAL) !== Math.floor((this.activeTime-deltaTime)/COLOR_CHANGE_INTERVAL))
+                        this.color = this.getColor();
+                    else if(this.activeTime > MULTI_PROJECTILE_DURATION) this.color = '#ffff00';
+                }
+                if(this.level >= 2) {
+                    this.x += this.speedX; this.y += this.speedY;
+                    if(this.x <= this.minX || this.x >= this.maxX) { this.speedX = -this.speedX; this.x = Math.min(this.maxX, Math.max(this.minX, this.x)); }
+                    if(this.y <= this.minY || this.y >= this.maxY) { this.speedY = -this.speedY; this.y = Math.min(this.maxY, Math.max(this.minY, this.y)); }
+                    let spd = Math.hypot(this.speedX, this.speedY);
+                    if(spd > this.maxSpeed) { this.speedX = (this.speedX/spd)*this.maxSpeed; this.speedY = (this.speedY/spd)*this.maxSpeed; }
                 }
             }
-        } catch (e) {
-            console.log("Audio not available:", e);
-        }
-    }
-    
-    // Toggle sound function
-    function toggleSound() {
-        soundEnabled = !soundEnabled;
-        soundToggle.textContent = soundEnabled ? '🔊' : '🔇';
-        localStorage.setItem('soundEnabled', soundEnabled);
-    }
-    
-    // Load sound setting
-    const savedSoundSetting = localStorage.getItem('soundEnabled');
-    if (savedSoundSetting !== null) {
-        soundEnabled = savedSoundSetting === 'true';
-        soundToggle.textContent = soundEnabled ? '🔊' : '🔇';
-    }
-
-    // Resize canvas for mobile
-    function resizeCanvas() {
-        const containerWidth = canvas.parentElement.clientWidth;
-        const maxWidth = Math.min(400, containerWidth);
-        canvas.width = maxWidth;
-        canvas.height = 450;
-        
-        paddle.width = paddleSizes[currentLevel] || 50;
-        paddle.x = (canvas.width - paddle.width) / 2;
-        paddle.y = canvas.height - 10;
-    }
-
-    // Check if circles overlap
-    function circlesOverlap(circle1, circle2) {
-        const dx = circle1.x - circle2.x;
-        const dy = circle1.y - circle2.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        return distance < (circle1.radius + circle2.radius + 10);
-    }
-
-    // Check if a circle overlaps with any existing circle
-    function isValidPosition(newCircle, existingCircles) {
-        for (let circle of existingCircles) {
-            if (circlesOverlap(newCircle, circle)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    // Circle class
-    class Circle {
-        constructor(x, y, diameter, level = 1, isSpecial = false) {
-            this.x = x;
-            this.y = y;
-            this.diameter = diameter;
-            this.radius = diameter / 2;
-            this.color = this.getRandomColor();
-            this.level = level;
-            this.isSpecial = isSpecial;
-            this.activeTime = 0;
-            
-            // Propiedades de movimiento para nivel 2+
-            if (level >= 2) {
-                this.speedX = (Math.random() - 0.5) * 1.5;
-                this.speedY = (Math.random() - 0.5) * 1.0;
-                this.maxSpeed = 1.2 + (level * 0.2);
-            } else {
-                this.speedX = 0;
-                this.speedY = 0;
-            }
-            
-            // Para rebote en bordes
-            this.minX = this.radius;
-            this.maxX = canvas.width - this.radius;
-            this.minY = this.radius + 20;
-            this.maxY = canvas.height * 0.6;
-        }
-        
-        getRandomColor() {
-            if (this.isSpecial) {
-                // Colores brillantes para el círculo especial
-                const specialColors = [
-                    '#ffff00', '#ffdd00', '#ffaa00',
-                    '#00ffff', '#ff00ff', '#ffff80'
-                ];
-                return specialColors[Math.floor(Math.random() * specialColors.length)];
-            }
-            
-            const colors = [
-                '#e94560', '#ff6b6b', '#ff9e7d',
-                '#0fce7c', '#4cd9a1', '#1dd1a1',
-                '#ffd166', '#ffed99', '#f9c74f',
-                '#118ab2', '#06d6a0', '#4cc9f0',
-                '#9b5de5', '#c77dff', '#7209b7',
-                '#f15bb5', '#ff70a6', '#ff477e'
-            ];
-            return colors[Math.floor(Math.random() * colors.length)];
-        }
-        
-        update(deltaTime) {
-            // Actualizar tiempo para círculo especial
-            if (this.isSpecial) {
-                this.activeTime += deltaTime;
-                
-                // Cambiar color cada medio segundo durante los primeros 15 segundos
-                if (this.activeTime <= MULTI_PROJECTILE_DURATION) {
-                    if (Math.floor(this.activeTime / COLOR_CHANGE_INTERVAL) !== 
-                        Math.floor((this.activeTime - deltaTime) / COLOR_CHANGE_INTERVAL)) {
-                        this.color = this.getRandomColor();
-                    }
+            draw() {
+                ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI*2);
+                ctx.fillStyle = this.color; ctx.fill();
+                ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
+                if(this.isSpecial) {
+                    ctx.fillStyle = '#fff'; ctx.font = 'bold 18px Arial'; ctx.textAlign='center'; ctx.textBaseline='middle';
+                    ctx.fillText('×2', this.x, this.y);
                 } else {
-                    // Después de 15 segundos, color fijo
-                    this.color = '#ffff00';
+                    ctx.fillStyle = '#fff'; ctx.font = `${Math.max(10, this.radius/2)}px Arial`; ctx.fillText(this.diameter, this.x, this.y);
                 }
             }
-            
-            // Mover círculos en niveles 2+
-            if (this.level >= 2) {
-                this.x += this.speedX;
-                this.y += this.speedY;
-                
-                // Rebotar en bordes
-                if (this.x <= this.minX || this.x >= this.maxX) {
-                    this.speedX = -this.speedX;
-                    this.x = this.x <= this.minX ? this.minX + 1 : this.maxX - 1;
-                }
-                
-                if (this.y <= this.minY || this.y >= this.maxY) {
-                    this.speedY = -this.speedY;
-                    this.y = this.y <= this.minY ? this.minY + 1 : this.maxY - 1;
-                }
-                
-                // Mantener velocidad máxima
-                const speed = Math.sqrt(this.speedX * this.speedX + this.speedY * this.speedY);
-                if (speed > this.maxSpeed) {
-                    this.speedX = (this.speedX / speed) * this.maxSpeed;
-                    this.speedY = (this.speedY / speed) * this.maxSpeed;
-                }
+            grow() {
+                let growth = Math.floor(Math.random() * 3) + 3;
+                this.diameter += growth;
+                this.radius = this.diameter / 2;
+                this.minX = this.radius; this.maxX = canvas.width - this.radius;
+                this.minY = this.radius + 20; this.maxY = canvas.height * 0.5;
             }
+            // *** MODIFIED: explode when diameter >= 200 (was 300) ***
+            shouldDisappear() { return this.diameter >= 200; }
         }
         
-        draw() {
-            ctx.beginPath();
-            ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-            
-            // Efecto especial para círculo especial
-            if (this.isSpecial) {
-                if (this.activeTime <= MULTI_PROJECTILE_DURATION) {
-                    // Brillar durante los primeros 15 segundos
-                    ctx.shadowColor = this.color;
-                    ctx.shadowBlur = 20;
-                    ctx.fillStyle = this.color;
-                } else {
-                    // Efecto más tenue después
-                    ctx.shadowBlur = 10;
-                    ctx.fillStyle = this.color;
-                }
-            } else {
-                ctx.fillStyle = this.color;
-                ctx.shadowBlur = 0;
+        // Projectile class (single ball)
+        class Projectile {
+            constructor(x, y, angle, isChild = false) {
+                this.x = x; this.y = y; this.radius = 7; this.active = true; this.isChild = isChild;
+                this.speed = isChild ? 3.5 : projectileSpeeds[currentLevel] || 4.0;
+                let rad = (180 - angle) * Math.PI/180;
+                this.vx = this.speed * Math.cos(rad);
+                this.vy = -this.speed * Math.sin(rad);
+                this.color = isChild ? '#ffaa00' : '#ffffff';
+                this.lastCollision = 0; this.collisionCD = 60;
             }
-            
-            ctx.fill();
-            ctx.shadowBlur = 0;
-            
-            ctx.strokeStyle = '#fff';
-            ctx.lineWidth = 2;
-            ctx.stroke();
-            
-            // Indicador visual especial para nivel 4
-            if (this.isSpecial) {
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.radius + 8, 0, Math.PI * 2);
-                ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
-                ctx.lineWidth = 2;
-                ctx.setLineDash([5, 3]);
-                ctx.stroke();
-                ctx.setLineDash([]);
-                
-                // Dibujar símbolo de multiplicación
-                ctx.fillStyle = '#fff';
-                ctx.font = 'bold 18px Arial';
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillText('×2', this.x, this.y);
-                
-                // Dibujar anillo exterior brillante
-                if (this.activeTime <= MULTI_PROJECTILE_DURATION) {
-                    ctx.beginPath();
-                    ctx.arc(this.x, this.y, this.radius + 12, 0, Math.PI * 2);
-                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
-                    ctx.lineWidth = 1;
-                    ctx.stroke();
+            update() {
+                if(!this.active) return;
+                let now = Date.now();
+                this.x += this.vx; this.y += this.vy;
+                let spd = Math.hypot(this.vx, this.vy);
+                let minSpd = this.isChild ? 2.5 : 3.0, maxSpd = this.isChild ? 4.5 : 5.5;
+                if(spd < minSpd && spd>0) { let r = minSpd/spd; this.vx*=r; this.vy*=r; }
+                if(spd > maxSpd) { let r = maxSpd/spd; this.vx*=r; this.vy*=r; }
+                // walls
+                if((this.x-this.radius <=0 || this.x+this.radius>=canvas.width) && now-this.lastCollision>this.collisionCD){
+                    if(this.x-this.radius<=0) this.x = this.radius+1; else this.x = canvas.width-this.radius-1;
+                    this.vx = -this.vx; score++; scoreElement.textContent = score; playBounceSound('wall');
+                    this.lastCollision = now;
                 }
-            } else if (this.level >= 2) {
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.radius + 3, 0, Math.PI * 2);
-                ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
-                ctx.lineWidth = 1;
-                ctx.stroke();
-            }
-            
-            ctx.fillStyle = '#fff';
-            ctx.font = `${Math.max(10, this.radius / 2)}px Arial`;
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText(this.diameter.toString(), this.x, this.y);
-        }
-        
-        grow() {
-            const growth = Math.floor(Math.random() * 3) + 3;
-            this.diameter += growth;
-            this.radius = this.diameter / 2;
-            
-            // Actualizar límites de movimiento
-            this.minX = this.radius;
-            this.maxX = canvas.width - this.radius;
-            this.minY = this.radius + 20;
-            this.maxY = canvas.height * 0.5;
-        }
-        
-        shouldDisappear() {
-            return this.diameter >= 300;
-        }
-    }
-
-    // Projectile class - VELOCIDAD AJUSTADA POR NIVEL
-    class Projectile {
-        constructor(x, y, angle, isChild = false) {
-            this.x = x;
-            this.y = y;
-            this.radius = 7;
-            this.speed = isChild ? 3.5 : projectileSpeeds[currentLevel] || 4.0; // Más lento para hijos
-            this.angle = (180 - angle) * Math.PI / 180;
-            this.vx = this.speed * Math.cos(this.angle);
-            this.vy = -this.speed * Math.sin(this.angle);
-            this.active = true;
-            this.isChild = isChild;
-            this.color = isChild ? '#ffaa00' : '#ffffff';
-            
-            this.lastWallCollisionTime = 0;
-            this.lastTopCollisionTime = 0;
-            this.lastPaddleCollisionTime = 0;
-            this.minCollisionInterval = 100;
-            this.collisionCooldown = 50;
-            this.lastAnyCollisionTime = 0;
-        }
-        
-        update() {
-            const currentTime = Date.now();
-            
-            this.x += this.vx;
-            this.y += this.vy;
-            
-            const minSpeed = this.isChild ? 2.5 : 3.0;
-            const maxSpeed = this.isChild ? 4.5 : 5.5;
-            const currentSpeed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
-            
-            // Asegurar velocidad mínima
-            if (currentSpeed < minSpeed && currentSpeed > 0) {
-                const ratio = minSpeed / currentSpeed;
-                this.vx *= ratio;
-                this.vy *= ratio;
-            }
-            
-            // Limitar velocidad máxima (MÁS BAJO PARA NIVEL 4)
-            if (currentSpeed > maxSpeed) {
-                const ratio = maxSpeed / currentSpeed;
-                this.vx *= ratio;
-                this.vy *= ratio;
-            }
-            
-            // Colisión con paredes
-            if ((this.x - this.radius <= 0 || this.x + this.radius >= canvas.width) && 
-                currentTime - this.lastWallCollisionTime > this.minCollisionInterval &&
-                currentTime - this.lastAnyCollisionTime > this.collisionCooldown) {
-                
-                if (this.x - this.radius <= 0) {
-                    this.x = this.radius + 1;
-                } else {
-                    this.x = canvas.width - this.radius - 1;
+                // top
+                if(this.y-this.radius <=0 && now-this.lastCollision>this.collisionCD){
+                    this.y = this.radius+1; this.vy = -this.vy;
+                    let centerX = canvas.width/2, push = (centerX-this.x)*0.6/canvas.width;
+                    this.vx += push; if(Math.abs(this.vx)<0.4) this.vx = this.vx<0 ? -0.4 : 0.4;
+                    score++; scoreElement.textContent = score; playBounceSound('top');
+                    this.lastCollision = now;
                 }
-                
-                this.vx = -this.vx;
-                const randomFactor = (Math.random() * 0.3) - 0.15;
-                this.vy += randomFactor;
-                score++;
-                scoreElement.textContent = score;
-                playBounceSound('wall');
-                
-                this.lastWallCollisionTime = currentTime;
-                this.lastAnyCollisionTime = currentTime;
-            }
-            
-            // Colisión con techo
-            if (this.y - this.radius <= 0 && 
-                currentTime - this.lastTopCollisionTime > this.minCollisionInterval &&
-                currentTime - this.lastAnyCollisionTime > this.collisionCooldown) {
-                
-                this.y = this.radius + 1;
-                this.vy = -this.vy;
-                
-                const centerX = canvas.width / 2;
-                const distanceToCenter = centerX - this.x;
-                const pushStrength = 0.6;
-                const directionToCenter = distanceToCenter > 0 ? 1 : -1;
-                const normalizedDistance = Math.abs(distanceToCenter) / (canvas.width / 2);
-                const pushForce = pushStrength * normalizedDistance * directionToCenter;
-                
-                this.vx += pushForce;
-                
-                if (Math.abs(this.vx) < 0.4) {
-                    this.vx = this.vx < 0 ? -0.4 : 0.4;
+                // paddle
+                if(this.y+this.radius >= paddle.y && this.y-this.radius <= paddle.y+paddle.height &&
+                   this.x+this.radius >= paddle.x && this.x-this.radius <= paddle.x+paddle.width && now-this.lastCollision>this.collisionCD){
+                    this.y = paddle.y - this.radius - 1;
+                    let hitPos = (this.x - (paddle.x + paddle.width/2)) / (paddle.width/2);
+                    this.vy = -Math.abs(this.vy); this.vx = hitPos * 2.5;
+                    if(Math.abs(this.vx)<0.8) this.vx = this.vx<0 ? -0.8 : 0.8;
+                    score++; scoreElement.textContent = score; playBounceSound('paddle');
+                    this.lastCollision = now;
                 }
-                
-                const maxVX = 3.5;
-                if (Math.abs(this.vx) > maxVX) {
-                    this.vx = this.vx > 0 ? maxVX : -maxVX;
-                }
-                
-                score++;
-                scoreElement.textContent = score;
-                playBounceSound('top');
-                
-                this.lastTopCollisionTime = currentTime;
-                this.lastAnyCollisionTime = currentTime;
-            }
-            
-            // Colisión con paddle
-            if (this.y + this.radius >= paddle.y && 
-                this.y - this.radius <= paddle.y + paddle.height &&
-                this.x + this.radius >= paddle.x && 
-                this.x - this.radius <= paddle.x + paddle.width &&
-                currentTime - this.lastPaddleCollisionTime > this.minCollisionInterval &&
-                currentTime - this.lastAnyCollisionTime > this.collisionCooldown) {
-                
-                this.y = paddle.y - this.radius - 1;
-                
-                const hitPos = (this.x - (paddle.x + paddle.width / 2)) / (paddle.width / 2);
-                this.vy = -Math.abs(this.vy);
-                this.vx = hitPos * 2.5;
-                
-                if (Math.abs(this.vx) < 0.8) {
-                    this.vx = this.vx < 0 ? -0.8 : 0.8;
-                }
-                
-                const speedAfterBounce = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
-                
-                // Asegurar velocidad mínima después del rebote
-                if (speedAfterBounce < minSpeed) {
-                    const ratio = minSpeed / speedAfterBounce;
-                    this.vx *= ratio;
-                    this.vy *= ratio;
-                }
-                
-                // Limitar velocidad máxima después del rebote
-                if (speedAfterBounce > maxSpeed) {
-                    const ratio = maxSpeed / speedAfterBounce;
-                    this.vx *= ratio;
-                    this.vy *= ratio;
-                }
-                
-                score++;
-                scoreElement.textContent = score;
-                playBounceSound('paddle');
-                
-                this.lastPaddleCollisionTime = currentTime;
-                this.lastAnyCollisionTime = currentTime;
-            }
-            
-            // Colisión con círculos
-            for (let i = 0; i < circles.length; i++) {
-                const circle = circles[i];
-                const dx = this.x - circle.x;
-                const dy = this.y - circle.y;
-                const distance = Math.sqrt(dx * dx + dy * dy);
-                
-                if (distance < this.radius + circle.radius) {
-                    const angle = Math.atan2(dy, dx);
-                    const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
-                    
-                    // Mantener la velocidad actual pero en dirección de rebote
-                    this.vx = speed * Math.cos(angle);
-                    this.vy = speed * Math.sin(angle);
-                    
-                    const overlap = this.radius + circle.radius - distance;
-                    this.x += overlap * Math.cos(angle);
-                    this.y += overlap * Math.sin(angle);
-                    
-                    circle.grow();
-                    score += 5;
-                    scoreElement.textContent = score;
-                    playBounceSound('circle');
-                    
-                    // Lógica para círculo especial en nivel 4
-                    if (circle.isSpecial && circle.activeTime <= MULTI_PROJECTILE_DURATION) {
-                        if (!multiProjectileActive) {
-                            multiProjectileActive = true;
-                            multiProjectileTimer = Date.now();
+                // circles collision
+                for(let i=0; i<circles.length; i++){
+                    let c = circles[i];
+                    let dx = this.x - c.x, dy = this.y - c.y, dist = Math.hypot(dx,dy);
+                    if(dist < this.radius + c.radius){
+                        let angle = Math.atan2(dy,dx);
+                        let speed = Math.hypot(this.vx, this.vy);
+                        this.vx = speed * Math.cos(angle); this.vy = speed * Math.sin(angle);
+                        let overlap = this.radius + c.radius - dist;
+                        this.x += overlap * Math.cos(angle); this.y += overlap * Math.sin(angle);
+                        c.grow();
+                        score += 5; scoreElement.textContent = score; playBounceSound('circle');
+                        // special circle logic
+                        if(c.isSpecial && c.activeTime <= MULTI_PROJECTILE_DURATION){
+                            if(currentLevel===4 && !multiProjectileActive) {
+                                multiProjectileActive = true; multiProjectileTimer = Date.now();
+                                this.splitIntoTwo(this);
+                            }
+                            circles.splice(i,1);
+                            if(c.isSpecial) { specialCircle=null; specialCircleActive=false; specialCircleRespawnTimer=0; }
+                            score+=30; scoreElement.textContent=score;
+                            i--; break;
                         }
-                        splitProjectile(this);
-                        circles.splice(i, 1);
-                        specialCircle = null;
-                        specialCircleActive = false;
-                        specialCircleRespawnTimer = 0;
-                        score += 30; // Puntos extra por golpear el círculo especial
-                        scoreElement.textContent = score;
-                        i--;
-                        break; // Salir después de golpear el círculo especial
-                    }
-                    
-                    if (circle.y < canvas.height * 0.3) {
-                        const centerX = canvas.width / 2;
-                        const pushToCenter = (centerX - this.x) * 0.1 / canvas.width;
-                        this.vx += pushToCenter;
-                    }
-                    
-                    if (circle.shouldDisappear()) {
-                        circles.splice(i, 1);
-                        score += 20;
-                        scoreElement.textContent = score;
-                        i--;
-                        
-                        // Actualizar círculo especial si se elimina
-                        if (circle.isSpecial) {
-                            specialCircle = null;
+                        if(c.shouldDisappear()){
+                            circles.splice(i,1); score+=20; scoreElement.textContent=score;
+                            i--;
+                            if(c.isSpecial) specialCircle=null;
                         }
+                        this.lastCollision = now;
+                        break;
                     }
-                    
-                    // Limitar velocidad después de la colisión
-                    const currentSpeedAfterCollision = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
-                    
-                    if (currentSpeedAfterCollision > maxSpeed) {
-                        const ratio = maxSpeed / currentSpeedAfterCollision;
-                        this.vx *= ratio;
-                        this.vy *= ratio;
+                }
+                // fall off bottom
+                if(this.y + this.radius >= canvas.height){
+                    this.active = false;
+                    if(currentLevel !== 4){
+                        lives--; livesElement.textContent = lives;
+                        if(lives<=0) endGame();
+                        else setControlsMode('angle');
                     }
-                    
-                    this.lastAnyCollisionTime = currentTime;
+                }
+            }
+            splitIntoTwo(original){
+                if(projectiles.length >= 8) return;
+                let angle = Math.atan2(original.vy, original.vx);
+                let angle1 = angle + Math.PI/8, angle2 = angle - Math.PI/8;
+                let spd = 3.5;
+                let p1 = new Projectile(original.x, original.y, 90 - (angle1*180/Math.PI), true);
+                let p2 = new Projectile(original.x, original.y, 90 - (angle2*180/Math.PI), true);
+                p1.vx = spd * Math.cos(angle1); p1.vy = spd * Math.sin(angle1);
+                p2.vx = spd * Math.cos(angle2); p2.vy = spd * Math.sin(angle2);
+                projectiles.push(p1, p2);
+                if(soundEnabled){
+                    let osc = audioContext.createOscillator(); let gain = audioContext.createGain();
+                    osc.connect(gain); gain.connect(audioContext.destination);
+                    osc.frequency.value = 523.25*1.5; osc.type='sawtooth'; gain.gain.value=0.15;
+                    gain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime+0.2);
+                    osc.start(); osc.stop(audioContext.currentTime+0.2);
+                }
+            }
+            draw(){
+                ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI*2);
+                ctx.fillStyle = this.color; ctx.fill(); ctx.strokeStyle = '#e94560'; ctx.lineWidth=2; ctx.stroke();
+            }
+        }
+        
+        // Triple shot: schedule 3 balls in sequence
+        function launchTripleShot(angleDeg){
+            if(pendingShots > 0 || shotTimer) return; // already launching
+            pendingShots = 3;
+            function fireOne(){
+                if(pendingShots <= 0) { shotTimer = null; return; }
+                // create new projectile
+                let newProj = new Projectile(paddle.x + paddle.width/2, paddle.y - 5, angleDeg, false);
+                if(currentLevel === 4){
+                    projectiles.push(newProj);
+                } else {
+                    // for levels 1-3 we keep single projectile reference but we can still have multiple? we'll manage array
+                    projectiles.push(newProj);
+                }
+                pendingShots--;
+                if(pendingShots > 0){
+                    shotTimer = setTimeout(fireOne, 120); // 120ms between shots
+                } else {
+                    shotTimer = null;
+                }
+            }
+            fireOne();
+        }
+        
+        function drawPaddle(){
+            ctx.fillStyle = paddle.color; ctx.fillRect(paddle.x, paddle.y, paddle.width, paddle.height);
+            ctx.strokeStyle='#fff'; ctx.strokeRect(paddle.x, paddle.y, paddle.width, paddle.height);
+        }
+        function updatePaddle(){
+            if(keys.left && paddle.x>0) paddle.x -= paddle.speed;
+            if(keys.right && paddle.x+paddle.width<canvas.width) paddle.x += paddle.speed;
+        }
+        
+        function drawTrajectory(angle){
+            if(projectiles.some(p => p.active) || !gameActive) return;
+            let startX = paddle.x + paddle.width/2, startY = paddle.y-5;
+            let rad = (180-angle)*Math.PI/180;
+            let speed = projectileSpeeds[currentLevel]||4.0;
+            let vx = speed*Math.cos(rad), vy = -speed*Math.sin(rad);
+            let x=startX, y=startY;
+            ctx.beginPath(); ctx.moveTo(x,y);
+            for(let i=0;i<30;i++){
+                x+=vx*6; y+=vy*6;
+                if(x-5<=0||x+5>=canvas.width) vx=-vx;
+                if(y-5<=0) { vy=-vy; let push=(canvas.width/2-x)*0.08; vx+=push; }
+                if(y+5>=canvas.height) break;
+                ctx.lineTo(x,y);
+            }
+            ctx.strokeStyle='rgba(255,255,255,0.7)'; ctx.lineWidth=5; ctx.stroke();
+            ctx.beginPath(); ctx.arc(startX, startY, 6, 0, Math.PI*2);
+            ctx.fillStyle='#e94560'; ctx.fill();
+        }
+        
+        function setControlsMode(mode){
+            if(currentLevel===4 && mode==='angle' && projectiles.some(p=>p.active)) return;
+            controlsMode = mode;
+            if(mode==='angle'){
+                angleSlider.min=0; angleSlider.max=180; angleSlider.value=currentAngle;
+                angleValue.textContent = `${currentAngle}°`;
+                fireBtn.textContent = 'GO!'; fireBtn.disabled = false;
+            } else {
+                angleSlider.min=0; angleSlider.max=canvas.width-paddle.width; angleSlider.value=paddle.x;
+                angleValue.textContent = 'Move'; fireBtn.textContent = 'WAITING'; fireBtn.disabled = true;
+            }
+        }
+        
+        function initCirclesForLevel(){
+            circles = []; specialCircle=null; specialCircleActive=false; specialCircleRespawnTimer=0;
+            let count = 4 + Math.floor(currentLevel/2);
+            if(currentLevel===4) count=5;
+            for(let i=0;i<count-(currentLevel===4?1:0);i++){
+                let attempts=0, placed=false;
+                while(!placed && attempts<60){
+                    let diam = Math.floor(Math.random()*25)+30;
+                    let x = Math.random()*(canvas.width-diam*2)+diam;
+                    let y = Math.random()*(canvas.height*0.35)+50;
+                    let newC = new Circle(x,y,diam,currentLevel,false);
+                    if(isValidPosition(newC,circles)){ circles.push(newC); placed=true; }
+                    attempts++;
+                }
+                if(!placed){ let diam=30; let x=50+(i*70)%(canvas.width-80); let y=60+(i%3)*40;
+                    circles.push(new Circle(x,y,diam,currentLevel,false)); }
+            }
+            if(currentLevel===4){
+                setTimeout(()=>createSpecialCircle(), 1000);
+                projectiles = [];
+                multiProjectileActive=false;
+            }
+        }
+        
+        function createSpecialCircle(){
+            if(currentLevel!==4 || !gameActive || allCirclesCleared) return;
+            let diam=40;
+            for(let att=0;att<40;att++){
+                let x = Math.random()*(canvas.width-diam*2)+diam;
+                let y = Math.random()*(canvas.height*0.3)+60;
+                let sp = new Circle(x,y,diam,currentLevel,true);
+                if(isValidPosition(sp,circles)){
+                    circles.push(sp); specialCircle=sp; specialCircleActive=true; specialCircleRespawnTimer=0;
+                    if(soundEnabled){
+                        let osc=audioContext.createOscillator(), gain=audioContext.createGain();
+                        osc.connect(gain); gain.connect(audioContext.destination);
+                        osc.frequency.value=659.25; osc.type='sine'; gain.gain.value=0.2;
+                        gain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime+0.3);
+                        osc.start(); osc.stop(audioContext.currentTime+0.3);
+                    }
                     break;
                 }
             }
-            
-            // Añadir impulso aleatorio si está muy lento
-            if (Math.abs(this.vx) < 0.3 && Math.abs(this.vy) > 2) {
-                const randomPush = (Math.random() - 0.5) * 1.0;
-                this.vx += randomPush;
-            }
-            
-            // Verificar si el proyectil cayó al fondo
-       // Verificar si el proyectil cayó al fondo
-if (this.y + this.radius >= canvas.height && this.active) {
-    this.active = false;
-    
-    // Para nivel 4, marcar como inactivo pero NO restar vida aquí
-    // La vida se restará cuando TODOS los proyectiles hayan caído
-    if (currentLevel !== 4) {
-        lives--;
-        livesElement.textContent = lives;
-        
-        // Permitir nuevo disparo en niveles normales
-        setControlsMode('angle');
-        
-        if (lives <= 0) {
-            endGame();
-        }
-    }
-    // En nivel 4, la vida se restará en checkAllProjectilesGone()
- }
         }
         
-        draw() {
-            ctx.beginPath();
-            ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-            ctx.fillStyle = this.color;
-            ctx.fill();
-            
-            if (this.isChild) {
-                ctx.strokeStyle = '#ff6600';
-                ctx.shadowColor = '#ffaa00';
-                ctx.shadowBlur = 10;
+        function checkAllProjectilesGone(){
+            if(currentLevel!==4) return false;
+            if(projectiles.some(p=>p.active)) return false;
+            return true;
+        }
+        
+        function completeLevel(){
+            gameActive=false; allCirclesCleared=true;
+            if(score>bestScore){ bestScore=score; localStorage.setItem('bestScore',bestScore); bestElement.textContent=bestScore; }
+            launchConfetti();
+            if(currentLevel===maxLevels){
+                levelCompleteElement.innerHTML = `<h2>🎉 Congratulations! 🎉</h2><p>All levels done!</p><p>Final score: <strong>${score}</strong></p><button class="next-level-btn" id="playAgainBtn">PLAY AGAIN</button>`;
+                levelCompleteElement.style.display='block';
+                document.getElementById('playAgainBtn').addEventListener('click',()=>{ currentLevel=1; initGame(1); });
             } else {
-                ctx.strokeStyle = '#e94560';
-                ctx.shadowBlur = 0;
-            }
-            
-            ctx.lineWidth = 2;
-            ctx.stroke();
-            ctx.shadowBlur = 0;
-        }
-    }
-
-    // Función para dividir proyectil - CORREGIDA
-function splitProjectile(originalProjectile) {
-    // Cambiamos la condición: permitir dividir si hay menos de 6 proyectiles
-    // y (multiProjectileActive es true O estamos en nivel 4)
-    if (currentLevel !== 4 || projectiles.length >= 6) return;
-    
-    // Activar multi-proyectil
-    multiProjectileActive = true;
-    multiProjectileTimer = Date.now();
-    
-    // Forzar modo paleta
-    controlsMode = 'paddle';
-    angleSlider.min = 0;
-    angleSlider.max = canvas.width - paddle.width;
-    angleSlider.value = paddle.x;
-    angleLabel.innerHTML = '<span id="angleValue">Move</span>';
-    fireBtn.textContent = 'WAITING';
-    fireBtn.disabled = true;
-        
-        // Calcular ángulos para dividir
-        const currentAngle = Math.atan2(originalProjectile.vy, originalProjectile.vx);
-        const angle1 = currentAngle + Math.PI / 8;  // 22.5 grados
-        const angle2 = currentAngle - Math.PI / 8;  // -22.5 grados
-        
-        const speed = 3.5; // Velocidad reducida para proyectiles hijos
-        
-        // Crear primer proyectil hijo
-        const projectile1 = new Projectile(
-            originalProjectile.x,
-            originalProjectile.y,
-            90 - (angle1 * 180 / Math.PI),
-            true
-        );
-        projectile1.vx = speed * Math.cos(angle1);
-        projectile1.vy = speed * Math.sin(angle1);
-        
-        // Crear segundo proyectil hijo
-        const projectile2 = new Projectile(
-            originalProjectile.x,
-            originalProjectile.y,
-            90 - (angle2 * 180 / Math.PI),
-            true
-        );
-        projectile2.vx = speed * Math.cos(angle2);
-        projectile2.vy = speed * Math.sin(angle2);
-        
-        // Añadir a la lista de proyectiles
-        projectiles.push(projectile1, projectile2);
-        
-        // Reproducir sonido especial
-        if (soundEnabled) {
-            try {
-                const oscillator = audioContext.createOscillator();
-                const gainNode = audioContext.createGain();
-                
-                oscillator.connect(gainNode);
-                gainNode.connect(audioContext.destination);
-                
-                oscillator.frequency.value = 523.25 * 1.5;
-                oscillator.type = 'sawtooth';
-                gainNode.gain.value = 0.15;
-                gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.2);
-                oscillator.start();
-                oscillator.stop(audioContext.currentTime + 0.2);
-            } catch (e) {
-                console.log("Audio not available:", e);
-            }
-        }
-    }
-    
-    // Función para verificar si todos los proyectiles han caído
-function checkAllProjectilesGone() {
-    if (currentLevel !== 4) return false;
-    
-    // Verificar proyectil principal
-    if (projectile && projectile.active) return false;
-    
-    // Verificar proyectiles hijos
-    for (let i = 0; i < projectiles.length; i++) {
-        if (projectiles[i].active) return false;
-    }
-    
-    // Si llegamos aquí, todos los proyectiles han caído
-    // IMPORTANTE: También verificamos si se disparó alguna vez en nivel 4
-    // (proyectile fue creado o projectiles tiene elementos)
-    if ((projectile !== null || projectiles.length > 0) && !allCirclesCleared) {
-        return true;
-    }
-    
-    return false;
-}
-
-    // Draw paddle
-    function drawPaddle() {
-        ctx.fillStyle = paddle.color;
-        ctx.fillRect(paddle.x, paddle.y, paddle.width, paddle.height);
-        ctx.strokeStyle = '#fff';
-        ctx.lineWidth = 2;
-        ctx.strokeRect(paddle.x, paddle.y, paddle.width, paddle.height);
-        
-        // Indicador visual para paleta pequeña
-        if (currentLevel === 3) {
-            ctx.fillStyle = 'rgba(233, 69, 96, 0.3)';
-            ctx.fillRect(paddle.x - 10, paddle.y, 10, paddle.height);
-            ctx.fillRect(paddle.x + paddle.width, paddle.y, 10, paddle.height);
-        }
-    }
-
-    // Update paddle position
-    function updatePaddle() {
-        if (keys.left && paddle.x > 0) {
-            paddle.x -= paddle.speed;
-        }
-        if (keys.right && paddle.x + paddle.width < canvas.width) {
-            paddle.x += paddle.speed;
-        }
-    }
-
-    // Draw trajectory
-    function drawTrajectory(angle) {
-        if (projectile && projectile.active) return;
-        
-        const startX = paddle.x + paddle.width / 2;
-        const startY = paddle.y - 5;
-        const radius = 5;
-        const speed = projectileSpeeds[currentLevel] || 4.0;
-        const angleRad = (180 - angle) * Math.PI / 180;
-        
-        let x = startX;
-        let y = startY;
-        let vx = speed * Math.cos(angleRad);
-        let vy = -speed * Math.sin(angleRad);
-        
-        ctx.setLineDash([]);
-        ctx.beginPath();
-        ctx.moveTo(x, y);
-        
-        for (let i = 0; i < 25; i++) {
-            x += vx * 7;
-            y += vy * 7;
-            
-            if (x - radius <= 0 || x + radius >= canvas.width) {
-                vx = -vx;
-                ctx.fillStyle = '#ffd166';
-                ctx.beginPath();
-                ctx.arc(x, y, 4, 0, Math.PI * 2);
-                ctx.fill();
-            }
-            
-            if (y - radius <= 0) {
-                vy = -vy;
-                const centerX = canvas.width / 2;
-                const pushToCenter = (centerX - x) * 0.08;
-                vx += pushToCenter;
-                
-                ctx.fillStyle = '#ffd166';
-                ctx.beginPath();
-                ctx.arc(x, y, 4, 0, Math.PI * 2);
-                ctx.fill();
-            }
-            
-            if (y + radius >= paddle.y && 
-                y - radius <= paddle.y + paddle.height &&
-                x + radius >= paddle.x && 
-                x - radius <= paddle.x + paddle.width) {
-                
-                vy = -Math.abs(vy);
-                const hitPos = (x - (paddle.x + paddle.width / 2)) / (paddle.width / 2);
-                vx = hitPos * 2.5;
-            }
-            
-            if (y + radius >= canvas.height) {
-                ctx.lineTo(x, y);
-                ctx.fillStyle = '#e94560';
-                ctx.beginPath();
-                ctx.arc(x, y, 5, 0, Math.PI * 2);
-                ctx.fill();
-                break;
-            }
-            
-            ctx.lineTo(x, y);
-            
-            if (x < 0 || x > canvas.width || y < 0 || y > canvas.height) {
-                break;
+                completedLevelElement.textContent=currentLevel; levelScoreElement.textContent=score;
+                levelCompleteElement.style.display='block';
             }
         }
         
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
-        ctx.lineWidth = 6;
-        ctx.stroke();
-        
-        ctx.setLineDash([8, 6]);
-        ctx.beginPath();
-        ctx.moveTo(startX, startY);
-        
-        x = startX;
-        y = startY;
-        vx = speed * Math.cos(angleRad);
-        vy = -speed * Math.sin(angleRad);
-        
-        for (let i = 0; i < 25; i++) {
-            x += vx * 7;
-            y += vy * 7;
-            
-            if (x - radius <= 0 || x + radius >= canvas.width) vx = -vx;
-            if (y - radius <= 0) {
-                vy = -vy;
-                const centerX = canvas.width / 2;
-                const pushToCenter = (centerX - x) * 0.08;
-                vx += pushToCenter;
-            }
-            if (y + radius >= canvas.height) break;
-            
-            ctx.lineTo(x, y);
-            if (x < 0 || x > canvas.width || y < 0 || y > canvas.height) break;
+        function endGame(){
+            gameActive=false;
+            if(score>bestScore){ bestScore=score; localStorage.setItem('bestScore',bestScore); bestElement.textContent=bestScore; }
+            finalScoreElement.textContent=score; finalBestElement.textContent=bestScore;
+            gameOverElement.style.display='block';
         }
         
-        ctx.strokeStyle = 'rgba(255, 215, 102, 0.8)';
-        ctx.lineWidth = 4;
-        ctx.stroke();
-        ctx.setLineDash([]);
-        
-        ctx.fillStyle = '#e94560';
-        ctx.beginPath();
-        ctx.arc(startX, startY, 6, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.strokeStyle = '#fff';
-        ctx.lineWidth = 2;
-        ctx.stroke();
-    }
-
-    // Initialize circles for current level - CORREGIDA
-    function initCirclesForLevel() {
-        circles = [];
-        specialCircle = null;
-        specialCircleActive = false; // RESET ESTADO
-        specialCircleRespawnTimer = 0; // RESET TEMPORIZADOR
-        const maxAttempts = 100;
-        let circleCount = 4 + Math.floor(currentLevel / 2);
-        
-        // Configuración especial para nivel 4
-        if (currentLevel === 4) {
-            circleCount = 5;
-            
-            // Primero crear círculos normales
-            for (let i = 0; i < circleCount - 1; i++) {
-                let attempts = 0;
-                let validPosition = false;
-                let newCircle;
-                
-                while (!validPosition && attempts < maxAttempts) {
-                    const diameter = Math.floor(Math.random() * 25) + 30;
-                    const x = Math.random() * (canvas.width - diameter * 2) + diameter;
-                    const y = Math.random() * (canvas.height * 0.3) + 60;
-                    
-                    newCircle = new Circle(x, y, diameter, currentLevel, false);
-                    
-                    if (isValidPosition(newCircle, circles)) {
-                        validPosition = true;
-                        circles.push(newCircle);
-                    }
-                    
-                    attempts++;
-                }
-            }
-            
-            // Crear el círculo especial después de un breve retraso
-            setTimeout(() => {
-                createSpecialCircle();
-            }, 1000);
-        } else {
-            // Niveles normales 1-3
-            for (let i = 0; i < circleCount; i++) {
-                let attempts = 0;
-                let validPosition = false;
-                let newCircle;
-                
-                while (!validPosition && attempts < maxAttempts) {
-                    const diameter = Math.floor(Math.random() * 25) + 30;
-                    const x = Math.random() * (canvas.width - diameter * 2) + diameter;
-                    const y = Math.random() * (canvas.height * 0.4) + 40;
-                    
-                    newCircle = new Circle(x, y, diameter, currentLevel, false);
-                    
-                    if (isValidPosition(newCircle, circles)) {
-                        validPosition = true;
-                        circles.push(newCircle);
-                    }
-                    
-                    attempts++;
-                }
-                
-                if (!validPosition) {
-                    const diameter = 30;
-                    const x = (i % 2) * (canvas.width / 2) + canvas.width / 4;
-                    const y = Math.floor(i / 2) * (canvas.height / 4) + canvas.height / 6;
-                    
-                    newCircle = new Circle(x, y, diameter, currentLevel, false);
-                    circles.push(newCircle);
-                }
+        function launchConfetti(){
+            for(let i=0;i<120;i++){
+                let conf = document.createElement('div');
+                conf.style.cssText = `position:fixed; width:8px; height:8px; background:${['#e94560','#0fce7c','#ffd166'][Math.floor(Math.random()*3)]}; top:-10px; left:${Math.random()*100}vw; pointer-events:none; z-index:1000; border-radius:2px;`;
+                document.body.appendChild(conf);
+                conf.animate([{transform:'translateY(0) rotate(0deg)'},{transform:`translateY(${window.innerHeight+100}px) rotate(${Math.random()*360}deg)`}],{duration:2000+Math.random()*1500, easing:'cubic-bezier(0.2,0.9,0.4,1)'}).onfinish=()=>conf.remove();
             }
         }
         
-        // Resetear temporizadores para nivel 4
-        if (currentLevel === 4) {
-            multiProjectileActive = false;
-            multiProjectileTimer = 0;
-            colorChangeTimer = 0;
-            projectiles = [];
-        }
-    }
-
-    // Function to change control mode
-    function setControlsMode(mode) {
-        if (currentLevel === 4 && mode === 'angle' && 
-            ((projectile && projectile.active) || projectiles.length > 0)) {
-            return; // No cambiar el modo si hay proyectiles activos
+        function applyLevelTheme(){
+            let theme=levelThemes[currentLevel]; document.body.style.background=`linear-gradient(135deg, ${theme[0]}, ${theme[1]})`;
+            levelElement.textContent=currentLevel; levelIndicator.textContent=`Level ${currentLevel}: ${levelNames[currentLevel]}`;
+            paddle.width=paddleSizes[currentLevel]; paddle.x=(canvas.width-paddle.width)/2;
         }
         
-        controlsMode = mode;
-        if (mode === 'angle') {
-            angleSlider.min = 0;
-            angleSlider.max = 180;
-            angleSlider.value = currentAngle;
-            angleLabel.innerHTML = `<span id="angleValue">${currentAngle}°</span>`;
-            fireBtn.textContent = 'GO!';
-            fireBtn.disabled = false;
-        } else if (mode === 'paddle') {
-            angleSlider.min = 0;
-            angleSlider.max = canvas.width - paddle.width;
-            angleSlider.value = paddle.x;
-            angleLabel.innerHTML = '<span id="angleValue">Move</span>';
-            fireBtn.textContent = 'WAITING';
-            fireBtn.disabled = true;
-        }
-    }
-
-    // Apply level theme
-    function applyLevelTheme() {
-        const theme = levelThemes[currentLevel] || levelThemes[1];
-        document.body.style.background = `linear-gradient(135deg, ${theme[0]}, ${theme[1]})`;
-        
-        levelElement.textContent = currentLevel;
-        levelIndicator.textContent = `Level ${currentLevel}: ${levelNames[currentLevel]}`;
-        
-        paddle.width = paddleSizes[currentLevel] || 50;
-        paddle.x = (canvas.width - paddle.width) / 2;
-    }
-
-    // Initialize game for specific level
-    function initGame(level = 1) {
-        currentLevel = level;
-        
-        circles = [];
-        projectile = null;
-        lives = 10;
-        score = 0;
-        gameActive = true;
-        allCirclesCleared = false;
-        
-        // Reset variables específicas del nivel 4
-        multiProjectileActive = false;
-        multiProjectileTimer = 0;
-        projectiles = [];
-        
-        livesElement.textContent = lives;
-        scoreElement.textContent = score;
-        
-        applyLevelTheme();
-        
-        paddle.width = paddleSizes[currentLevel] || 50;
-        paddle.x = (canvas.width - paddle.width) / 2;
-        
-        initCirclesForLevel();
-        
-        gameOverElement.style.display = 'none';
-        levelCompleteElement.style.display = 'none';
-        setControlsMode('angle');
-        
-        if (animationId) {
-            cancelAnimationFrame(animationId);
-        }
-        
-        lastTime = 0;
-        animate();
-    }
-
-    // Función para crear el círculo especial
-    function createSpecialCircle() {
-        if (currentLevel !== 4 || !gameActive || allCirclesCleared) return;
-        
-        const specialDiameter = 40;
-        let validPosition = false;
-        let attempts = 0;
-        
-        while (!validPosition && attempts < 50) {
-            const x = Math.random() * (canvas.width - specialDiameter * 2) + specialDiameter;
-            const y = Math.random() * (canvas.height * 0.3) + 60;
-            
-            const newSpecialCircle = new Circle(x, y, specialDiameter, currentLevel, true);
-            
-            if (isValidPosition(newSpecialCircle, circles)) {
-                validPosition = true;
-                circles.push(newSpecialCircle);
-                specialCircle = newSpecialCircle;
-                specialCircleActive = true;
-                specialCircleRespawnTimer = 0;
-                
-                // Reproducir sonido de aparición
-                if (soundEnabled) {
-                    try {
-                        const oscillator = audioContext.createOscillator();
-                        const gainNode = audioContext.createGain();
-                        
-                        oscillator.connect(gainNode);
-                        gainNode.connect(audioContext.destination);
-                        
-                        oscillator.frequency.value = 659.25; // Mi alto
-                        oscillator.type = 'sine';
-                        gainNode.gain.value = 0.2;
-                        gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.3);
-                        oscillator.start();
-                        oscillator.stop(audioContext.currentTime + 0.3);
-                    } catch (e) {
-                        console.log("Audio not available:", e);
-                    }
-                }
-            }
-            
-            attempts++;
-        }
-    }
-
-    // Animation loop - CORREGIDA
-    let lastTime = 0;
-    function animate(currentTime = 0) {
-        if (!gameActive) return;
-        
-        const deltaTime = currentTime - lastTime;
-        lastTime = currentTime;
-        
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
-        ctx.fillStyle = '#000';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        
-        // Dibujar trayectoria si está en modo ángulo
-        if ((!projectile || !projectile.active) && controlsMode === 'angle' && !allCirclesCleared) {
-            drawTrajectory(currentAngle);
-        }
-        
-        // Actualizar y dibujar círculos
-        for (let circle of circles) {
-            circle.update(deltaTime);
-            circle.draw();
-        }
-        
-        updatePaddle();
-        drawPaddle();
-        
-        // Actualizar múltiples proyectiles en nivel 4
-
-if (currentLevel === 4) {
-    for (let i = projectiles.length - 1; i >= 0; i--) {
-        const proj = projectiles[i];
-        if (proj && proj.active) {
-            proj.update();
-            proj.draw();
-            
-            if (!proj.active) {
-                projectiles.splice(i, 1);
-            }
-        } else {
-            projectiles.splice(i, 1);
-        }
-    }
-    
-    // Verificar si hay proyectil principal activo
-    if (projectile && projectile.active) {
-        projectile.update();
-        projectile.draw();
-        
-        if (!projectile.active) {
-            projectile = null;
-        }
-    }
-    
-    // Mantener en modo paleta si hay proyectiles activos
-    if ((projectiles.length > 0 || (projectile && projectile.active)) && !allCirclesCleared) {
-        controlsMode = 'paddle';
-        angleSlider.min = 0;
-        angleSlider.max = canvas.width - paddle.width;
-        angleSlider.value = paddle.x;
-        angleLabel.innerHTML = '<span id="angleValue">Move</span>';
-        fireBtn.textContent = 'WAITING';
-        fireBtn.disabled = true;
-    }
-    
-
-if (checkAllProjectilesGone() && !allCirclesCleared) {
-    console.log("Todos los proyectiles han caído, restando vida");
-    
-    // Solo restar una vida por turno completo
-    lives--;
-    livesElement.textContent = lives;
-    
-    // IMPORTANTE: Resetear estado del proyectil principal
-    if (projectile && !projectile.active) {
-        projectile = null;
-    }
-    
-    // Resetear multi-proyectil
-    multiProjectileActive = false;
-    multiProjectileTimer = 0;
-    
-    // Limpiar lista de proyectiles
-    projectiles = [];
-    
-    // Permitir nuevo disparo
-    setControlsMode('angle');
-    
-    if (lives <= 0) {
-        endGame();
-    }
-}
-} else {
-    // Niveles normales 1-3 (código existente)
-    if (projectile && projectile.active && !allCirclesCleared) {
-        projectile.update();
-        projectile.draw();
-        
-        if (!projectile.active) {
-            projectile = null;
+        let keys = { left:false, right:false };
+        function initGame(level=1){
+            currentLevel=level; circles=[]; projectiles=[]; lives=10; score=0; gameActive=true; allCirclesCleared=false;
+            specialCircle=null; specialCircleActive=false; multiProjectileActive=false;
+            livesElement.textContent=lives; scoreElement.textContent=score;
+            applyLevelTheme(); initCirclesForLevel();
+            gameOverElement.style.display='none'; levelCompleteElement.style.display='none';
             setControlsMode('angle');
+            if(animationId) cancelAnimationFrame(animationId);
+            lastTimestamp=0; animate();
         }
-    }
-}
         
-        // Lógica de respawn del círculo especial en nivel 4
-        if (currentLevel === 4 && gameActive && !allCirclesCleared) {
-            if (!specialCircleActive && specialCircleRespawnTimer < SPECIAL_CIRCLE_RESPAWN_TIME) {
-                specialCircleRespawnTimer += deltaTime;
-                
-                // Dibujar indicador de respawn
-                if (specialCircleRespawnTimer > 1000) { // Mostrar después de 1 segundo
-                    const timeLeft = SPECIAL_CIRCLE_RESPAWN_TIME - specialCircleRespawnTimer;
-                    const secondsLeft = Math.ceil(timeLeft / 1000);
-                    
-                    ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
-                    ctx.font = 'bold 14px Arial';
-                    ctx.textAlign = 'center';
-                    ctx.fillText(`×2 Power reappears in: ${secondsLeft}s`, canvas.width / 2, canvas.height - 50);
-                    
-                    // Barra de progreso del respawn
-                    const barWidth = 200;
-                    const barHeight = 6;
-                    const barX = (canvas.width - barWidth) / 2;
-                    const barY = canvas.height - 35;
-                    const progress = specialCircleRespawnTimer / SPECIAL_CIRCLE_RESPAWN_TIME;
-                    
-                    // Fondo de la barra
-                    ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
-                    ctx.fillRect(barX, barY, barWidth, barHeight);
-                    
-                    // Barra de progreso
-                    ctx.fillStyle = '#9b5de5';
-                    ctx.fillRect(barX, barY, barWidth * progress, barHeight);
+        let lastTimestamp=0;
+        function animate(now=0){
+            if(!gameActive) return;
+            let delta = Math.min(100, now-lastTimestamp);
+            lastTimestamp=now;
+            ctx.clearRect(0,0,canvas.width,canvas.height);
+            ctx.fillStyle='#000'; ctx.fillRect(0,0,canvas.width,canvas.height);
+            if((!projectiles.some(p=>p.active) || projectiles.length===0) && controlsMode==='angle' && !allCirclesCleared) drawTrajectory(currentAngle);
+            for(let c of circles){ c.update(delta); c.draw(); }
+            updatePaddle(); drawPaddle();
+            // update all projectiles
+            for(let i=0;i<projectiles.length;i++){
+                let p=projectiles[i];
+                if(p.active){ p.update(); p.draw(); if(!p.active) { projectiles.splice(i,1); i--; } }
+                else { projectiles.splice(i,1); i--; }
+            }
+            if(currentLevel===4){
+                if(projectiles.some(p=>p.active) && !allCirclesCleared){
+                    controlsMode='paddle'; angleSlider.min=0; angleSlider.max=canvas.width-paddle.width; angleSlider.value=paddle.x;
+                    angleValue.textContent='Move'; fireBtn.disabled=true; fireBtn.textContent='WAITING';
+                } else if(!projectiles.some(p=>p.active) && !allCirclesCleared){
+                    if(checkAllProjectilesGone() && !allCirclesCleared && gameActive){
+                        lives--; livesElement.textContent=lives;
+                        projectiles=[];
+                        setControlsMode('angle');
+                        if(lives<=0) endGame();
+                    }
                 }
-            } else if (!specialCircleActive && specialCircleRespawnTimer >= SPECIAL_CIRCLE_RESPAWN_TIME) {
-                // Crear nuevo círculo especial
-                createSpecialCircle();
+                // special respawn
+                if(!specialCircleActive && specialCircleRespawnTimer<SPECIAL_CIRCLE_RESPAWN_TIME && !allCirclesCleared){
+                    specialCircleRespawnTimer+=delta;
+                    if(specialCircleRespawnTimer>=SPECIAL_CIRCLE_RESPAWN_TIME) createSpecialCircle();
+                }
+                if(specialCircle && specialCircle.activeTime<=MULTI_PROJECTILE_DURATION){
+                    let left = (MULTI_PROJECTILE_DURATION - specialCircle.activeTime)/1000;
+                    ctx.fillStyle='white'; ctx.font='bold 12px Arial'; ctx.fillText(`×2: ${Math.ceil(left)}s`, canvas.width/2, 28);
+                }
+            } else {
+                // normal levels: if no active projectile, switch to angle mode
+                if(!projectiles.some(p=>p.active) && controlsMode==='paddle' && !allCirclesCleared){
+                    setControlsMode('angle');
+                }
             }
-            
-            // Actualizar estado del círculo especial
-            if (specialCircle) {
-                specialCircleActive = true;
-            }
-            
-            // Dibujar indicador de tiempo para círculo especial activo
-            if (specialCircle && specialCircle.activeTime <= MULTI_PROJECTILE_DURATION) {
-                const timeLeft = MULTI_PROJECTILE_DURATION - specialCircle.activeTime;
-                const secondsLeft = Math.ceil(timeLeft / 1000);
-                
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-                ctx.font = 'bold 14px Arial';
-                ctx.textAlign = 'center';
-                ctx.fillText(`×2 Power: ${secondsLeft}s`, canvas.width / 2, 25);
-                
-                // Dibujar barra de tiempo
-                const barWidth = 200;
-                const barHeight = 8;
-                const barX = (canvas.width - barWidth) / 2;
-                const barY = 35;
-                const progress = timeLeft / MULTI_PROJECTILE_DURATION;
-                
-                // Fondo de la barra
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
-                ctx.fillRect(barX, barY, barWidth, barHeight);
-                
-                // Barra de progreso
-                ctx.fillStyle = progress > 0.5 ? '#0fce7c' : progress > 0.2 ? '#ffd166' : '#e94560';
-                ctx.fillRect(barX, barY, barWidth * progress, barHeight);
-            }
-        }
-        
-        if (circles.length === 0 && !allCirclesCleared && gameActive) {
-            allCirclesCleared = true;
-            completeLevel();
-        }
-        
-        if (gameActive) {
+            if(circles.length===0 && !allCirclesCleared && gameActive){ allCirclesCleared=true; completeLevel(); }
             animationId = requestAnimationFrame(animate);
         }
-    }
-
-    // Complete level
-    function completeLevel() {
-        gameActive = false;
-        specialCircleActive = false;
-        specialCircleRespawnTimer = 0;
         
-        if (score > bestScore) {
-            bestScore = score;
-            localStorage.setItem('bestScore', bestScore);
-            bestElement.textContent = bestScore;
-        }
-        
-        launchConfetti();
-        
-        if (currentLevel === maxLevels) {
-            levelCompleteElement.innerHTML = `
-                <h2>🎉 Congratulations! 🎉</h2>
-                <p>You've completed all levels!</p>
-                <p>Final score: <strong>${score}</strong></p>
-                <button class="next-level-btn" id="playAgainBtn">PLAY AGAIN FROM LEVEL 1</button>
-            `;
-            
-            levelCompleteElement.style.display = 'block';
-            
-            setTimeout(() => {
-                document.getElementById('playAgainBtn').addEventListener('click', function() {
-                    currentLevel = 1;
-                    initGame(currentLevel);
-                });
-            }, 100);
-        } else {
-            completedLevelElement.textContent = currentLevel;
-            levelScoreElement.textContent = score;
-            remainingLivesElement.textContent = lives;
-            levelCompleteElement.style.display = 'block';
-        }
-    }
-
-    // End game
-    function endGame() {
-        gameActive = false;
-        specialCircleActive = false;
-        specialCircleRespawnTimer = 0;
-        
-        if (score > bestScore) {
-            bestScore = score;
-            localStorage.setItem('bestScore', bestScore);
-            bestElement.textContent = bestScore;
-        }
-        
-        finalScoreElement.textContent = score;
-        finalBestElement.textContent = bestScore;
-        gameOverElement.style.display = 'block';
-    }
-    
-    // Launch confetti
-    function launchConfetti() {
-        const confettiCount = 150;
-        const colors = ['#e94560', '#0fce7c', '#ffd166', '#118ab2', '#9b5de5', '#ffffff'];
-        
-        for (let i = 0; i < confettiCount; i++) {
-            const confetti = document.createElement('div');
-            confetti.style.position = 'absolute';
-            confetti.style.width = '10px';
-            confetti.style.height = '10px';
-            confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
-            confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
-            confetti.style.top = '-20px';
-            confetti.style.left = Math.random() * 100 + 'vw';
-            confetti.style.opacity = '0.8';
-            confetti.style.zIndex = '15';
-            confetti.style.pointerEvents = 'none';
-            
-            document.body.appendChild(confetti);
-            
-            const animation = confetti.animate([
-                { 
-                    transform: `translateY(0px) rotate(0deg)`,
-                    opacity: 1 
-                },
-                { 
-                    transform: `translateY(${window.innerHeight + 100}px) rotate(${Math.random() * 360}deg)`,
-                    opacity: 0 
-                }
-            ], {
-                duration: Math.random() * 3000 + 2000,
-                easing: 'cubic-bezier(0.1, 0.8, 0.3, 1)'
-            });
-            
-            animation.onfinish = () => {
-                confetti.remove();
-            };
-        }
-    }
-
-    // Event Listeners
-    soundToggle.addEventListener('click', toggleSound);
-    
-    continueBtn.addEventListener('click', function() {
-        if (!allCirclesCleared) {
-            lives = 2;
-            livesElement.textContent = lives;
-            gameOverElement.style.display = 'none';
-            gameActive = true;
-            setControlsMode('angle');
-            lastTime = 0;
-            animate();
-        }
-    });
-
-    nextLevelBtn.addEventListener('click', function() {
-        levelCompleteElement.style.display = 'none';
-        
-        if (currentLevel < maxLevels) {
-            currentLevel++;
-            initGame(currentLevel);
-        } else {
-            currentLevel = 1;
-            initGame(currentLevel);
-        }
-    });
-
-    menuBtn.addEventListener('click', function() {
-        levelCompleteElement.style.display = 'none';
-        currentLevel = 1;
-        initGame(currentLevel);
-    });
-
-    window.addEventListener('keydown', function(e) {
-        if (e.key === 'ArrowLeft') keys.left = true;
-        if (e.key === 'ArrowRight') keys.right = true;
-        if (e.key === 'n' || e.key === 'N') {
-            e.preventDefault();
-            if (gameActive && !allCirclesCleared) {
-                allCirclesCleared = true;
-                completeLevel();
-            }
-        }
-    });
-
-    window.addEventListener('keyup', function(e) {
-        if (e.key === 'ArrowLeft') keys.left = false;
-        if (e.key === 'ArrowRight') keys.right = false;
-    });
-
-    canvas.addEventListener('touchmove', function(e) {
-        e.preventDefault();
-        const touch = e.touches[0];
-        const rect = canvas.getBoundingClientRect();
-        const touchX = touch.clientX - rect.left;
-        
-        paddle.x = touchX - paddle.width / 2;
-        
-        if (paddle.x < 0) paddle.x = 0;
-        if (paddle.x + paddle.width > canvas.width) paddle.x = canvas.width - paddle.width;
-    });
-
-    angleSlider.addEventListener('input', function() {
-        if (controlsMode === 'angle') {
-            currentAngle = parseInt(this.value);
-            angleValue.textContent = `${currentAngle}°`;
-        } else if (controlsMode === 'paddle') {
-            paddle.x = parseInt(this.value);
-        }
-    });
-
-    fireBtn.addEventListener('click', function() {
-        if (controlsMode === 'angle') {
-            if (!projectile || !projectile.active) {
-                projectile = new Projectile(
-                    paddle.x + paddle.width / 2,
-                    paddle.y - 5,
-                    currentAngle,
-                    false
-                );
-                
-                if (currentLevel === 4) {
-                    projectiles = [];
-                    projectiles.push(projectile);
-                }
-                
+        // Event binding
+        soundToggle.addEventListener('click', toggleSound);
+        continueBtn.addEventListener('click',()=>{ if(!allCirclesCleared){ lives+=2; livesElement.textContent=lives; gameOverElement.style.display='none'; gameActive=true; setControlsMode('angle'); animate(); } });
+        nextLevelBtn.addEventListener('click',()=>{ levelCompleteElement.style.display='none'; if(currentLevel<maxLevels) currentLevel++; else currentLevel=1; initGame(currentLevel); });
+        menuBtn.addEventListener('click',()=>{ levelCompleteElement.style.display='none'; currentLevel=1; initGame(1); });
+        restartBtn.addEventListener('click',()=>{ currentLevel=1; initGame(1); });
+        skipBtn.addEventListener('click',()=>{ if(gameActive && !allCirclesCleared){ allCirclesCleared=true; completeLevel(); } });
+        window.addEventListener('keydown',(e)=>{ if(e.key==='ArrowLeft') keys.left=true; if(e.key==='ArrowRight') keys.right=true; });
+        window.addEventListener('keyup',(e)=>{ if(e.key==='ArrowLeft') keys.left=false; if(e.key==='ArrowRight') keys.right=false; });
+        angleSlider.addEventListener('input',()=>{
+            if(controlsMode==='angle'){ currentAngle=parseInt(angleSlider.value); angleValue.textContent=`${currentAngle}°`; }
+            else if(controlsMode==='paddle'){ paddle.x=parseInt(angleSlider.value); }
+        });
+        fireBtn.addEventListener('click',()=>{
+            if(controlsMode==='angle' && gameActive && !allCirclesCleared && !projectiles.some(p=>p.active)){
+                // TRIPLE SHOT: launch 3 balls consecutively
+                launchTripleShot(currentAngle);
                 setControlsMode('paddle');
             }
-        }
-    });
-
-    restartBtn.addEventListener('click', function() {
-        currentLevel = 1;
-        initGame(currentLevel);
-    });
-
-    // Funciones para debug
-    function skipLevel() {
-        if (gameActive && !allCirclesCleared) {
-            allCirclesCleared = true;
-            completeLevel();
-        }
-    }
-    window.addEventListener('load', function() {
-        resizeCanvas();
-        initGame(currentLevel);
-        setControlsMode('angle');
-        
-        document.body.addEventListener('click', function initAudio() {
-            if (audioContext.state === 'suspended') {
-                audioContext.resume();
-            }
-            document.body.removeEventListener('click', initAudio);
-        }, { once: true });
-    });
-    
-    window.addEventListener('resize', resizeCanvas);
+        });
+        canvas.addEventListener('touchmove',(e)=>{ e.preventDefault(); let rect=canvas.getBoundingClientRect(); let tx=e.touches[0].clientX-rect.left; paddle.x=tx-paddle.width/2; paddle.x=Math.min(Math.max(0,paddle.x),canvas.width-paddle.width); angleSlider.value=paddle.x; });
+        window.addEventListener('load',()=>{ resizeCanvas(); initGame(1); document.body.addEventListener('click',()=>{ if(audioContext.state==='suspended') audioContext.resume(); },{once:true}); });
+        window.addEventListener('resize',resizeCanvas);
+    })();
 </script>
 </body>
 </html>
