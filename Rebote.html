@@ -1945,32 +1945,33 @@ if (checkAllProjectilesGone() && !allCirclesCleared) {
         }
     });
 
-fireBtn.addEventListener('click', function() {
-    if (controlsMode === 'angle' && gameActive) {
-        // Función interna para crear un proyectil
-        const launchBall = () => {
-            const newProjectile = new Projectile(
-                paddle.x + paddle.width / 2,
-                paddle.y - 5,
-                currentAngle,
-                false
-            );
-            
-            if (currentLevel === 4) {
-                projectiles.push(newProjectile); [cite: 803]
-            } else {
-                projectile = newProjectile; [cite: 800]
-            }
-        };
-
-        // Lanzar 3 bolas con un intervalo de 100ms entre ellas
-        launchBall();
-        setTimeout(launchBall, 100);
-        setTimeout(launchBall, 200);
-
-        setControlsMode('paddle'); [cite: 801]
-    }
-});
+    fireBtn.addEventListener('click', function() {
+        if (controlsMode === 'angle' && gameActive) {
+            // Función para crear y lanzar una bola
+            const launchBall = () => {
+                const newProjectile = new Projectile(
+                    paddle.x + paddle.width / 2,
+                    paddle.y - 5,
+                    currentAngle,
+                    false
+                );
+                
+                // Si es nivel 4, añadir al arreglo. Si no, asignar a la variable única.
+                if (currentLevel === 4) {
+                    projectiles.push(newProjectile);
+                } else {
+                    projectile = newProjectile;
+                }
+            };
+    
+            // Lanzar 3 bolas con un pequeño retraso para que no se encimen
+            launchBall();
+            setTimeout(launchBall, 100);
+            setTimeout(launchBall, 200);
+    
+            setControlsMode('paddle');
+        }
+    });
 
     restartBtn.addEventListener('click', function() {
         currentLevel = 1;
