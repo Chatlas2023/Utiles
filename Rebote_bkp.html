@@ -102,11 +102,11 @@
             touch-action: none;
             width: 100%;
             max-width: 400px;
-            height: 380px;
+            height: 450px;
         }
         
         .controls {
-            margin-top: 90px;
+            margin-top: 40px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -396,7 +396,7 @@
         </div>
         
         <div class="game-area">
-            <canvas id="gameCanvas" width="400" height="380"></canvas>
+            <canvas id="gameCanvas" width="400" height="450"></canvas>
         </div>
         
         <div class="controls">
@@ -429,7 +429,6 @@
     
     <div class="debug-buttons">
         <button class="debug-btn" onclick="skipLevel()">Skip Level</button>
-        <button class="debug-btn" onclick="restartLevel()">Restart</button>
     </div>
 
 <script>
@@ -484,10 +483,10 @@
     let specialCircleActive = false;
 
     // Verificación de fecha de expiración (deshabilitada temporalmente)
-    const expirationDate = new Date('2026-3-1');
+    const expirationDate = new Date('2026-6-1');
     const currentDate = new Date();
 
-    if (false) { // Deshabilitado para pruebas
+    if (currentDate > expirationDate) { // Verificar si la fecha actual es posterior a la de expiración
         // Mostrar mensaje de prueba vencida y deshabilitar el juego
         const trialExpired = document.createElement('div');
         trialExpired.style.cssText = `
@@ -576,7 +575,7 @@
         width: 50,
         height: 10,
         x: 175,
-        y: 370,
+        y: canvas.height - 10,
         speed: 5,
         color: '#ffffff'
     };
@@ -697,7 +696,7 @@
         const containerWidth = canvas.parentElement.clientWidth;
         const maxWidth = Math.min(400, containerWidth);
         canvas.width = maxWidth;
-        canvas.height = 380;
+        canvas.height = 450;
         
         paddle.width = paddleSizes[currentLevel] || 50;
         paddle.x = (canvas.width - paddle.width) / 2;
@@ -748,7 +747,7 @@
             this.minX = this.radius;
             this.maxX = canvas.width - this.radius;
             this.minY = this.radius + 20;
-            this.maxY = canvas.height * 0.5;
+            this.maxY = canvas.height * 0.6;
         }
         
         getRandomColor() {
@@ -904,7 +903,7 @@
         constructor(x, y, angle, isChild = false) {
             this.x = x;
             this.y = y;
-            this.radius = 5;
+            this.radius = 7;
             this.speed = isChild ? 3.5 : projectileSpeeds[currentLevel] || 4.0; // Más lento para hijos
             this.angle = (180 - angle) * Math.PI / 180;
             this.vx = this.speed * Math.cos(this.angle);
@@ -1123,18 +1122,25 @@
             }
             
             // Verificar si el proyectil cayó al fondo
-            if (this.y + this.radius >= canvas.height && this.active) {
-                this.active = false;
-                lives--;
-                livesElement.textContent = lives;
-                
-                // Permitir nuevo disparo en cualquier nivel
-                setControlsMode('angle');
-                
-                if (lives <= 0) {
-                    endGame();
-                }
-            }
+       // Verificar si el proyectil cayó al fondo
+if (this.y + this.radius >= canvas.height && this.active) {
+    this.active = false;
+    
+    // Para nivel 4, marcar como inactivo pero NO restar vida aquí
+    // La vida se restará cuando TODOS los proyectiles hayan caído
+    if (currentLevel !== 4) {
+        lives--;
+        livesElement.textContent = lives;
+        
+        // Permitir nuevo disparo en niveles normales
+        setControlsMode('angle');
+        
+        if (lives <= 0) {
+            endGame();
+        }
+    }
+    // En nivel 4, la vida se restará en checkAllProjectilesGone()
+ }
         }
         
         draw() {
@@ -1159,8 +1165,23 @@
     }
 
     // Función para dividir proyectil - CORREGIDA
-    function splitProjectile(originalProjectile) {
-        if (!multiProjectileActive || projectiles.length >= 6) return; // Límite de 6 proyectiles
+function splitProjectile(originalProjectile) {
+    // Cambiamos la condición: permitir dividir si hay menos de 6 proyectiles
+    // y (multiProjectileActive es true O estamos en nivel 4)
+    if (currentLevel !== 4 || projectiles.length >= 6) return;
+    
+    // Activar multi-proyectil
+    multiProjectileActive = true;
+    multiProjectileTimer = Date.now();
+    
+    // Forzar modo paleta
+    controlsMode = 'paddle';
+    angleSlider.min = 0;
+    angleSlider.max = canvas.width - paddle.width;
+    angleSlider.value = paddle.x;
+    angleLabel.innerHTML = '<span id="angleValue">Move</span>';
+    fireBtn.textContent = 'WAITING';
+    fireBtn.disabled = true;
         
         // Calcular ángulos para dividir
         const currentAngle = Math.atan2(originalProjectile.vy, originalProjectile.vx);
@@ -1212,6 +1233,28 @@
             }
         }
     }
+    
+    // Función para verificar si todos los proyectiles han caído
+function checkAllProjectilesGone() {
+    if (currentLevel !== 4) return false;
+    
+    // Verificar proyectil principal
+    if (projectile && projectile.active) return false;
+    
+    // Verificar proyectiles hijos
+    for (let i = 0; i < projectiles.length; i++) {
+        if (projectiles[i].active) return false;
+    }
+    
+    // Si llegamos aquí, todos los proyectiles han caído
+    // IMPORTANTE: También verificamos si se disparó alguna vez en nivel 4
+    // (proyectile fue creado o projectiles tiene elementos)
+    if ((projectile !== null || projectiles.length > 0) && !allCirclesCleared) {
+        return true;
+    }
+    
+    return false;
+}
 
     // Draw paddle
     function drawPaddle() {
@@ -1435,6 +1478,11 @@
 
     // Function to change control mode
     function setControlsMode(mode) {
+        if (currentLevel === 4 && mode === 'angle' && 
+            ((projectile && projectile.active) || projectiles.length > 0)) {
+            return; // No cambiar el modo si hay proyectiles activos
+        }
+        
         controlsMode = mode;
         if (mode === 'angle') {
             angleSlider.min = 0;
@@ -1475,6 +1523,11 @@
         score = 0;
         gameActive = true;
         allCirclesCleared = false;
+        
+        // Reset variables específicas del nivel 4
+        multiProjectileActive = false;
+        multiProjectileTimer = 0;
+        projectiles = [];
         
         livesElement.textContent = lives;
         scoreElement.textContent = score;
@@ -1572,48 +1625,82 @@
         drawPaddle();
         
         // Actualizar múltiples proyectiles en nivel 4
-        if (currentLevel === 4) {
-            for (let i = projectiles.length - 1; i >= 0; i--) {
-                const proj = projectiles[i];
-                if (proj && proj.active) {
-                    proj.update();
-                    proj.draw();
-                    
-                    if (!proj.active) {
-                        projectiles.splice(i, 1);
-                    }
-                } else {
-                    projectiles.splice(i, 1);
-                }
-            }
+
+if (currentLevel === 4) {
+    for (let i = projectiles.length - 1; i >= 0; i--) {
+        const proj = projectiles[i];
+        if (proj && proj.active) {
+            proj.update();
+            proj.draw();
             
-            // Verificar si hay proyectil principal activo
-            if (projectile && projectile.active) {
-                projectile.update();
-                projectile.draw();
-                
-                if (!projectile.active) {
-                    projectile = null;
-                    // Solo cambiar modo si no hay proyectiles hijos activos
-                    if (projectiles.length === 0) {
-                        setControlsMode('angle');
-                    }
-                }
-            } else if (projectiles.length === 0 && controlsMode === 'paddle') {
-                setControlsMode('angle');
+            if (!proj.active) {
+                projectiles.splice(i, 1);
             }
         } else {
-            // Niveles normales 1-3
-            if (projectile && projectile.active && !allCirclesCleared) {
-                projectile.update();
-                projectile.draw();
-                
-                if (!projectile.active) {
-                    projectile = null;
-                    setControlsMode('angle');
-                }
-            }
+            projectiles.splice(i, 1);
         }
+    }
+    
+    // Verificar si hay proyectil principal activo
+    if (projectile && projectile.active) {
+        projectile.update();
+        projectile.draw();
+        
+        if (!projectile.active) {
+            projectile = null;
+        }
+    }
+    
+    // Mantener en modo paleta si hay proyectiles activos
+    if ((projectiles.length > 0 || (projectile && projectile.active)) && !allCirclesCleared) {
+        controlsMode = 'paddle';
+        angleSlider.min = 0;
+        angleSlider.max = canvas.width - paddle.width;
+        angleSlider.value = paddle.x;
+        angleLabel.innerHTML = '<span id="angleValue">Move</span>';
+        fireBtn.textContent = 'WAITING';
+        fireBtn.disabled = true;
+    }
+    
+
+if (checkAllProjectilesGone() && !allCirclesCleared) {
+    console.log("Todos los proyectiles han caído, restando vida");
+    
+    // Solo restar una vida por turno completo
+    lives--;
+    livesElement.textContent = lives;
+    
+    // IMPORTANTE: Resetear estado del proyectil principal
+    if (projectile && !projectile.active) {
+        projectile = null;
+    }
+    
+    // Resetear multi-proyectil
+    multiProjectileActive = false;
+    multiProjectileTimer = 0;
+    
+    // Limpiar lista de proyectiles
+    projectiles = [];
+    
+    // Permitir nuevo disparo
+    setControlsMode('angle');
+    
+    if (lives <= 0) {
+        endGame();
+    }
+}
+} else {
+    // Niveles normales 1-3 (código existente)
+    if (projectile && projectile.active && !allCirclesCleared) {
+        projectile.update();
+        projectile.draw();
+        
+        if (!projectile.active) {
+            projectile = null;
+            setControlsMode('angle');
+        }
+    }
+}
         
         // Lógica de respawn del círculo especial en nivel 4
         if (currentLevel === 4 && gameActive && !allCirclesCleared) {
@@ -1890,11 +1977,6 @@
             completeLevel();
         }
     }
-
-    function restartLevel() {
-        initGame(currentLevel);
-    }
-
     window.addEventListener('load', function() {
         resizeCanvas();
         initGame(currentLevel);
