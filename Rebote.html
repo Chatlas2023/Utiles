@@ -1181,36 +1181,25 @@
         }
 
         if (circles.length === 0 && !allCirclesCleared && gameActive) {
-            allCirclesCleared = true; completeLevel();
+            completeLevel();
         }
 
         if (gameActive) animationId = requestAnimationFrame(animate);
     }
 
-    function completeLevel() {
-        gameActive = false; specialCircleActive = false; specialCircleRespawnTimer = 0;
+       function completeLevel() {
         if (score > bestScore) {
-            bestScore = score; localStorage.setItem('bestScore', bestScore);
+            bestScore = score;
+            localStorage.setItem('bestScore', bestScore);
             bestElement.textContent = bestScore;
         }
-        launchConfetti();
-        if (currentLevel === maxLevels) {
-            levelCompleteElement.innerHTML = `
-                <h2>🎉 Congratulations! 🎉</h2>
-                <p>You've completed all levels!</p>
-                <p>Final score: <strong>${score}</strong></p>
-                <button class="next-level-btn" id="playAgainBtn">PLAY AGAIN FROM LEVEL 1</button>
-            `;
-            levelCompleteElement.style.display = 'block';
-            setTimeout(() => {
-                document.getElementById('playAgainBtn').addEventListener('click', () => { currentLevel = 1; initGame(currentLevel); });
-            }, 100);
-        } else {
-            completedLevelElement.textContent = currentLevel;
-            levelScoreElement.textContent = score;
-            remainingLivesElement.textContent = lives;
-            levelCompleteElement.style.display = 'block';
-        }
+        // Subir de nivel (cíclico) y seguir jugando
+        currentLevel = currentLevel < maxLevels ? currentLevel + 1 : 1;
+        allCirclesCleared = false;
+        applyLevelTheme();
+        initCirclesForLevel();
+        projectiles = []; volleyPending = [];
+        setControlsMode('angle');
     }
 
     function endGame() {
