@@ -862,7 +862,7 @@
 
     // ─── Split projectile (level 4 special circle) ───────────────────────────
     function splitProjectile(originalProjectile) {
-        if (currentLevel !== 4 || projectiles.length >= 8) return;
+        if (currentLevel % maxLevels !== 0 || projectiles.length >= 8) return;
         multiProjectileActive = true; multiProjectileTimer = Date.now();
         controlsMode = 'paddle';
         angleSlider.min = 0; angleSlider.max = canvas.width - paddle.width;
@@ -985,7 +985,7 @@
         specialCircle = null; specialCircleActive = false; specialCircleRespawnTimer = 0;
         const maxAttempts = 100;
         let circleCount = 4 + Math.floor(currentLevel / 2);
-        if (currentLevel === 4) {
+        if (currentLevel % maxLevels === 0) {
             circleCount = 5;
             for (let i = 0; i < circleCount - 1; i++) {
                 let attempts = 0, validPosition = false, newCircle;
@@ -1039,7 +1039,7 @@
         const theme = levelThemes[currentLevel] || levelThemes[1];
         document.body.style.background = `linear-gradient(135deg, ${theme[0]}, ${theme[1]})`;
         levelElement.textContent = currentLevel;
-        levelIndicator.textContent = `Level ${currentLevel}: ${levelNames[currentLevel]}`;
+        levelIndicator.textContent = `Level ${currentLevel}: ${levelNames[currentLevel] || 'Endless'}`;
         paddle.width = paddleSizes[currentLevel] || 50;
         paddle.x = (canvas.width - paddle.width) / 2;
     }
@@ -1063,7 +1063,7 @@
     }
 
     function createSpecialCircle() {
-        if (currentLevel !== 4 || !gameActive || allCirclesCleared) return;
+        if (currentLevel % maxLevels !== 0 || !gameActive || allCirclesCleared) return;
         const specialDiameter = 40;
         let validPosition = false, attempts = 0;
         while (!validPosition && attempts < 50) {
@@ -1149,7 +1149,7 @@
         }
 
         // Level 4 special-circle respawn UI
-        if (currentLevel === 4 && gameActive && !allCirclesCleared) {
+        if (currentLevel % maxLevels === 0 && gameActive && !allCirclesCleared) {
             if (!specialCircleActive && specialCircleRespawnTimer < SPECIAL_CIRCLE_RESPAWN_TIME) {
                 specialCircleRespawnTimer += deltaTime;
                 if (specialCircleRespawnTimer > 1000) {
@@ -1194,7 +1194,7 @@
             bestElement.textContent = bestScore;
         }
         // Subir de nivel (cíclico) y seguir jugando
-        currentLevel = currentLevel < maxLevels ? currentLevel + 1 : 1;
+        currentLevel++;
         allCirclesCleared = false;
         applyLevelTheme();
         initCirclesForLevel();
