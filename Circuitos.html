@@ -121,7 +121,6 @@
             .info-panel { gap: 10px; flex-wrap: wrap; justify-content: center; }
             .level-selector { order: 1; }
         }
-        /* Canvas de confeti sobre todo pero sin bloquear interacción */
         #confetti-canvas {
             position: fixed;
             top: 0;
@@ -155,18 +154,18 @@
     (function(){
         // ---------- CONFETI (sistema ligero) ----------
         const confettiCanvas = document.getElementById('confetti-canvas');
-        let confettiCtx = confettiCanvas.getContext('2d');
-        let confettiActive = false;
+        let confettiCtx = null;
         let particles = [];
         let animationId = null;
         
         function resizeConfettiCanvas() {
+            if (!confettiCanvas) return;
             confettiCanvas.width = window.innerWidth;
             confettiCanvas.height = window.innerHeight;
+            if (!confettiCtx) {
+                confettiCtx = confettiCanvas.getContext('2d');
+            }
         }
-        window.addEventListener('resize', () => {
-            resizeConfettiCanvas();
-        });
         
         class ConfettiParticle {
             constructor(x, y) {
@@ -184,7 +183,7 @@
             update() {
                 this.x += this.speedX;
                 this.y += this.speedY;
-                this.speedY += 0.2; // gravedad
+                this.speedY += 0.2;
                 this.speedX *= 0.99;
                 this.rotation += this.rotationSpeed;
                 this.alpha *= this.decay;
@@ -202,6 +201,10 @@
         }
         
         function launchConfetti() {
+            if (!confettiCtx) {
+                resizeConfettiCanvas();
+                if (!confettiCtx) return;
+            }
             if (animationId) cancelAnimationFrame(animationId);
             particles = [];
             resizeConfettiCanvas();
@@ -217,7 +220,6 @@
                 p.speedY = vy;
                 particles.push(p);
             }
-            // adicionales laterales
             for (let i = 0; i < 80; i++) {
                 const sideX = Math.random() * window.innerWidth;
                 const p = new ConfettiParticle(sideX, -20);
@@ -225,7 +227,6 @@
                 p.speedX = (Math.random() - 0.5) * 4;
                 particles.push(p);
             }
-            confettiActive = true;
             function animateConfetti() {
                 if (!confettiCtx) return;
                 confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
@@ -239,18 +240,16 @@
                 if (anyAlive && particles.length > 0) {
                     animationId = requestAnimationFrame(animateConfetti);
                 } else {
-                    confettiActive = false;
-                    confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+                    if (confettiCtx) confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
                     animationId = null;
                 }
             }
             animateConfetti();
-            // auto stop después de 4 segundos por si acaso
             setTimeout(() => {
                 if (animationId) {
                     cancelAnimationFrame(animationId);
                     animationId = null;
-                    confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+                    if (confettiCtx) confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
                 }
             }, 4200);
         }
@@ -509,7 +508,6 @@
             }
             connections.set(color, newPathCoords);
             
-            // Verificar victoria
             const totalColors = dots.length / 2;
             let completed = 0;
             for (let [col, pathArray] of connections.entries()) {
@@ -518,7 +516,6 @@
             if (completed === totalColors) {
                 victoryFlag = true;
                 victoryDiv.innerHTML = '<div class="victory-msg">🎉 ¡NIVEL COMPLETADO! 🎉</div>';
-                // LANZAR CONFETI AL COMPLETAR EL NIVEL
                 launchConfetti();
                 activeDrawing = false;
                 fullRedraw();
@@ -628,7 +625,6 @@
             victoryFlag = false;
             victoryDiv.innerHTML = "";
             fullRedraw();
-            // Si hay confeti activo se detiene visualmente (no molesta)
             if (animationId) {
                 cancelAnimationFrame(animationId);
                 animationId = null;
