@@ -2,174 +2,119 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Utilidades para el Celular</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Utilidades Compactas</title>
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
         
         body {
-            background-color: #121212;
-            color: #e0e0e0;
-            line-height: 1.6;
-            padding: 20px;
             background: linear-gradient(135deg, #121212 0%, #1a1a2e 100%);
+            color: #e0e0e0;
             min-height: 100vh;
+            padding: 10px; /* Reducido para ganar espacio */
         }
         
         .container {
-            max-width: 1200px;
+            max-width: 600px; /* Limitamos el ancho para mantener todo junto */
             margin: 0 auto;
-            padding: 20px;
         }
         
-        header {
-            text-align: center;
-            margin-bottom: 30px;
-            padding: 10px;
-        }
-        
-        h1 {
-            color: #bb86fc;
-            margin-bottom: 8px;
-            font-size: 28px;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-        }
-        
-        .subtitle {
-            color: #a0a0a0;
-            font-size: 16px;
-        }
+        header { text-align: center; margin-bottom: 15px; }
+        h1 { color: #bb86fc; font-size: 22px; }
+        .subtitle { color: #a0a0a0; font-size: 14px; }
         
         .games-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-            gap: 20px;
+            /* Forzamos 3 columnas en móviles pequeños, 4 en medianos */
+            grid-template-columns: repeat(3, 1fr); 
+            gap: 12px; 
             justify-items: center;
-            margin-top: 20px;
         }
         
         .game-icon {
             background-color: #1e1e1e;
-            border-radius: 16px;
-            overflow: hidden;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-            transition: all 0.3s ease;
+            border-radius: 12px;
             text-decoration: none;
             display: flex;
             flex-direction: column;
             align-items: center;
             color: inherit;
-            width: 110px;
-            height: 130px;
+            width: 100%; /* Se adapta a la columna */
+            max-width: 100px;
+            height: 110px;
             border: 1px solid #333;
-            padding: 12px;
-            text-align: center;
+            padding: 10px;
+            transition: transform 0.2s;
             position: relative;
         }
         
-        .game-icon:hover {
-            transform: translateY(-5px) scale(1.05);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
-            border-color: #bb86fc;
-            filter: brightness(1.1);
-        }
-
-        .game-icon:active {
-            transform: scale(0.96);
-        }
+        .game-icon:active { transform: scale(0.95); }
         
         .game-symbol {
-            width: 65px;
-            height: 65px;
+            width: 50px;
+            height: 50px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-bottom: 10px;
-            font-size: 30px;
-            color: white;
+            margin-bottom: 8px;
+            font-size: 24px;
             background-color: #2a2a2a;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-            position: relative;
             overflow: hidden;
         }
 
-        /* DISEÑO DE ICONO TIPO FLOW FREE */
-        .flow-icon {
-            width: 100%;
-            height: 100%;
-            position: relative;
-            background: #000;
-        }
-        .flow-dot {
-            width: 14px;
-            height: 14px;
-            border-radius: 50%;
-            position: absolute;
-            z-index: 2;
-        }
+        /* DISEÑO FLOW FREE */
+        .flow-icon { width: 100%; height: 100%; position: relative; background: #000; }
+        .flow-dot { width: 10px; height: 10px; border-radius: 50%; position: absolute; z-index: 2; }
         .dot-blue { background: #3A86FF; top: 15%; left: 15%; }
         .dot-blue-2 { background: #3A86FF; bottom: 15%; right: 15%; }
         .flow-line {
             position: absolute;
-            border: 6px solid #3A86FF;
-            width: 60%;
-            height: 60%;
-            border-bottom: none;
-            border-left: none;
-            border-radius: 0 20px 0 0;
-            top: 25%;
-            left: 20%;
-            z-index: 1;
+            border: 4px solid #3A86FF;
+            width: 55%; height: 55%;
+            border-bottom: none; border-left: none;
+            border-radius: 0 15px 0 0;
+            top: 25%; left: 20%; z-index: 1;
         }
         
         .game-name {
-            font-size: 13px;
+            font-size: 11px;
             color: #bb86fc;
             font-weight: 500;
-            line-height: 1.3;
-            height: 32px;
+            line-height: 1.2;
+            text-align: center;
         }
         
         .badge-new {
             position: absolute;
-            top: 6px;
-            right: 8px;
+            top: -5px;
+            right: -5px;
             background-color: #03dac6;
             color: #000;
-            font-size: 9px;
+            font-size: 8px;
             font-weight: bold;
-            border-radius: 20px;
-            padding: 2px 6px;
+            border-radius: 10px;
+            padding: 2px 5px;
+            z-index: 10;
+        }
+
+        @media (min-width: 450px) {
+            .games-grid { grid-template-columns: repeat(4, 1fr); }
         }
         
         footer {
             text-align: center;
-            margin-top: 40px;
-            color: #7f7f7f;
-            font-size: 12px;
-            padding: 15px;
-            border-top: 1px solid #2a2a2a;
-        }
-        
-        @media (max-width: 600px) {
-            .games-grid { grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); }
-            .game-icon { width: 90px; height: 110px; padding: 10px; }
-            .game-symbol { width: 55px; height: 55px; font-size: 24px; }
-            .game-name { font-size: 11px; height: 26px; }
+            margin-top: 20px;
+            color: #666;
+            font-size: 10px;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>Colección de Utilidades</h1>
-            <p class="subtitle">Selecciona una herramienta para continuar</p>
+            <h1>Utilidades</h1>
+            <p class="subtitle">Todo en una pantalla</p>
         </header>
         
         <div class="games-grid">
@@ -177,43 +122,36 @@
                 <div class="game-symbol">🔢</div>
                 <div class="game-name">Contador</div>
             </a>
-                     
             <a href="Mapa.html" class="game-icon">
                 <div class="game-symbol">🗺️</div>
-                <div class="game-name">Mapa Ruteador</div>
+                <div class="game-name">Mapa</div>
             </a>
-            
             <a href="Dic_arg_esp.html" class="game-icon">
                 <div class="game-symbol">🇦🇷</div>
                 <div class="game-name">Diccionario</div>
             </a>
-            
             <a href="Sumayresta.html" class="game-icon">
                 <div class="game-symbol">➕➖</div>
-                <div class="game-name">Suma y Resta</div>
+                <div class="game-name">Suma</div>
             </a>
-
             <a href="arboles.html" class="game-icon">
                 <div class="game-symbol">🌳</div>
-                <div class="game-name">Árboles C.A.B.A.</div>
+                <div class="game-name">Árboles</div>
             </a>
-            
             <a href="quiz.html" class="game-icon">
                 <div class="game-symbol">🤔</div>
-                <div class="game-name">Trivia Noticias</div>
+                <div class="game-name">Trivia</div>
             </a>
-            
             <a href="Rebote.html" class="game-icon">
                 <div class="game-symbol">⚪</div>
-                <div class="game-name">Rebote Extremo</div>
+                <div class="game-name">Rebote</div>
             </a>
-
             <a href="https://chatlas2026-padron-premium.hf.space/" target="_blank" class="game-icon">
                 <div class="game-symbol">🗳️</div>
-                <div class="game-name">Consulta Padrón</div>
+                <div class="game-name">Padrón</div>
             </a>
-
             <a href="Circuitos.html" class="game-icon">
+                <div class="badge-new">NUEVO</div>
                 <div class="game-symbol">
                     <div class="flow-icon">
                         <div class="flow-dot dot-blue"></div>
@@ -222,12 +160,11 @@
                     </div>
                 </div>
                 <div class="game-name">Circuitos</div>
-                <div class="badge-new">NUEVO</div>
             </a>
         </div>
         
         <footer>
-            <p>© 2026 Utilidades de Chatlas | Todos los derechos reservados</p>
+            <p>© 2026 Chatlas</p>
         </footer>
     </div>
 </body>
