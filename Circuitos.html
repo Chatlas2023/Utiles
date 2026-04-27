@@ -81,33 +81,33 @@ const LEVELS = [
     {   // Básico: 7x5 con 5 colores (10 puntos)
         rows: 5, cols: 7,
         dots: [
-            { x: 0, y: 0, color: COLORS[0] }, { x: 6, y: 0, color: COLORS[0] },
-            { x: 0, y: 2, color: COLORS[1] }, { x: 6, y: 2, color: COLORS[1] },
-            { x: 0, y: 4, color: COLORS[2] }, { x: 6, y: 4, color: COLORS[2] },
-            { x: 2, y: 0, color: COLORS[3] }, { x: 4, y: 4, color: COLORS[3] },
-            { x: 3, y: 0, color: COLORS[4] }, { x: 3, y: 4, color: COLORS[4] }
+            { x: 0, y: 0, color: COLORS[0] }, { x: 6, y: 4, color: COLORS[0] },
+            { x: 0, y: 1, color: COLORS[1] }, { x: 5, y: 4, color: COLORS[1] },
+            { x: 1, y: 1, color: COLORS[2] }, { x: 5, y: 3, color: COLORS[2] },
+            { x: 1, y: 2, color: COLORS[3] }, { x: 4, y: 3, color: COLORS[3] },
+            { x: 2, y: 2, color: COLORS[4] }, { x: 4, y: 2, color: COLORS[4] }
         ]
     },
     {   // Intermedio: 9x9 con 6 colores (12 puntos)
         rows: 9, cols: 9,
         dots: [
             { x: 0, y: 0, color: COLORS[0] }, { x: 8, y: 8, color: COLORS[0] },
-            { x: 0, y: 4, color: COLORS[1] }, { x: 8, y: 4, color: COLORS[1] },
-            { x: 2, y: 0, color: COLORS[2] }, { x: 6, y: 8, color: COLORS[2] },
-            { x: 4, y: 0, color: COLORS[3] }, { x: 4, y: 8, color: COLORS[3] },
-            { x: 0, y: 8, color: COLORS[4] }, { x: 8, y: 0, color: COLORS[4] },
-            { x: 1, y: 2, color: COLORS[5] }, { x: 7, y: 6, color: COLORS[5] }
+            { x: 7, y: 8, color: COLORS[1] }, { x: 0, y: 1, color: COLORS[1] },
+            { x: 1, y: 1, color: COLORS[2] }, { x: 7, y: 7, color: COLORS[2] },
+            { x: 6, y: 7, color: COLORS[3] }, { x: 1, y: 2, color: COLORS[3] },
+            { x: 2, y: 2, color: COLORS[4] }, { x: 6, y: 6, color: COLORS[4] },
+            { x: 5, y: 6, color: COLORS[5] }, { x: 5, y: 3, color: COLORS[5] }
         ]
     },
     {   // Avanzado: 8x11 con 6 colores (12 puntos)
         rows: 8, cols: 11,
         dots: [
             { x: 0, y: 0, color: COLORS[0] }, { x: 10, y: 7, color: COLORS[0] },
-            { x: 0, y: 7, color: COLORS[1] }, { x: 10, y: 0, color: COLORS[1] },
-            { x: 1, y: 3, color: COLORS[2] }, { x: 9, y: 4, color: COLORS[2] },
-            { x: 3, y: 1, color: COLORS[3] }, { x: 7, y: 6, color: COLORS[3] },
-            { x: 5, y: 0, color: COLORS[4] }, { x: 5, y: 7, color: COLORS[4] },
-            { x: 2, y: 5, color: COLORS[5] }, { x: 8, y: 2, color: COLORS[5] }
+            { x: 9, y: 7, color: COLORS[1] }, { x: 0, y: 1, color: COLORS[1] },
+            { x: 1, y: 1, color: COLORS[2] }, { x: 9, y: 6, color: COLORS[2] },
+            { x: 8, y: 6, color: COLORS[3] }, { x: 1, y: 2, color: COLORS[3] },
+            { x: 2, y: 2, color: COLORS[4] }, { x: 8, y: 5, color: COLORS[4] },
+            { x: 7, y: 5, color: COLORS[5] }, { x: 2, y: 3, color: COLORS[5] }
         ]
     }
 ];
@@ -239,19 +239,20 @@ const LEVELS = [
         if (x < 0 || x >= columnas || y < 0 || y >= filas) return false;
         const cel = grilla[y][x];
 
+        // Solo bloquea si se intenta cruzar sobre el PINCHO (Punto) de otro color
         if (cel.esInicio) return cel.colorOcupado === color;
 
-        // No permitir pasar por celda ocupada por otro color
-        if (cel.colorOcupado !== null && cel.colorOcupado !== color) return false;
-
-        // No repetir celda en la ruta temporal actual
+        // No repetir celda actual por la que ya estamos trazando
         if (rutaTemporal.some(p => p.x === x && p.y === y)) return false;
 
         return true;
     }
 
     function iniciarDibujo(e) {
-        if (victoryDiv.innerHTML) return;
+        // Solo bloquear si ganaste por completo (no si tira advertencia naranjita)
+        if (victoryDiv.innerHTML.includes("🎉")) return;
+        victoryDiv.innerHTML = "";
+        
         e.preventDefault();
         const pos = obtenerCoordenadas(e);
         if (!pos) return;
@@ -284,8 +285,38 @@ const LEVELS = [
 
         const ultimo = rutaTemporal[rutaTemporal.length-1];
         if (ultimo.x === pos.x && ultimo.y === pos.y) return;
+
+        // MEJORA: Permitir ir hacia atrás para poder borrar lo propio
+        if (rutaTemporal.length > 1) {
+            const penultimo = rutaTemporal[rutaTemporal.length-2];
+            if (penultimo.x === pos.x && penultimo.y === pos.y) {
+                rutaTemporal.pop(); // Borra la pisada
+                dibujarTodo();
+                return;
+            }
+        }
+
         if (!esAdyacente(ultimo, pos)) return;
         if (!celdaDisponible(pos.x, pos.y, colorActual)) return;
+
+        // LÓGICA DE CRUCE: Cortar caminos de otros colores
+        const cel = grilla[pos.y][pos.x];
+        if (cel.colorOcupado !== null && cel.colorOcupado !== colorActual) {
+            const colorCortado = cel.colorOcupado;
+            const rutaCortada = caminos.get(colorCortado);
+            if (rutaCortada) {
+                const idx = rutaCortada.findIndex(p => p.x === pos.x && p.y === pos.y);
+                if (idx !== -1) {
+                    const nuevaRuta = rutaCortada.slice(0, idx); // Hasta el corte
+                    // Quitar registro de grilla del tramo que queda suelto
+                    for (let i = idx; i < rutaCortada.length; i++) {
+                        const c = rutaCortada[i];
+                        if (!grilla[c.y][c.x].esInicio) grilla[c.y][c.x].colorOcupado = null;
+                    }
+                    caminos.set(colorCortado, nuevaRuta);
+                }
+            }
+        }
 
         rutaTemporal.push({x: pos.x, y: pos.y});
         dibujarTodo();
@@ -301,27 +332,41 @@ const LEVELS = [
         const primero = rutaTemporal[0];
         const ultimo = rutaTemporal[rutaTemporal.length-1];
 
-        const validoInicio = (primero.x === extremos[0].x && primero.y === extremos[0].y) ||
-                             (primero.x === extremos[1].x && primero.y === extremos[1].y);
-        const validoFin = (ultimo.x === extremos[0].x && ultimo.y === extremos[0].y) ||
-                          (ultimo.x === extremos[1].x && ultimo.y === extremos[1].y);
+        // LÓGICA DE VICTORIA: Validamos estrictamente conectar extremo 0 al extremo 1
+        const conectaExtremo0 = (primero.x === extremos[0].x && primero.y === extremos[0].y) || 
+                                (ultimo.x === extremos[0].x && ultimo.y === extremos[0].y);
+        const conectaExtremo1 = (primero.x === extremos[1].x && primero.y === extremos[1].y) || 
+                                (ultimo.x === extremos[1].x && ultimo.y === extremos[1].y);
 
-        if (validoInicio && validoFin) {
-            // Marcar celdas ocupadas
+        if (conectaExtremo0 && conectaExtremo1) {
+            // Marcar celdas ocupadas oficiales
             for (let i = 1; i < rutaTemporal.length - 1; i++) {
                 const c = rutaTemporal[i];
                 if (!grilla[c.y][c.x].esInicio) grilla[c.y][c.x].colorOcupado = color;
             }
             caminos.set(color, [...rutaTemporal]);
 
-            // Verificar si todos los pares están completos
+            // Comprobar completados
             let completados = 0;
             for (let ruta of caminos.values()) {
                 if (ruta.length > 1) completados++;
             }
+
+            // Comprobar que no hayan quedado casillas vacías (Regla del Flow)
+            let celdasVacias = 0;
+            for (let y = 0; y < filas; y++) {
+                for (let x = 0; x < columnas; x++) {
+                    if (grilla[y][x].colorOcupado === null) celdasVacias++;
+                }
+            }
+
             if (completados === puntos.length / 2) {
-                victoryDiv.innerHTML = '<div class="victory-msg">🎉 ¡NIVEL COMPLETADO! 🎉</div>';
-                lanzarConfetti();
+                if (celdasVacias === 0) {
+                    victoryDiv.innerHTML = '<div class="victory-msg">🎉 ¡NIVEL COMPLETADO! 🎉</div>';
+                    lanzarConfetti();
+                } else {
+                    victoryDiv.innerHTML = '<div class="victory-msg" style="background:#d4841b; color:#fff;">⚠️ ¡Faltan celdas por cubrir!</div>';
+                }
             }
         }
 
@@ -335,9 +380,26 @@ const LEVELS = [
     window.addEventListener('mousemove', moverDibujo);
     window.addEventListener('mouseup', finalizarDibujo);
 
+    canvas.addEventListener('touchstart', iniciarDibujo, {passive: false});
+    canvas.addEventListener('touchmove', moverDibujo, {passive: false});
+    canvas.addEventListener('touchend', finalizarDibujo);
+
     resetBtn.addEventListener('click', () => cargarNivel(nivelActual));
 
+    document.querySelectorAll('.level-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const lvl = parseInt(btn.dataset.level);
+            cargarNivel(lvl);
+            levelNameSpan.textContent = ["BÁSICO · 7x5", "INTERMEDIO · 9x9", "AVANZADO · 8x11"][lvl];
+            document.querySelectorAll('.level-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        });
+    });
+
+    window.addEventListener('resize', () => { ajustarTamaño(); dibujarTodo(); });
+
     cargarNivel(0);
+    document.querySelector('.level-btn[data-level="0"]').classList.add('active');
 </script>
 </body>
 </html>
