@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Utilidades para el Celular | Circuitos incluido</title>
+    <title>Utilidades para el Celular</title>
     <style>
         * {
             box-sizing: border-box;
@@ -78,11 +78,9 @@
             border-color: #bb86fc;
             filter: brightness(1.1);
         }
-        
-        /* efecto tap para móviles */
+
         .game-icon:active {
             transform: scale(0.96);
-            transition: 0.05s;
         }
         
         .game-symbol {
@@ -97,21 +95,37 @@
             color: white;
             background-color: #2a2a2a;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
         }
-        
-        .double-flag {
-            display: flex;
+
+        /* DISEÑO DE ICONO TIPO FLOW FREE */
+        .flow-icon {
             width: 100%;
             height: 100%;
-            justify-content: center;
-            align-items: center;
+            position: relative;
+            background: #000;
         }
-        
-        .double-flag span {
-            flex: 1;
-            text-align: center;
-            font-size: 30px;
-            line-height: 1;
+        .flow-dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            position: absolute;
+            z-index: 2;
+        }
+        .dot-blue { background: #3A86FF; top: 15%; left: 15%; }
+        .dot-blue-2 { background: #3A86FF; bottom: 15%; right: 15%; }
+        .flow-line {
+            position: absolute;
+            border: 6px solid #3A86FF;
+            width: 60%;
+            height: 60%;
+            border-bottom: none;
+            border-left: none;
+            border-radius: 0 20px 0 0;
+            top: 25%;
+            left: 20%;
+            z-index: 1;
         }
         
         .game-name {
@@ -119,27 +133,19 @@
             color: #bb86fc;
             font-weight: 500;
             line-height: 1.3;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-            text-overflow: ellipsis;
             height: 32px;
         }
         
-        /* nuevo badge opcional para destacar estreno */
         .badge-new {
             position: absolute;
             top: 6px;
             right: 8px;
-            background-color: #ff9800;
-            color: #121212;
+            background-color: #03dac6;
+            color: #000;
             font-size: 9px;
             font-weight: bold;
             border-radius: 20px;
             padding: 2px 6px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
-            letter-spacing: 0.5px;
         }
         
         footer {
@@ -152,38 +158,10 @@
         }
         
         @media (max-width: 600px) {
-            .games-grid {
-                grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
-                gap: 15px;
-            }
-            
-            .game-icon {
-                width: 90px;
-                height: 110px;
-                padding: 10px;
-            }
-            
-            .game-symbol {
-                width: 55px;
-                height: 55px;
-                font-size: 24px;
-            }
-            
-            .double-flag span {
-                font-size: 24px;
-            }
-            
-            .game-name {
-                font-size: 11px;
-                height: 26px;
-            }
-            
-            .badge-new {
-                font-size: 7px;
-                top: 4px;
-                right: 5px;
-                padding: 1px 4px;
-            }
+            .games-grid { grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); }
+            .game-icon { width: 90px; height: 110px; padding: 10px; }
+            .game-symbol { width: 55px; height: 55px; font-size: 24px; }
+            .game-name { font-size: 11px; height: 26px; }
         }
     </style>
 </head>
@@ -191,81 +169,57 @@
     <div class="container">
         <header>
             <h1>Colección de Utilidades</h1>
-            <p class="subtitle">Elige una utilidad para comenzar | Circuitos: une puntos de colores</p>
+            <p class="subtitle">Selecciona una herramienta para continuar</p>
         </header>
         
         <div class="games-grid">
-            <!-- Utilidad 1: Contador -->
             <a href="Contador.html" class="game-icon">
-                <div class="game-symbol">
-                    🔢
-                </div>
+                <div class="game-symbol">🔢</div>
                 <div class="game-name">Contador</div>
             </a>
                      
-            <!-- Utilidad 2: Mapa -->
             <a href="Mapa.html" class="game-icon">
-                <div class="game-symbol">
-                    🗺️
-                </div>
+                <div class="game-symbol">🗺️</div>
                 <div class="game-name">Mapa Ruteador</div>
             </a>
             
-            <!-- Utilidad 3: Diccionario Argentino-Español -->
             <a href="Dic_arg_esp.html" class="game-icon">
-                <div class="game-symbol">
-                    <div class="double-flag">
-                        <span>🇪🇸</span>
-                        <span>🇦🇷</span>
-                    </div>
-                </div>
-                <div class="game-name">Diccionario Esp-Arg</div>
+                <div class="game-symbol">🇦🇷</div>
+                <div class="game-name">Diccionario</div>
             </a>
             
-            <!-- Utilidad 4: Suma y Resta -->
             <a href="Sumayresta.html" class="game-icon">
-                <div class="game-symbol">
-                    ➕➖
-                </div>
+                <div class="game-symbol">➕➖</div>
                 <div class="game-name">Suma y Resta</div>
             </a>
 
-            <!-- Utilidad 5: Árboles -->
             <a href="arboles.html" class="game-icon">
-                <div class="game-symbol">
-                    🌳
-                </div>
+                <div class="game-symbol">🌳</div>
                 <div class="game-name">Árboles C.A.B.A.</div>
             </a>
             
-            <!-- Utilidad 6: Quiz -->
             <a href="quiz.html" class="game-icon">
-                <div class="game-symbol">
-                    🤔
-                </div>
-                <div class="game-name">Trivia de Noticias</div>
+                <div class="game-symbol">🤔</div>
+                <div class="game-name">Trivia Noticias</div>
             </a>
             
-            <!-- Utilidad 7: Rebote -->
             <a href="Rebote.html" class="game-icon">
-                <div class="game-symbol">
-                    ⚪
-                </div>
+                <div class="game-symbol">⚪</div>
                 <div class="game-name">Rebote Extremo</div>
             </a>
 
-            <!-- Utilidad 8: Consulta Padrón (externa) -->
-            <a href="https://chatlas2026-padron-premium.hf.space/" target="_blank" rel="noopener noreferrer" class="game-icon">
-                <div class="game-symbol">
-                    🗳️
-                </div>
+            <a href="https://chatlas2026-padron-premium.hf.space/" target="_blank" class="game-icon">
+                <div class="game-symbol">🗳️</div>
                 <div class="game-name">Consulta Padrón</div>
             </a>
 
-            <!-- NUEVA UTILIDAD: Circuitos - unión entre puntos de colores -->
             <a href="Circuitos.html" class="game-icon">
                 <div class="game-symbol">
-                    🎯🌀
+                    <div class="flow-icon">
+                        <div class="flow-dot dot-blue"></div>
+                        <div class="flow-line"></div>
+                        <div class="flow-dot dot-blue-2"></div>
+                    </div>
                 </div>
                 <div class="game-name">Circuitos</div>
                 <div class="badge-new">NUEVO</div>
@@ -273,7 +227,7 @@
         </div>
         
         <footer>
-            <p>© 2025 Utilidades de Chatlas | Todos los derechos reservados · Circuitos: encuentra la unión entre puntos de colores</p>
+            <p>© 2026 Utilidades de Chatlas | Todos los derechos reservados</p>
         </footer>
     </div>
 </body>
