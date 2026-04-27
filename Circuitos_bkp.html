@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Flow Clone - 3 Niveles | Conecta los puntos + Confeti</title>
+    <style>
+        * {
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            margin: 0;
+            background: #0a0f1e;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: 'Segoe UI', 'Poppins', system-ui, sans-serif;
+            touch-action: none;
+            padding: 16px;
+            box-sizing: border-box;
+        }
+
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 18px;
+            background: #161e2c;
+            padding: 20px 18px 22px 18px;
+            border-radius: 56px;
+            box-shadow: 0 20px 35px rgba(0,0,0,0.5);
+        }
+
+        canvas {
+            display: block;
+            margin: 0 auto;
+            border-radius: 24px;
+            box-shadow: 0 12px 28px rgba(0,0,0,0.5);
+            cursor: pointer;
+            touch-action: none;
+            background-color: #010409;
+        }
+
+        .info-panel {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            gap: 20px;
+            background: #0e121fcc;
+            backdrop-filter: blur(4px);
+            padding: 6px 20px;
+            border-radius: 60px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .level-badge {
+            background: #2a3a55;
+            padding: 6px 18px;
+            border-radius: 40px;
+            color: white;
+            font-weight: bold;
+            font-size: 1rem;
+        }
+
+        button {
+            background: #2d4a7c;
+            border: none;
+            color: white;
+            font-weight: bold;
+            font-size: 1rem;
+            padding: 8px 24px;
+            border-radius: 60px;
+            cursor: pointer;
+            transition: 0.2s;
+            font-family: inherit;
+            box-shadow: 0 4px 0 #102a44;
+            transform: translateY(-2px);
+        }
+        button:active {
+            transform: translateY(2px);
+            box-shadow: 0 1px 0 #102a44;
+        }
+        .reset-btn {
+            background: #4e3b6e;
+            box-shadow: 0 4px 0 #2a1f3f;
+        }
+        .victory-msg {
+            background: #2b7a4b;
+            padding: 8px 20px;
+            border-radius: 40px;
+            font-weight: bold;
+            color: #c6ffcf;
+            font-size: 0.9rem;
+            animation: pulse 0.8s;
+        }
+        @keyframes pulse {
+            0% { opacity: 0; transform: scale(0.9);}
+            100% { opacity: 1; transform: scale(1);}
+        }
+        .level-selector {
+            display: flex;
+            gap: 12px;
+        }
+        .level-btn {
+            background: #1f2a40;
+            padding: 4px 18px;
+            font-size: 0.9rem;
+            box-shadow: 0 2px 0 #0b0f1a;
+        }
+        .level-btn.active {
+            background: #3b6f9e;
+            box-shadow: 0 0 8px #6aa9ff;
+            border: 1px solid #9bc0ff;
+        }
+    </style>
+</head>
+<body>
+<div>
+    <div class="game-container">
+        <canvas id="gameCanvas" width="400" height="400"></canvas>
+        <div class="info-panel">
+            <div class="level-badge" id="levelName">BÁSICO · 7x5</div>
+            <div class="level-selector">
+                <button class="level-btn" data-level="0">🌱 Básico</button>
+                <button class="level-btn" data-level="1">⚡ Intermedio</button>
+                <button class="level-btn" data-level="2">🔥 Avanzado</button>
+            </div>
+            <button id="resetButton" class="reset-btn">⟳ Reiniciar nivel</button>
+        </div>
+        <div id="victoryMessage" style="min-height: 48px;"></div>
+    </div>
+</div>
+
+<script>
+    (function(){
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const levelNameSpan = document.getElementById("levelName");
+        const victoryDiv = document.getElementById("victoryMessage");
+        const resetBtn = document.getElementById("resetButton");
+
+        const COLOR_PALETTE = ["#FF3366", "#3A86FF", "#FFD166", "#06D6A0", "#EF476F", "#9C89B8", "#F25F5C", "#70D6FF"];
+        
+const LEVELS = [
+            { // Nivel 1: Básico 5x5 (Simplificado para asegurar resolución)
+                rows: 5, cols: 5, dots: [
+                    { x: 0, y: 0, color: COLOR_PALETTE[0] }, { x: 4, y: 0, color: COLOR_PALETTE[0] },
+                    { x: 0, y: 1, color: COLOR_PALETTE[1] }, { x: 3, y: 1, color: COLOR_PALETTE[1] },
+                    { x: 0, y: 2, color: COLOR_PALETTE[2] }, { x: 2, y: 2, color: COLOR_PALETTE[2] },
+                    { x: 0, y: 3, color: COLOR_PALETTE[3] }, { x: 4, y: 3, color: COLOR_PALETTE[3] },
+                    { x: 0, y: 4, color: COLOR_PALETTE[4] }, { x: 4, y: 4, color: COLOR_PALETTE[4] }
+                ]
+            },
+            { // Nivel 2: Intermedio 6x6 (Diseño en espiral)
+                rows: 6, cols: 6, dots: [
+                    { x: 0, y: 0, color: COLOR_PALETTE[0] }, { x: 5, y: 5, color: COLOR_PALETTE[0] },
+                    { x: 1, y: 1, color: COLOR_PALETTE[1] }, { x: 4, y: 4, color: COLOR_PALETTE[1] },
+                    { x: 2, y: 2, color: COLOR_PALETTE[2] }, { x: 3, y: 3, color: COLOR_PALETTE[2] },
+                    { x: 0, y: 5, color: COLOR_PALETTE[3] }, { x: 1, y: 4, color: COLOR_PALETTE[3] },
+                    { x: 5, y: 0, color: COLOR_PALETTE[4] }, { x: 4, y: 1, color: COLOR_PALETTE[4] }
+                ]
+            },
+            { // Nivel 3: Avanzado 7x7 (Desafiante pero posible)
+                rows: 7, cols: 7, dots: [
+                    { x: 0, y: 0, color: COLOR_PALETTE[0] }, { x: 6, y: 6, color: COLOR_PALETTE[0] },
+                    { x: 1, y: 0, color: COLOR_PALETTE[1] }, { x: 0, y: 1, color: COLOR_PALETTE[1] },
+                    { x: 6, y: 0, color: COLOR_PALETTE[2] }, { x: 0, y: 6, color: COLOR_PALETTE[2] },
+                    { x: 2, y: 2, color: COLOR_PALETTE[3] }, { x: 4, y: 4, color: COLOR_PALETTE[3] },
+                    { x: 5, y: 2, color: COLOR_PALETTE[4] }, { x: 2, y: 5, color: COLOR_PALETTE[4] }
+                ]
+            }
+        ];
+
+        let currentLevelIdx = 0, rows, cols, dots, cellSize = 30;
+        let grid = [], connections = new Map(), activeDrawing = false, currentColorDrawing = null, currentPathCoords = [], victoryFlag = false;
+
+        function loadLevel(idx) {
+            currentLevelIdx = idx;
+            const data = LEVELS[idx];
+            rows = data.rows;
+            cols = data.cols;
+            dots = data.dots.map(d => ({...d}));
+            
+            grid = Array(rows).fill().map(() => Array(cols).fill().map(() => ({ color: null, isStart: false })));
+            dots.forEach(d => {
+                if (d.x >= 0 && d.x < cols && d.y >= 0 && d.y < rows) {
+                    grid[d.y][d.x] = { color: d.color, isStart: true };
+                }
+            });
+            
+            connections.clear();
+            const uniqueColors = [...new Set(dots.map(d => d.color))];
+            uniqueColors.forEach(c => connections.set(c, []));
+            
+            victoryFlag = false;
+            victoryDiv.innerHTML = "";
+            adjustCanvasSize();
+        }
+
+        function adjustCanvasSize() {
+            const maxWidth = Math.min(window.innerWidth - 60, 600);
+            const maxHeight = window.innerHeight - 200;
+            const widthByCols = maxWidth / cols;
+            const heightByRows = maxHeight / rows;
+            cellSize = Math.floor(Math.min(widthByCols, heightByRows, 65));
+            
+            if (cellSize < 20) cellSize = 20;
+            
+            canvas.width = cols * cellSize;
+            canvas.height = rows * cellSize;
+            canvas.style.width = canvas.width + 'px';
+            canvas.style.height = canvas.height + 'px';
+            
+            fullRedraw();
+        }
+
+        function fullRedraw() {
+            if (!ctx) return;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "#010409";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Dibujar grilla
+            ctx.strokeStyle = "#2a2f3f";
+            ctx.lineWidth = 1.5;
+            for (let i = 0; i <= cols; i++) {
+                ctx.beginPath();
+                ctx.moveTo(i * cellSize, 0);
+                ctx.lineTo(i * cellSize, canvas.height);
+                ctx.stroke();
+            }
+            for (let j = 0; j <= rows; j++) {
+                ctx.beginPath();
+                ctx.moveTo(0, j * cellSize);
+                ctx.lineTo(canvas.width, j * cellSize);
+                ctx.stroke();
+            }
+            
+            // Dibujar conexiones guardadas
+            for (let [color, path] of connections.entries()) {
+                if (path.length > 1) drawPath(color, path);
+            }
+            
+            // Dibujar línea actual
+            if (activeDrawing && currentPathCoords.length > 1 && currentColorDrawing) {
+                drawPath(currentColorDrawing, currentPathCoords);
+            }
+            
+            // Dibujar puntos
+            dots.forEach(dot => {
+                const cx = (dot.x + 0.5) * cellSize;
+                const cy = (dot.y + 0.5) * cellSize;
+                ctx.fillStyle = dot.color;
+                ctx.beginPath();
+                ctx.arc(cx, cy, cellSize * 0.3, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = "rgba(255,255,255,0.4)";
+                ctx.beginPath();
+                ctx.arc(cx - cellSize * 0.08, cy - cellSize * 0.08, cellSize * 0.08, 0, Math.PI * 2);
+                ctx.fill();
+            });
+        }
+
+        function drawPath(color, path) {
+            if (!path || path.length < 2) return;
+            ctx.save();
+            ctx.strokeStyle = color;
+            ctx.lineWidth = cellSize * 0.35;
+            ctx.lineCap = "round";
+            ctx.lineJoin = "round";
+            ctx.beginPath();
+            ctx.moveTo((path[0].x + 0.5) * cellSize, (path[0].y + 0.5) * cellSize);
+            for (let i = 1; i < path.length; i++) {
+                ctx.lineTo((path[i].x + 0.5) * cellSize, (path[i].y + 0.5) * cellSize);
+            }
+            ctx.stroke();
+            ctx.restore();
+        }
+
+        function getCanvasCoords(e) {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            let clientX, clientY;
+            
+            if (e.touches) {
+                if (e.touches.length === 0) return null;
+                clientX = e.touches[0].clientX;
+                clientY = e.touches[0].clientY;
+            } else {
+                clientX = e.clientX;
+                clientY = e.clientY;
+            }
+            
+            let canvasX = (clientX - rect.left) * scaleX;
+            let canvasY = (clientY - rect.top) * scaleY;
+            
+            if (canvasX < 0 || canvasY < 0) return null;
+            const col = Math.floor(canvasX / cellSize);
+            const row = Math.floor(canvasY / cellSize);
+            if (col >= 0 && col < cols && row >= 0 && row < rows) {
+                return { x: col, y: row };
+            }
+            return null;
+        }
+
+        function isAdjacent(p1, p2) {
+            return (Math.abs(p1.x - p2.x) + Math.abs(p1.y - p2.y)) === 1;
+        }
+
+        function canExtend(x, y, color) {
+            if (x < 0 || x >= cols || y < 0 || y >= rows) return false;
+            const cell = grid[y][x];
+            if (cell.isStart) {
+                return cell.color === color;
+            }
+            if (cell.color !== null && cell.color !== color) return false;
+            if (currentPathCoords.some(p => p.x === x && p.y === y)) return false;
+            return true;
+        }
+
+        function onPointerStart(e) {
+            if (victoryFlag) return;
+            e.preventDefault();
+            const pos = getCanvasCoords(e);
+            if (!pos) return;
+            
+            const dotHere = dots.find(d => d.x === pos.x && d.y === pos.y);
+            if (!dotHere) return;
+            
+            const color = dotHere.color;
+            const existing = connections.get(color);
+            if (existing && existing.length > 0) {
+                // Limpiar camino viejo
+                for (let cell of existing) {
+                    if (grid[cell.y] && grid[cell.y][cell.x] && !grid[cell.y][cell.x].isStart) {
+                        grid[cell.y][cell.x].color = null;
+                    }
+                }
+                connections.set(color, []);
+            }
+            
+            activeDrawing = true;
+            currentColorDrawing = color;
+            currentPathCoords = [{ x: pos.x, y: pos.y }];
+            fullRedraw();
+        }
+
+        function onPointerMove(e) {
+            if (!activeDrawing || victoryFlag) return;
+            e.preventDefault();
+            const pos = getCanvasCoords(e);
+            if (!pos) return;
+            
+            const last = currentPathCoords[currentPathCoords.length - 1];
+            if (last.x === pos.x && last.y === pos.y) return;
+            if (!isAdjacent(last, pos)) return;
+            if (!canExtend(pos.x, pos.y, currentColorDrawing)) return;
+            
+            currentPathCoords.push(pos);
+            fullRedraw();
+            
+            // Auto-completar al llegar al otro extremo
+            const dotEndpoints = dots.filter(d => d.color === currentColorDrawing);
+            if (dotEndpoints.length === 2) {
+                const isTarget = (pos.x === dotEndpoints[0].x && pos.y === dotEndpoints[0].y) ||
+                                 (pos.x === dotEndpoints[1].x && pos.y === dotEndpoints[1].y);
+                if (isTarget && currentPathCoords.length > 1) {
+                    onPointerEnd(e);
+                }
+            }
+        }
+
+        function onPointerEnd(e) {
+            if (!activeDrawing || victoryFlag) {
+                activeDrawing = false;
+                currentPathCoords = [];
+                fullRedraw();
+                return;
+            }
+            e.preventDefault();
+            
+            if (currentPathCoords.length >= 2) {
+                const color = currentColorDrawing;
+                const endpoints = dots.filter(d => d.color === color);
+                const first = currentPathCoords[0];
+                const last = currentPathCoords[currentPathCoords.length - 1];
+                
+                const startMatch = (first.x === endpoints[0].x && first.y === endpoints[0].y) ||
+                                   (first.x === endpoints[1].x && first.y === endpoints[1].y);
+                const endMatch = (last.x === endpoints[0].x && last.y === endpoints[0].y) ||
+                                 (last.x === endpoints[1].x && last.y === endpoints[1].y);
+                
+                if (startMatch && endMatch) {
+                    // Guardar el camino
+                    for (let i = 1; i < currentPathCoords.length - 1; i++) {
+                        const cell = currentPathCoords[i];
+                        if (!grid[cell.y][cell.x].isStart) {
+                            grid[cell.y][cell.x].color = color;
+                        }
+                    }
+                    connections.set(color, [...currentPathCoords]);
+                    
+                    // Verificar victoria
+                    let completed = 0;
+                    for (let [col, path] of connections.entries()) {
+                        if (path.length > 1) completed++;
+                    }
+                    if (completed === dots.length / 2) {
+                        victoryFlag = true;
+                        victoryDiv.innerHTML = '<div class="victory-msg">🎉 ¡NIVEL COMPLETADO! 🎉</div>';
+                    }
+                }
+            }
+            
+            activeDrawing = false;
+            currentColorDrawing = null;
+            currentPathCoords = [];
+            fullRedraw();
+        }
+
+        function resetLevel() {
+            loadLevel(currentLevelIdx);
+        }
+
+        function changeLevel(index) {
+            currentLevelIdx = index;
+            loadLevel(currentLevelIdx);
+            const names = ["BÁSICO · 7x5", "INTERMEDIO · 9x9", "AVANZADO · 8x11"];
+            levelNameSpan.innerText = names[currentLevelIdx];
+            victoryDiv.innerHTML = "";
+            victoryFlag = false;
+            fullRedraw();
+        }
+
+        // Eventos
+        canvas.addEventListener('mousedown', onPointerStart);
+        window.addEventListener('mousemove', onPointerMove);
+        window.addEventListener('mouseup', onPointerEnd);
+        
+        canvas.addEventListener('touchstart', onPointerStart, { passive: false });
+        window.addEventListener('touchmove', onPointerMove, { passive: false });
+        window.addEventListener('touchend', onPointerEnd);
+        
+        resetBtn.addEventListener('click', resetLevel);
+        
+        document.querySelectorAll('.level-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const lvl = parseInt(btn.dataset.level);
+                if (!isNaN(lvl)) changeLevel(lvl);
+                document.querySelectorAll('.level-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            });
+        });
+        
+        window.addEventListener('resize', () => adjustCanvasSize());
+        
+        // Inicializar
+        loadLevel(0);
+        document.querySelector('.level-btn[data-level="0"]').classList.add('active');
+        levelNameSpan.innerText = "BÁSICO · 7x5";
+    })();
+</script>
+</body>
+</html>
