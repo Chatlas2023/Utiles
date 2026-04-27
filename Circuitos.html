@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Flow Clone Mobile</title>
+    <style>
+        body { margin: 0; background: #121212; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; font-family: sans-serif; }
+        canvas { border: 2px solid #333; background-color: #000; touch-action: none; }
+    </style>
+</head>
+<body>
+
+<canvas id="gameCanvas"></canvas>
+
+<script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // Configuración del tablero (10x14 como en tu imagen)
+    const rows = 14;
+    const cols = 10;
+    let cellSize;
+
+    // Colores y Puntos iniciales (Ejemplo con 2 colores)
+    const dots = [
+        { x: 1, y: 1, color: '#FF006E' }, { x: 8, y: 12, color: '#FF006E' },
+        { x: 2, y: 2, color: '#3A86FF' }, { x: 6, y: 6, color: '#3A86FF' }
+    ];
+
+    let isDrawing = false;
+    let currentColor = null;
+    let path = [];
+
+    function init() {
+        // Ajustar tamaño al dispositivo
+        const padding = 20;
+        const availableWidth = window.innerWidth - padding;
+        const availableHeight = window.innerHeight - padding;
+        
+        cellSize = Math.min(availableWidth / cols, availableHeight / rows);
+        canvas.width = cols * cellSize;
+        canvas.height = rows * cellSize;
+        drawBoard();
+    }
+
+    function drawBoard() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // Dibujar cuadrícula
+        ctx.strokeStyle = '#222';
+        for (let i = 0; i <= cols; i++) {
+            ctx.beginPath(); ctx.moveTo(i * cellSize, 0); ctx.lineTo(i * cellSize, canvas.height); ctx.stroke();
+        }
+        for (let j = 0; j <= rows; j++) {
+            ctx.beginPath(); ctx.moveTo(0, j * cellSize); ctx.lineTo(canvas.width, j * cellSize); ctx.stroke();
+        }
+
+        // Dibujar nodos iniciales
+        dots.forEach(dot => {
+            ctx.fillStyle = dot.color;
+            ctx.beginPath();
+            ctx.arc((dot.x + 0.5) * cellSize, (dot.y + 0.5) * cellSize, cellSize * 0.35, 0, Math.PI * 2);
+            ctx.fill();
+        });
+    }
+
+    function getMousePos(e) {
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        return {
+            x: Math.floor((clientX - rect.left) / cellSize),
+            y: Math.floor((clientY - rect.top) / cellSize)
+        };
+    }
+
+    // Lógica de dibujo
+    function startDrawing(e) {
+        const pos = getMousePos(e);
+        const dot = dots.find(d => d.x === pos.x && d.y === pos.y);
+        if (dot) {
+            isDrawing = true;
+            currentColor = dot.color;
+            path = [pos];
+        }
+    }
+
+    function moveDrawing(e) {
+        if (!isDrawing) return;
+        const pos = getMousePos(e);
+        const lastPos = path[path.length - 1];
+
+        // Solo agregar si es una celda adyacente nueva
+        if (pos.x !== lastPos.x || pos.y !== lastPos.y) {
+            // Aquí podrías añadir lógica para que solo se mueva en horizontal/vertical
+            path.push(pos);
+            drawCurrentPath();
+        }
+    }
+
+    function drawCurrentPath() {
+        if (path.length < 1) return;
+        ctx.strokeStyle = currentColor;
+        ctx.lineWidth = cellSize * 0.4;
+        ctx.lineCap = "round";
+        ctx.lineJoin = "round";
+        ctx.beginPath();
+        ctx.moveTo((path[0].x + 0.5) * cellSize, (path[0].y + 0.5) * cellSize);
+        for (let i = 1; i < path.length; i++) {
+            ctx.lineTo((path[i].x + 0.5) * cellSize, (path[i].y + 0.5) * cellSize);
+        }
+        ctx.stroke();
+    }
+
+    function stopDrawing() {
+        isDrawing = false;
+        // Aquí validarías si el path terminó en el otro punto del mismo color
+    }
+
+    // Eventos para Móvil y PC
+    canvas.addEventListener('mousedown', startDrawing);
+    canvas.addEventListener('mousemove', moveDrawing);
+    window.addEventListener('mouseup', stopDrawing);
+
+    canvas.addEventListener('touchstart', (e) => { e.preventDefault(); startDrawing(e); }, {passive: false});
+    canvas.addEventListener('touchmove', (e) => { e.preventDefault(); moveDrawing(e); }, {passive: false});
+    canvas.addEventListener('touchend', stopDrawing);
+
+    window.onload = init;
+</script>
+</body>
+</html>
