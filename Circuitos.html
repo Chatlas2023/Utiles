@@ -53,7 +53,7 @@
 <div class="game-container">
     <canvas id="gameCanvas"></canvas>
     <div class="info-panel">
-        <div class="level-badge" id="levelName">BÁSICO · 5x5</div>
+        <div class="level-badge" id="levelName">BÁSICO · 7x5</div>
         <div class="level-selector">
             <button class="level-btn" data-level="0">🌱 Básico</button>
             <button class="level-btn" data-level="1">⚡ Intermedio</button>
@@ -68,31 +68,49 @@
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
 
-    const COLORS = ["#FF3366","#3A86FF","#FFD166","#06D6A0","#9C27B0","#FF6D00","#00B4D8","#E63946"];
+    const COLORS = [
+    "#FF3366", // Rosa
+    "#3A86FF", // Azul
+    "#FFD166", // Amarillo
+    "#06D6A0", // Verde menta
+    "#9C27B0", // Púrpura
+    "#FF6D00"  // Naranja
+];
 
-    const LEVELS = [ /* tus niveles originales sin cambios */ 
-        { rows: 5, cols: 5, dots: [
-            { x: 0, y: 0, color: COLORS[0] }, { x: 4, y: 0, color: COLORS[0] },
-            { x: 0, y: 2, color: COLORS[1] }, { x: 4, y: 2, color: COLORS[1] },
-            { x: 0, y: 4, color: COLORS[2] }, { x: 4, y: 4, color: COLORS[2] },
-            { x: 2, y: 0, color: COLORS[3] }, { x: 2, y: 4, color: COLORS[3] }
-        ]},
-        { rows: 6, cols: 6, dots: [
-            { x: 0, y: 0, color: COLORS[0] }, { x: 5, y: 5, color: COLORS[0] },
-            { x: 0, y: 5, color: COLORS[1] }, { x: 5, y: 0, color: COLORS[1] },
-            { x: 1, y: 2, color: COLORS[2] }, { x: 4, y: 3, color: COLORS[2] },
-            { x: 2, y: 1, color: COLORS[3] }, { x: 3, y: 4, color: COLORS[3] },
-            { x: 1, y: 4, color: COLORS[4] }, { x: 4, y: 2, color: COLORS[4] }
-        ]},
-        { rows: 7, cols: 7, dots: [
-            { x: 0, y: 0, color: COLORS[0] }, { x: 6, y: 6, color: COLORS[0] },
-            { x: 0, y: 6, color: COLORS[1] }, { x: 6, y: 0, color: COLORS[1] },
-            { x: 1, y: 3, color: COLORS[2] }, { x: 5, y: 3, color: COLORS[2] },
-            { x: 3, y: 1, color: COLORS[3] }, { x: 3, y: 5, color: COLORS[3] },
-            { x: 2, y: 2, color: COLORS[4] }, { x: 4, y: 4, color: COLORS[4] },
-            { x: 2, y: 4, color: COLORS[5] }, { x: 4, y: 2, color: COLORS[5] }
-        ]}
-    ];
+const LEVELS = [
+    {   // Básico: 7x5 con 5 colores (10 puntos)
+        rows: 5, cols: 7,
+        dots: [
+            { x: 0, y: 0, color: COLORS[0] }, { x: 6, y: 0, color: COLORS[0] },
+            { x: 0, y: 2, color: COLORS[1] }, { x: 6, y: 2, color: COLORS[1] },
+            { x: 0, y: 4, color: COLORS[2] }, { x: 6, y: 4, color: COLORS[2] },
+            { x: 2, y: 0, color: COLORS[3] }, { x: 4, y: 4, color: COLORS[3] },
+            { x: 3, y: 0, color: COLORS[4] }, { x: 3, y: 4, color: COLORS[4] }
+        ]
+    },
+    {   // Intermedio: 9x9 con 6 colores (12 puntos)
+        rows: 9, cols: 9,
+        dots: [
+            { x: 0, y: 0, color: COLORS[0] }, { x: 8, y: 8, color: COLORS[0] },
+            { x: 0, y: 4, color: COLORS[1] }, { x: 8, y: 4, color: COLORS[1] },
+            { x: 2, y: 0, color: COLORS[2] }, { x: 6, y: 8, color: COLORS[2] },
+            { x: 4, y: 0, color: COLORS[3] }, { x: 4, y: 8, color: COLORS[3] },
+            { x: 0, y: 8, color: COLORS[4] }, { x: 8, y: 0, color: COLORS[4] },
+            { x: 1, y: 2, color: COLORS[5] }, { x: 7, y: 6, color: COLORS[5] }
+        ]
+    },
+    {   // Avanzado: 8x11 con 6 colores (12 puntos)
+        rows: 8, cols: 11,
+        dots: [
+            { x: 0, y: 0, color: COLORS[0] }, { x: 10, y: 7, color: COLORS[0] },
+            { x: 0, y: 7, color: COLORS[1] }, { x: 10, y: 0, color: COLORS[1] },
+            { x: 1, y: 3, color: COLORS[2] }, { x: 9, y: 4, color: COLORS[2] },
+            { x: 3, y: 1, color: COLORS[3] }, { x: 7, y: 6, color: COLORS[3] },
+            { x: 5, y: 0, color: COLORS[4] }, { x: 5, y: 7, color: COLORS[4] },
+            { x: 2, y: 5, color: COLORS[5] }, { x: 8, y: 2, color: COLORS[5] }
+        ]
+    }
+];
 
     let nivelActual = 0;
     let filas, columnas, puntos;
@@ -350,7 +368,7 @@
         btn.addEventListener('click', () => {
             const lvl = parseInt(btn.dataset.level);
             cargarNivel(lvl);
-            levelNameSpan.textContent = ["BÁSICO · 5x5", "INTERMEDIO · 6x6", "AVANZADO · 7x7"][lvl];
+            levelNameSpan.textContent = ["BÁSICO · 7x5", "INTERMEDIO · 9x9", "AVANZADO · 8x11"][lvl];
             document.querySelectorAll('.level-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
         });
