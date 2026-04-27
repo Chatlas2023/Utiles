@@ -674,10 +674,15 @@
         ctx = canvas.getContext('2d');
         resizeConfettiCanvas();
         bindEvents();
-        loadLevel(0);
+        
+        // Esperar a que el DOM esté listo
+        window.addEventListener('load', () => {
+            loadLevel(0);
+            adjustCanvasSizeAndDraw();
+            fullRedraw();
+        });
+        
         document.querySelector('.level-btn[data-level="0"]').classList.add('active');
         levelNameSpan.innerText = "BÁSICO · 7x5";
-    })();
+    })(); // <-- IMPORTANTE: cerrar la función anónima
 </script>
-</body>
-</html>
