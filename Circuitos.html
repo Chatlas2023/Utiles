@@ -149,173 +149,201 @@
     </div>
     <canvas id="confetti-canvas"></canvas>
 </div>
-<script>
-    (function(){
-        // ---------- ELEMENTOS DEL DOM ----------
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-        const levelNameSpan = document.getElementById("levelName");
-        const victoryDiv = document.getElementById("victoryMessage");
-        const resetBtn = document.getElementById("resetButton");
-        const confettiCanvas = document.getElementById('confetti-canvas');
-        let confettiCtx = confettiCanvas.getContext('2d');
+(function(){
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const levelNameSpan = document.getElementById("levelName");
+    const victoryDiv = document.getElementById("victoryMessage");
+    const resetBtn = document.getElementById("resetButton");
+    const confettiCanvas = document.getElementById('confetti-canvas');
+    let confettiCtx = confettiCanvas.getContext('2d');
 
-        // ---------- CONFIGURACIÓN Y NIVELES ----------
-        const COLOR_PALETTE = ["#FF3366", "#3A86FF", "#FFD166", "#06D6A0", "#EF476F", "#9C89B8", "#F25F5C", "#70D6FF"];
-        const LEVELS = [
-            { rows: 5, cols: 7, dots: [{ x: 0, y: 0, color: COLOR_PALETTE[0] }, { x: 6, y: 4, color: COLOR_PALETTE[0] }, { x: 1, y: 2, color: COLOR_PALETTE[1] }, { x: 5, y: 2, color: COLOR_PALETTE[1] }, { x: 2, y: 0, color: COLOR_PALETTE[2] }, { x: 4, y: 0, color: COLOR_PALETTE[2] }, { x: 3, y: 4, color: COLOR_PALETTE[3] }, { x: 5, y: 3, color: COLOR_PALETTE[3] }, { x: 0, y: 4, color: COLOR_PALETTE[4] }, { x: 2, y: 4, color: COLOR_PALETTE[4] }]},
-            { rows: 9, cols: 9, dots: [{ x: 0, y: 0, color: COLOR_PALETTE[0] }, { x: 8, y: 8, color: COLOR_PALETTE[0] }, { x: 2, y: 1, color: COLOR_PALETTE[1] }, { x: 7, y: 4, color: COLOR_PALETTE[1] }, { x: 4, y: 0, color: COLOR_PALETTE[2] }, { x: 4, y: 8, color: COLOR_PALETTE[2] }, { x: 1, y: 5, color: COLOR_PALETTE[3] }, { x: 6, y: 5, color: COLOR_PALETTE[3] }, { x: 3, y: 7, color: COLOR_PALETTE[4] }, { x: 5, y: 7, color: COLOR_PALETTE[4] }, { x: 0, y: 4, color: COLOR_PALETTE[5] }, { x: 8, y: 2, color: COLOR_PALETTE[5] }]},
-            { rows: 8, cols: 11, dots: [{ x: 0, y: 0, color: COLOR_PALETTE[0] }, { x: 10, y: 7, color: COLOR_PALETTE[0] }, { x: 2, y: 2, color: COLOR_PALETTE[1] }, { x: 8, y: 5, color: COLOR_PALETTE[1] }, { x: 4, y: 0, color: COLOR_PALETTE[2] }, { x: 6, y: 7, color: COLOR_PALETTE[2] }, { x: 1, y: 4, color: COLOR_PALETTE[3] }, { x: 9, y: 2, color: COLOR_PALETTE[3] }, { x: 3, y: 6, color: COLOR_PALETTE[4] }, { x: 5, y: 3, color: COLOR_PALETTE[4] }, { x: 7, y: 1, color: COLOR_PALETTE[5] }, { x: 2, y: 7, color: COLOR_PALETTE[5] }]}
-        ];
+    const COLOR_PALETTE = ["#FF3366", "#3A86FF", "#FFD166", "#06D6A0", "#EF476F", "#9C89B8", "#F25F5C", "#70D6FF"];
+    const LEVELS = [
+        { rows: 5, cols: 7, dots: [{ x: 0, y: 0, color: COLOR_PALETTE[0] }, { x: 6, y: 4, color: COLOR_PALETTE[0] }, { x: 1, y: 2, color: COLOR_PALETTE[1] }, { x: 5, y: 2, color: COLOR_PALETTE[1] }, { x: 2, y: 0, color: COLOR_PALETTE[2] }, { x: 4, y: 0, color: COLOR_PALETTE[2] }, { x: 3, y: 4, color: COLOR_PALETTE[3] }, { x: 5, y: 3, color: COLOR_PALETTE[3] }, { x: 0, y: 4, color: COLOR_PALETTE[4] }, { x: 2, y: 4, color: COLOR_PALETTE[4] }]},
+        { rows: 9, cols: 9, dots: [{ x: 0, y: 0, color: COLOR_PALETTE[0] }, { x: 8, y: 8, color: COLOR_PALETTE[0] }, { x: 2, y: 1, color: COLOR_PALETTE[1] }, { x: 7, y: 4, color: COLOR_PALETTE[1] }, { x: 4, y: 0, color: COLOR_PALETTE[2] }, { x: 4, y: 8, color: COLOR_PALETTE[2] }, { x: 1, y: 5, color: COLOR_PALETTE[3] }, { x: 6, y: 5, color: COLOR_PALETTE[3] }, { x: 3, y: 7, color: COLOR_PALETTE[4] }, { x: 5, y: 7, color: COLOR_PALETTE[4] }, { x: 0, y: 4, color: COLOR_PALETTE[5] }, { x: 8, y: 2, color: COLOR_PALETTE[5] }]},
+        { rows: 8, cols: 11, dots: [{ x: 0, y: 0, color: COLOR_PALETTE[0] }, { x: 10, y: 7, color: COLOR_PALETTE[0] }, { x: 2, y: 2, color: COLOR_PALETTE[1] }, { x: 8, y: 5, color: COLOR_PALETTE[1] }, { x: 4, y: 0, color: COLOR_PALETTE[2] }, { x: 6, y: 7, color: COLOR_PALETTE[2] }, { x: 1, y: 4, color: COLOR_PALETTE[3] }, { x: 9, y: 2, color: COLOR_PALETTE[3] }, { x: 3, y: 6, color: COLOR_PALETTE[4] }, { x: 5, y: 3, color: COLOR_PALETTE[4] }, { x: 7, y: 1, color: COLOR_PALETTE[5] }, { x: 2, y: 7, color: COLOR_PALETTE[5] }]}
+    ];
 
-        let currentLevelIdx = 0, rows, cols, dots, cellSize = 0;
-        let grid = [], connections = new Map(), activeDrawing = false, currentColorDrawing = null, currentPathCoords = [], victoryFlag = false;
+    let currentLevelIdx = 0, rows, cols, dots, cellSize = 0;
+    let grid = [], connections = new Map(), activeDrawing = false, currentColorDrawing = null, currentPathCoords = [], victoryFlag = false;
 
-        // ---------- LÓGICA DE JUEGO ----------
-        function loadLevel(idx) {
-            currentLevelIdx = idx;
-            const data = LEVELS[idx];
-            rows = data.rows; cols = data.cols;
-            dots = data.dots.map(d => ({...d}));
-            grid = Array(rows).fill().map(() => Array(cols).fill().map(() => ({ color: null, isStart: false })));
-            dots.forEach(d => grid[d.y][d.x] = { color: d.color, isStart: true });
-            connections.clear();
-            [...new Set(dots.map(d => d.color))].forEach(c => connections.set(c, []));
-            victoryFlag = false;
-            victoryDiv.innerHTML = "";
-            adjustCanvasSize();
+    function loadLevel(idx) {
+        currentLevelIdx = idx;
+        const data = LEVELS[idx];
+        rows = data.rows; cols = data.cols;
+        dots = data.dots.map(d => ({...d}));
+        grid = Array(rows).fill().map(() => Array(cols).fill().map(() => ({ color: null, isStart: false })));
+        dots.forEach(d => grid[d.y][d.x] = { color: d.color, isStart: true });
+        connections.clear();
+        [...new Set(dots.map(d => d.color))].forEach(c => connections.set(c, []));
+        victoryFlag = false;
+        victoryDiv.innerHTML = "";
+        adjustCanvasSize(); // Esto llama a fullRedraw()
+    }
+
+    function adjustCanvasSize() {
+        // Medimos el ancho de la ventana directamente para mayor seguridad
+        const padding = 60;
+        const availableWidth = window.innerWidth - padding;
+        const availableHeight = window.innerHeight - 300;
+        
+        cellSize = Math.floor(Math.min(availableWidth / cols, availableHeight / rows, 60));
+        if(cellSize < 25) cellSize = 25; // Mínimo para que sea jugable
+
+        canvas.width = cols * cellSize;
+        canvas.height = rows * cellSize;
+        
+        // Pequeño delay para asegurar que el canvas se ajustó en el DOM
+        requestAnimationFrame(fullRedraw);
+    }
+
+    function fullRedraw() {
+        if (!ctx) return;
+        ctx.fillStyle = "#010409";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // Grilla
+        ctx.strokeStyle = "#2a2f3f";
+        ctx.lineWidth = 1;
+        for(let i=0; i<=cols; i++){ 
+            ctx.beginPath(); ctx.moveTo(i*cellSize, 0); ctx.lineTo(i*cellSize, canvas.height); ctx.stroke(); 
         }
-
-        function adjustCanvasSize() {
-            // Este es el punto crítico para evitar la pantalla negra
-            const container = document.querySelector('.game-container');
-            const availableWidth = container ? container.clientWidth - 40 : window.innerWidth - 60;
-            const availableHeight = window.innerHeight - 250;
-            
-            // Calculamos un cellSize que quepa en pantalla y sea al menos 30px
-            cellSize = Math.max(Math.min(availableWidth / cols, availableHeight / rows, 60), 30);
-            
-            canvas.width = cols * cellSize;
-            canvas.height = rows * cellSize;
-            fullRedraw();
+        for(let j=0; j<=rows; j++){ 
+            ctx.beginPath(); ctx.moveTo(0, j*cellSize); ctx.lineTo(canvas.width, j*cellSize); ctx.stroke(); 
         }
-
-        function fullRedraw() {
-            if (!ctx) return;
-            ctx.fillStyle = "#010409";
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
-            // Dibujar Grilla
-            ctx.strokeStyle = "#2a2f3f";
-            ctx.lineWidth = 1;
-            for(let i=0; i<=cols; i++){ ctx.beginPath(); ctx.moveTo(i*cellSize, 0); ctx.lineTo(i*cellSize, canvas.height); ctx.stroke(); }
-            for(let j=0; j<=rows; j++){ ctx.beginPath(); ctx.moveTo(0, j*cellSize); ctx.lineTo(canvas.width, j*cellSize); ctx.stroke(); }
-            
-            // Dibujar Conexiones
-            connections.forEach((path, color) => { if(path.length > 1) drawPath(color, path); });
-            if(activeDrawing && currentPathCoords.length > 1) drawPath(currentColorDrawing, currentPathCoords);
-            
-            // Puntos
-            dots.forEach(d => {
-                const cx = (d.x + 0.5) * cellSize, cy = (d.y + 0.5) * cellSize;
-                ctx.fillStyle = d.color; ctx.beginPath(); ctx.arc(cx, cy, cellSize * 0.35, 0, Math.PI*2); ctx.fill();
-                ctx.fillStyle = "rgba(255,255,255,0.2)"; ctx.beginPath(); ctx.arc(cx-5, cy-5, cellSize*0.1, 0, Math.PI*2); ctx.fill();
-            });
-        }
-
-        function drawPath(color, path) {
-            ctx.save();
-            ctx.strokeStyle = color;
-            ctx.lineWidth = cellSize * 0.4;
-            ctx.lineCap = "round"; ctx.lineJoin = "round";
-            ctx.beginPath();
-            ctx.moveTo((path[0].x+0.5)*cellSize, (path[0].y+0.5)*cellSize);
-            path.slice(1).forEach(p => ctx.lineTo((p.x+0.5)*cellSize, (p.y+0.5)*cellSize));
-            ctx.stroke();
-            ctx.restore();
-        }
-
-        // ---------- INPUTS ----------
-        function getCoords(e) {
-            const rect = canvas.getBoundingClientRect();
-            const x = ((e.touches ? e.touches[0].clientX : e.clientX) - rect.left) * (canvas.width / rect.width);
-            const y = ((e.touches ? e.touches[0].clientY : e.clientY) - rect.top) * (canvas.height / rect.height);
-            const col = Math.floor(x / cellSize), row = Math.floor(y / cellSize);
-            return (col >= 0 && col < cols && row >= 0 && row < rows) ? {x: col, y: row} : null;
-        }
-
-        function start(e) {
-            if(victoryFlag) return;
-            const p = getCoords(e);
-            if(!p) return;
-            const dot = dots.find(d => d.x === p.x && d.y === p.y);
-            if(dot) {
-                activeDrawing = true; currentColorDrawing = dot.color;
-                connections.set(dot.color, []);
-                currentPathCoords = [p];
-            }
-        }
-
-        function move(e) {
-            if(!activeDrawing) return;
-            const p = getCoords(e);
-            if(!p) return;
-            const last = currentPathCoords[currentPathCoords.length-1];
-            if(p.x === last.x && p.y === last.y) return;
-            if(Math.abs(p.x - last.x) + Math.abs(p.y - last.y) !== 1) return;
-            
-            const target = grid[p.y][p.x];
-            if(target.isStart && target.color !== currentColorDrawing) return;
-            
-            currentPathCoords.push(p);
-            fullRedraw();
-            if(target.isStart && target.color === currentColorDrawing) end();
-        }
-
-        function end() {
-            if(!activeDrawing) return;
-            const last = currentPathCoords[currentPathCoords.length-1];
-            const target = grid[last.y][last.x];
-            if(target.isStart && target.color === currentColorDrawing && currentPathCoords.length > 1) {
-                connections.set(currentColorDrawing, [...currentPathCoords]);
-                checkWin();
-            }
-            activeDrawing = false;
-            fullRedraw();
-        }
-
-        function checkWin() {
-            const done = [...connections.values()].filter(v => v.length > 0).length;
-            if(done === dots.length / 2) {
-                victoryFlag = true;
-                victoryDiv.innerHTML = '<div class="victory-msg">🎉 ¡NIVEL COMPLETADO! 🎉</div>';
-                if(typeof launchConfetti === 'function') launchConfetti();
-            }
-        }
-
-        // ---------- INICIALIZACIÓN ----------
-        window.addEventListener('load', () => {
-            loadLevel(0);
-            canvas.addEventListener('mousedown', start);
-            window.addEventListener('mousemove', move);
-            window.addEventListener('mouseup', end);
-            canvas.addEventListener('touchstart', e => { e.preventDefault(); start(e); }, {passive: false});
-            window.addEventListener('touchmove', e => { e.preventDefault(); move(e); }, {passive: false});
-            window.addEventListener('touchend', end);
+        
+        // Conexiones guardadas
+        connections.forEach((path, color) => { if(path.length > 1) drawPath(color, path); });
+        
+        // Línea actual que se está dibujando
+        if(activeDrawing && currentPathCoords.length > 1) drawPath(currentColorDrawing, currentPathCoords);
+        
+        // Dibujar Puntos (Dots)
+        dots.forEach(d => {
+            const cx = (d.x + 0.5) * cellSize, cy = (d.y + 0.5) * cellSize;
+            ctx.fillStyle = d.color; 
+            ctx.beginPath(); 
+            ctx.arc(cx, cy, cellSize * 0.35, 0, Math.PI*2); 
+            ctx.fill();
+            // Brillo
+            ctx.fillStyle = "rgba(255,255,255,0.2)"; 
+            ctx.beginPath(); 
+            ctx.arc(cx - (cellSize*0.1), cy - (cellSize*0.1), cellSize*0.08, 0, Math.PI*2); 
+            ctx.fill();
         });
+    }
 
-        resetBtn.onclick = () => loadLevel(currentLevelIdx);
-        document.querySelectorAll('.level-btn').forEach((btn, i) => {
-            btn.onclick = () => {
-                document.querySelectorAll('.level-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                const names = ["BÁSICO · 7x5", "INTERMEDIO · 9x9", "AVANZADO · 8x11"];
-                levelNameSpan.innerText = names[i];
-                loadLevel(i);
-            };
-        });
-        window.onresize = adjustCanvasSize;
-    })();
+    function drawPath(color, path) {
+        ctx.save();
+        ctx.strokeStyle = color;
+        ctx.lineWidth = cellSize * 0.4;
+        ctx.lineCap = "round"; 
+        ctx.lineJoin = "round";
+        ctx.beginPath();
+        ctx.moveTo((path[0].x+0.5)*cellSize, (path[0].y+0.5)*cellSize);
+        path.slice(1).forEach(p => ctx.lineTo((p.x+0.5)*cellSize, (p.y+0.5)*cellSize));
+        ctx.stroke();
+        ctx.restore();
+    }
+
+    // --- Controles de mouse/touch mejorados ---
+    function getCoords(e) {
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        const x = (clientX - rect.left) * (canvas.width / rect.width);
+        const y = (clientY - rect.top) * (canvas.height / rect.height);
+        const col = Math.floor(x / cellSize), row = Math.floor(y / cellSize);
+        return (col >= 0 && col < cols && row >= 0 && row < rows) ? {x: col, y: row} : null;
+    }
+
+    function start(e) {
+        if(victoryFlag) return;
+        const p = getCoords(e);
+        if(!p) return;
+        const dot = dots.find(d => d.x === p.x && d.y === p.y);
+        if(dot) {
+            activeDrawing = true; 
+            currentColorDrawing = dot.color;
+            connections.set(dot.color, [p]);
+            currentPathCoords = [p];
+        }
+    }
+
+    function move(e) {
+        if(!activeDrawing) return;
+        const p = getCoords(e);
+        if(!p) return;
+        const last = currentPathCoords[currentPathCoords.length-1];
+        if(p.x === last.x && p.y === last.y) return;
+        
+        // Solo permitir movimientos ortogonales (arriba, abajo, izq, der)
+        if(Math.abs(p.x - last.x) + Math.abs(p.y - last.y) !== 1) return;
+        
+        const target = grid[p.y][p.x];
+        // No pasar por otros puntos de inicio de distinto color
+        if(target.isStart && target.color !== currentColorDrawing) return;
+        
+        currentPathCoords.push(p);
+        fullRedraw();
+        
+        // Si llegamos al punto final del mismo color, terminar automáticamente
+        if(target.isStart && target.color === currentColorDrawing && currentPathCoords.length > 1) {
+            end();
+        }
+    }
+
+    function end() {
+        if(!activeDrawing) return;
+        const last = currentPathCoords[currentPathCoords.length-1];
+        const target = grid[last.y][last.x];
+        if(target.isStart && target.color === currentColorDrawing && currentPathCoords.length > 1) {
+            connections.set(currentColorDrawing, [...currentPathCoords]);
+            checkWin();
+        } else {
+            // Si no terminó en un punto, borrar lo que se estaba dibujando
+            connections.set(currentColorDrawing, []);
+        }
+        activeDrawing = false;
+        fullRedraw();
+    }
+
+    function checkWin() {
+        const completed = [...connections.values()].filter(v => v.length > 0).length;
+        if(completed === dots.length / 2) {
+            victoryFlag = true;
+            victoryDiv.innerHTML = '<div class="victory-msg">🎉 ¡NIVEL COMPLETADO! 🎉</div>';
+        }
+    }
+
+    // Inicialización al cargar la ventana
+    window.addEventListener('load', () => {
+        loadLevel(0);
+        
+        canvas.addEventListener('mousedown', start);
+        window.addEventListener('mousemove', move);
+        window.addEventListener('mouseup', end);
+        
+        canvas.addEventListener('touchstart', e => { e.preventDefault(); start(e); }, {passive: false});
+        window.addEventListener('touchmove', e => { e.preventDefault(); move(e); }, {passive: false});
+        window.addEventListener('touchend', e => { e.preventDefault(); end(); }, {passive: false});
+    });
+
+    resetBtn.onclick = () => loadLevel(currentLevelIdx);
+    
+    document.querySelectorAll('.level-btn').forEach((btn, i) => {
+        btn.onclick = () => {
+            document.querySelectorAll('.level-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            const names = ["BÁSICO · 7x5", "INTERMEDIO · 9x9", "AVANZADO · 8x11"];
+            levelNameSpan.innerText = names[i];
+            loadLevel(i);
+        };
+    });
+    
+    window.onresize = adjustCanvasSize;
+})();
 </script>
 
 </body>
