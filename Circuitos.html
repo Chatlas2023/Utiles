@@ -146,30 +146,34 @@
 
         const COLOR_PALETTE = ["#FF3366", "#3A86FF", "#FFD166", "#06D6A0", "#EF476F", "#9C89B8", "#F25F5C", "#70D6FF"];
         
-        const LEVELS = [
-            { rows: 5, cols: 7, dots: [
-                { x: 0, y: 0, color: COLOR_PALETTE[0] }, { x: 6, y: 4, color: COLOR_PALETTE[0] },
-                { x: 1, y: 2, color: COLOR_PALETTE[1] }, { x: 5, y: 2, color: COLOR_PALETTE[1] },
-                { x: 2, y: 0, color: COLOR_PALETTE[2] }, { x: 4, y: 0, color: COLOR_PALETTE[2] },
-                { x: 3, y: 4, color: COLOR_PALETTE[3] }, { x: 5, y: 3, color: COLOR_PALETTE[3] },
-                { x: 0, y: 4, color: COLOR_PALETTE[4] }, { x: 2, y: 4, color: COLOR_PALETTE[4] }
-            ]},
-            { rows: 9, cols: 9, dots: [
-                { x: 0, y: 0, color: COLOR_PALETTE[0] }, { x: 8, y: 8, color: COLOR_PALETTE[0] },
-                { x: 2, y: 1, color: COLOR_PALETTE[1] }, { x: 7, y: 4, color: COLOR_PALETTE[1] },
-                { x: 4, y: 0, color: COLOR_PALETTE[2] }, { x: 4, y: 8, color: COLOR_PALETTE[2] },
-                { x: 1, y: 5, color: COLOR_PALETTE[3] }, { x: 6, y: 5, color: COLOR_PALETTE[3] },
-                { x: 3, y: 7, color: COLOR_PALETTE[4] }, { x: 5, y: 7, color: COLOR_PALETTE[4] },
-                { x: 0, y: 4, color: COLOR_PALETTE[5] }, { x: 8, y: 2, color: COLOR_PALETTE[5] }
-            ]},
-            { rows: 8, cols: 11, dots: [
-                { x: 0, y: 0, color: COLOR_PALETTE[0] }, { x: 10, y: 7, color: COLOR_PALETTE[0] },
-                { x: 2, y: 2, color: COLOR_PALETTE[1] }, { x: 8, y: 5, color: COLOR_PALETTE[1] },
-                { x: 4, y: 0, color: COLOR_PALETTE[2] }, { x: 6, y: 7, color: COLOR_PALETTE[2] },
-                { x: 1, y: 4, color: COLOR_PALETTE[3] }, { x: 9, y: 2, color: COLOR_PALETTE[3] },
-                { x: 3, y: 6, color: COLOR_PALETTE[4] }, { x: 5, y: 3, color: COLOR_PALETTE[4] },
-                { x: 7, y: 1, color: COLOR_PALETTE[5] }, { x: 2, y: 7, color: COLOR_PALETTE[5] }
-            ]}
+const LEVELS = [
+            { // Nivel 1: Básico 5x5 (Simplificado para asegurar resolución)
+                rows: 5, cols: 5, dots: [
+                    { x: 0, y: 0, color: COLOR_PALETTE[0] }, { x: 4, y: 0, color: COLOR_PALETTE[0] },
+                    { x: 0, y: 1, color: COLOR_PALETTE[1] }, { x: 3, y: 1, color: COLOR_PALETTE[1] },
+                    { x: 0, y: 2, color: COLOR_PALETTE[2] }, { x: 2, y: 2, color: COLOR_PALETTE[2] },
+                    { x: 0, y: 3, color: COLOR_PALETTE[3] }, { x: 4, y: 3, color: COLOR_PALETTE[3] },
+                    { x: 0, y: 4, color: COLOR_PALETTE[4] }, { x: 4, y: 4, color: COLOR_PALETTE[4] }
+                ]
+            },
+            { // Nivel 2: Intermedio 6x6 (Diseño en espiral)
+                rows: 6, cols: 6, dots: [
+                    { x: 0, y: 0, color: COLOR_PALETTE[0] }, { x: 5, y: 5, color: COLOR_PALETTE[0] },
+                    { x: 1, y: 1, color: COLOR_PALETTE[1] }, { x: 4, y: 4, color: COLOR_PALETTE[1] },
+                    { x: 2, y: 2, color: COLOR_PALETTE[2] }, { x: 3, y: 3, color: COLOR_PALETTE[2] },
+                    { x: 0, y: 5, color: COLOR_PALETTE[3] }, { x: 1, y: 4, color: COLOR_PALETTE[3] },
+                    { x: 5, y: 0, color: COLOR_PALETTE[4] }, { x: 4, y: 1, color: COLOR_PALETTE[4] }
+                ]
+            },
+            { // Nivel 3: Avanzado 7x7 (Desafiante pero posible)
+                rows: 7, cols: 7, dots: [
+                    { x: 0, y: 0, color: COLOR_PALETTE[0] }, { x: 6, y: 6, color: COLOR_PALETTE[0] },
+                    { x: 1, y: 0, color: COLOR_PALETTE[1] }, { x: 0, y: 1, color: COLOR_PALETTE[1] },
+                    { x: 6, y: 0, color: COLOR_PALETTE[2] }, { x: 0, y: 6, color: COLOR_PALETTE[2] },
+                    { x: 2, y: 2, color: COLOR_PALETTE[3] }, { x: 4, y: 4, color: COLOR_PALETTE[3] },
+                    { x: 5, y: 2, color: COLOR_PALETTE[4] }, { x: 2, y: 5, color: COLOR_PALETTE[4] }
+                ]
+            }
         ];
 
         let currentLevelIdx = 0, rows, cols, dots, cellSize = 30;
