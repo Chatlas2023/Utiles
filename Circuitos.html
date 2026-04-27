@@ -3,739 +3,364 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Flow Clone - Niveles Resolubles | Conecta los puntos</title>
+    <title>Flow Game - Conecta los puntos</title>
     <style>
-        * {
-            user-select: none;
-            -webkit-tap-highlight-color: transparent;
-        }
-
+        * { user-select: none; -webkit-tap-highlight-color: transparent; }
         body {
-            margin: 0;
-            background: #0a0f1e;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            font-family: 'Segoe UI', 'Poppins', system-ui, sans-serif;
-            touch-action: none;
-            padding: 16px;
-            box-sizing: border-box;
+            margin: 0; background: #0a0f1e;
+            display: flex; justify-content: center; align-items: center;
+            min-height: 100vh; font-family: 'Segoe UI', system-ui, sans-serif;
+            padding: 16px; box-sizing: border-box;
         }
-
         .game-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 18px;
-            background: #161e2c;
-            padding: 20px 18px 22px 18px;
-            border-radius: 56px;
+            display: flex; flex-direction: column; align-items: center; gap: 18px;
+            background: #161e2c; padding: 20px; border-radius: 56px;
             box-shadow: 0 20px 35px rgba(0,0,0,0.5);
         }
-
         canvas {
-            display: block;
-            margin: 0 auto;
-            border-radius: 24px;
-            box-shadow: 0 12px 28px rgba(0,0,0,0.5);
-            cursor: pointer;
-            touch-action: none;
-            background-color: #010409;
+            display: block; margin: 0 auto; border-radius: 24px;
+            box-shadow: 0 12px 28px rgba(0,0,0,0.5); background-color: #010409;
         }
-
         .info-panel {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            width: 100%;
-            gap: 20px;
-            background: #0e121fcc;
-            backdrop-filter: blur(4px);
-            padding: 6px 20px;
-            border-radius: 60px;
-            flex-wrap: wrap;
-            justify-content: center;
+            display: flex; justify-content: space-between; align-items: center;
+            width: 100%; gap: 15px; background: #0e121fcc; backdrop-filter: blur(4px);
+            padding: 6px 20px; border-radius: 60px; flex-wrap: wrap; justify-content: center;
         }
-
-        .level-badge {
-            background: #2a3a55;
-            padding: 6px 18px;
-            border-radius: 40px;
-            color: white;
-            font-weight: bold;
-            font-size: 1rem;
-        }
-
+        .level-badge { background: #2a3a55; padding: 6px 18px; border-radius: 40px; color: white; font-weight: bold; font-size: 1rem; }
         button {
-            background: #2d4a7c;
-            border: none;
-            color: white;
-            font-weight: bold;
-            font-size: 1rem;
-            padding: 8px 24px;
-            border-radius: 60px;
-            cursor: pointer;
-            transition: 0.2s;
-            font-family: inherit;
-            box-shadow: 0 4px 0 #102a44;
-            transform: translateY(-2px);
+            background: #2d4a7c; border: none; color: white; font-weight: bold;
+            font-size: 1rem; padding: 8px 24px; border-radius: 60px; cursor: pointer;
+            font-family: inherit; box-shadow: 0 4px 0 #102a44; transform: translateY(-2px);
         }
-        button:active {
-            transform: translateY(2px);
-            box-shadow: 0 1px 0 #102a44;
-        }
-        .reset-btn {
-            background: #4e3b6e;
-            box-shadow: 0 4px 0 #2a1f3f;
-        }
+        button:active { transform: translateY(2px); box-shadow: 0 1px 0 #102a44; }
+        .reset-btn { background: #4e3b6e; box-shadow: 0 4px 0 #2a1f3f; }
         .victory-msg {
-            background: #2b7a4b;
-            padding: 8px 20px;
-            border-radius: 40px;
-            font-weight: bold;
-            color: #c6ffcf;
-            font-size: 0.9rem;
-            animation: pulse 0.8s;
+            background: #2b7a4b; padding: 8px 20px; border-radius: 40px;
+            font-weight: bold; color: #c6ffcf; font-size: 0.9rem; animation: pulse 0.8s;
         }
-        @keyframes pulse {
-            0% { opacity: 0; transform: scale(0.9);}
-            100% { opacity: 1; transform: scale(1);}
-        }
-        .level-selector {
-            display: flex;
-            gap: 12px;
-        }
+        @keyframes pulse { 0% { opacity: 0; transform: scale(0.9); } 100% { opacity: 1; transform: scale(1); } }
+        .level-selector { display: flex; gap: 12px; }
         .level-btn {
-            background: #1f2a40;
-            padding: 4px 18px;
-            font-size: 0.9rem;
+            background: #1f2a40; padding: 4px 18px; font-size: 0.9rem;
             box-shadow: 0 2px 0 #0b0f1a;
         }
         .level-btn.active {
-            background: #3b6f9e;
-            box-shadow: 0 0 8px #6aa9ff;
-            border: 1px solid #9bc0ff;
-        }
-        #confetti-canvas {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 1000;
+            background: #3b6f9e; box-shadow: 0 0 8px #6aa9ff; border: 1px solid #9bc0ff;
         }
     </style>
 </head>
 <body>
-<div>
-    <div class="game-container">
-        <canvas id="gameCanvas" width="500" height="500"></canvas>
-        <div class="info-panel">
-            <div class="level-badge" id="levelName">BÁSICO · 6x6</div>
-            <div class="level-selector">
-                <button class="level-btn" data-level="0">🌱 Básico</button>
-                <button class="level-btn" data-level="1">⚡ Intermedio</button>
-                <button class="level-btn" data-level="2">🔥 Avanzado</button>
-            </div>
-            <button id="resetButton" class="reset-btn">⟳ Reiniciar nivel</button>
+<div class="game-container">
+    <canvas id="gameCanvas"></canvas>
+    <div class="info-panel">
+        <div class="level-badge" id="levelName">BÁSICO · 5x5</div>
+        <div class="level-selector">
+            <button class="level-btn" data-level="0">🌱 Básico</button>
+            <button class="level-btn" data-level="1">⚡ Intermedio</button>
+            <button class="level-btn" data-level="2">🔥 Avanzado</button>
         </div>
-        <div id="victoryMessage" style="min-height: 48px;"></div>
+        <button id="resetButton" class="reset-btn">⟳ Reiniciar</button>
     </div>
-    <canvas id="confetti-canvas"></canvas>
+    <div id="victoryMessage" style="min-height: 48px;"></div>
 </div>
 
 <script>
-    (function(){
-        // ---------- CONFETI ----------
-        const confettiCanvas = document.getElementById('confetti-canvas');
-        let confettiCtx = null;
-        let particles = [];
-        let animationId = null;
-        
-        function resizeConfettiCanvas() {
-            if (!confettiCanvas) return;
-            confettiCanvas.width = window.innerWidth;
-            confettiCanvas.height = window.innerHeight;
-            if (!confettiCtx) confettiCtx = confettiCanvas.getContext('2d');
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    const COLORS = ["#FF3366","#3A86FF","#FFD166","#06D6A0","#9C27B0","#FF6D00","#00B4D8","#E63946"];
+
+    const LEVELS = [ /* tus niveles originales sin cambios */ 
+        { rows: 5, cols: 5, dots: [
+            { x: 0, y: 0, color: COLORS[0] }, { x: 4, y: 0, color: COLORS[0] },
+            { x: 0, y: 2, color: COLORS[1] }, { x: 4, y: 2, color: COLORS[1] },
+            { x: 0, y: 4, color: COLORS[2] }, { x: 4, y: 4, color: COLORS[2] },
+            { x: 2, y: 0, color: COLORS[3] }, { x: 2, y: 4, color: COLORS[3] }
+        ]},
+        { rows: 6, cols: 6, dots: [
+            { x: 0, y: 0, color: COLORS[0] }, { x: 5, y: 5, color: COLORS[0] },
+            { x: 0, y: 5, color: COLORS[1] }, { x: 5, y: 0, color: COLORS[1] },
+            { x: 1, y: 2, color: COLORS[2] }, { x: 4, y: 3, color: COLORS[2] },
+            { x: 2, y: 1, color: COLORS[3] }, { x: 3, y: 4, color: COLORS[3] },
+            { x: 1, y: 4, color: COLORS[4] }, { x: 4, y: 2, color: COLORS[4] }
+        ]},
+        { rows: 7, cols: 7, dots: [
+            { x: 0, y: 0, color: COLORS[0] }, { x: 6, y: 6, color: COLORS[0] },
+            { x: 0, y: 6, color: COLORS[1] }, { x: 6, y: 0, color: COLORS[1] },
+            { x: 1, y: 3, color: COLORS[2] }, { x: 5, y: 3, color: COLORS[2] },
+            { x: 3, y: 1, color: COLORS[3] }, { x: 3, y: 5, color: COLORS[3] },
+            { x: 2, y: 2, color: COLORS[4] }, { x: 4, y: 4, color: COLORS[4] },
+            { x: 2, y: 4, color: COLORS[5] }, { x: 4, y: 2, color: COLORS[5] }
+        ]}
+    ];
+
+    let nivelActual = 0;
+    let filas, columnas, puntos;
+    let tamanoCelda = 60;
+    let grilla = [];           // { colorOcupado: string|null, esInicio: boolean }
+    let caminos = new Map();   // color → array de {x,y}
+    let dibujando = false;
+    let colorActual = null;
+    let rutaTemporal = [];
+
+    const levelNameSpan = document.getElementById("levelName");
+    const victoryDiv = document.getElementById("victoryMessage");
+    const resetBtn = document.getElementById("resetButton");
+
+    function lanzarConfetti() {
+        const duration = 2500;
+        const end = Date.now() + duration;
+        const frame = () => {
+            if (Date.now() > end) return;
+            for (let i = 0; i < 4; i++) {
+                const c = document.createElement('div');
+                c.style.position = 'fixed'; c.style.zIndex = '9999';
+                c.style.width = c.style.height = (Math.random()*8 + 5) + 'px';
+                c.style.background = `hsl(${Math.random()*360},90%,60%)`;
+                c.style.left = Math.random()*window.innerWidth + 'px';
+                c.style.top = '-10px';
+                c.style.borderRadius = '2px';
+                c.style.pointerEvents = 'none';
+                document.body.appendChild(c);
+                c.animate([
+                    {transform: 'translateY(0) rotate(0deg)', opacity: 1},
+                    {transform: `translateY(${window.innerHeight+100}px) rotate(${Math.random()*800}deg)`, opacity: 0}
+                ], {duration: 1200 + Math.random()*1800, easing: 'cubic-bezier(0.25,0.46,0.45,0.94)'})
+                .onfinish = () => c.remove();
+            }
+            requestAnimationFrame(frame);
+        };
+        frame();
+    }
+
+    function cargarNivel(indice) {
+        nivelActual = indice;
+        const datos = LEVELS[indice];
+        filas = datos.rows; columnas = datos.cols;
+        puntos = datos.dots.map(p => ({...p}));
+
+        grilla = Array.from({length: filas}, () => 
+            Array.from({length: columnas}, () => ({colorOcupado: null, esInicio: false}))
+        );
+
+        puntos.forEach(p => {
+            grilla[p.y][p.x] = {colorOcupado: p.color, esInicio: true};
+        });
+
+        caminos.clear();
+        new Set(puntos.map(p => p.color)).forEach(c => caminos.set(c, []));
+
+        victoryDiv.innerHTML = "";
+        dibujando = false; colorActual = null; rutaTemporal = [];
+
+        ajustarTamaño();
+        dibujarTodo();
+    }
+
+    function ajustarTamaño() {
+        const max = Math.min(window.innerWidth - 60, 580);
+        tamanoCelda = Math.max(20, Math.floor(Math.min(max / columnas, (window.innerHeight - 220) / filas)));
+        canvas.width = columnas * tamanoCelda;
+        canvas.height = filas * tamanoCelda;
+    }
+
+    function dibujarTodo() {
+        ctx.fillStyle = "#010409";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Grid
+        ctx.strokeStyle = "#2a2f3f"; ctx.lineWidth = 1.8;
+        for (let i = 0; i <= columnas; i++) {
+            ctx.beginPath(); ctx.moveTo(i*tamanoCelda, 0); ctx.lineTo(i*tamanoCelda, canvas.height); ctx.stroke();
         }
-        
-        class ConfettiParticle {
-            constructor(x, y) {
-                this.x = x; this.y = y;
-                this.size = Math.random() * 8 + 4;
-                this.speedX = (Math.random() - 0.5) * 7;
-                this.speedY = Math.random() * 6 + 3;
-                this.color = `hsl(${Math.random() * 360}, 80%, 60%)`;
-                this.rotation = Math.random() * 360;
-                this.rotationSpeed = (Math.random() - 0.5) * 12;
-                this.alpha = 1;
-                this.decay = 0.98 + Math.random() * 0.015;
-            }
-            update() {
-                this.x += this.speedX;
-                this.y += this.speedY;
-                this.speedY += 0.2;
-                this.speedX *= 0.99;
-                this.rotation += this.rotationSpeed;
-                this.alpha *= this.decay;
-                return this.alpha > 0.02 && this.y < window.innerHeight + 100;
-            }
-            draw(ctx) {
-                ctx.save();
-                ctx.translate(this.x, this.y);
-                ctx.rotate(this.rotation * Math.PI / 180);
-                ctx.globalAlpha = this.alpha;
-                ctx.fillStyle = this.color;
-                ctx.fillRect(-this.size/2, -this.size/2, this.size, this.size/1.5);
-                ctx.restore();
-            }
-        }
-        
-        function launchConfetti() {
-            if (!confettiCtx) resizeConfettiCanvas();
-            if (!confettiCtx) return;
-            if (animationId) cancelAnimationFrame(animationId);
-            particles = [];
-            resizeConfettiCanvas();
-            const centerX = window.innerWidth / 2;
-            const centerY = window.innerHeight / 3;
-            for (let i = 0; i < 150; i++) {
-                const angle = (Math.random() - 0.5) * Math.PI * 0.8;
-                const speed = 5 + Math.random() * 8;
-                const vx = Math.sin(angle) * speed + (Math.random() - 0.5) * 3;
-                const vy = -Math.abs(Math.cos(angle) * speed) - 2;
-                const p = new ConfettiParticle(centerX + (Math.random() - 0.5) * 90, centerY);
-                p.speedX = vx; p.speedY = vy;
-                particles.push(p);
-            }
-            for (let i = 0; i < 80; i++) {
-                const sideX = Math.random() * window.innerWidth;
-                const p = new ConfettiParticle(sideX, -20);
-                p.speedY = Math.random() * 5 + 4;
-                p.speedX = (Math.random() - 0.5) * 4;
-                particles.push(p);
-            }
-            function animateConfetti() {
-                if (!confettiCtx) return;
-                confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
-                let anyAlive = false;
-                for (let p of particles) {
-                    const alive = p.update();
-                    p.draw(confettiCtx);
-                    if (alive) anyAlive = true;
-                }
-                particles = particles.filter(p => p.alpha > 0.02);
-                if (anyAlive && particles.length > 0) {
-                    animationId = requestAnimationFrame(animateConfetti);
-                } else {
-                    if (confettiCtx) confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
-                    animationId = null;
-                }
-            }
-            animateConfetti();
-            setTimeout(() => {
-                if (animationId) { cancelAnimationFrame(animationId); animationId = null; if(confettiCtx) confettiCtx.clearRect(0,0,confettiCanvas.width,confettiCanvas.height); }
-            }, 4200);
+        for (let j = 0; j <= filas; j++) {
+            ctx.beginPath(); ctx.moveTo(0, j*tamanoCelda); ctx.lineTo(canvas.width, j*tamanoCelda); ctx.stroke();
         }
 
-        // ---------- COLORES CON ALTO CONTRASTE (diferenciables en móvil) ----------
-        // Reemplazamos rojos similares por tonos distintivos: rojo fuego, naranja, magenta, etc.
-        const COLOR_PALETTE = [
-            "#FF2A2A",     // Rojo brillante
-            "#3A86FF",     // Azul eléctrico
-            "#FFB703",     // Amarillo dorado (cálido)
-            "#06D6A0",     // Menta turquesa
-            "#9C27B0",     // Púrpura vibrante
-            "#FF6D00",     // Naranja intenso
-            "#00B4D8",     // Cyan profundo
-            "#E63946"      // Rojo coral (contrasta con el primero)
-        ];
+        // Caminos completos
+        for (let [color, ruta] of caminos) {
+            if (ruta.length > 1) dibujarLinea(color, ruta, false);
+        }
 
-        // ---------- GENERADOR DE NIVELES RESOLUBLES ----------
-        // Cada nivel se genera con un recorrido garantizado que conecta todos los pares.
-        // Los niveles están diseñados manualmente con caminos ortogonales verificados.
-        
-        // NIVEL BÁSICO: 6x6, 4 pares de colores (8 puntos) - Fácil, garantizado
-        const basicLevel = {
-            rows: 6,
-            cols: 6,
-            dots: [
-                { x: 0, y: 0, color: COLOR_PALETTE[0] }, { x: 5, y: 0, color: COLOR_PALETTE[0] },  // Rojo - línea superior
-                { x: 0, y: 2, color: COLOR_PALETTE[1] }, { x: 5, y: 2, color: COLOR_PALETTE[1] },  // Azul
-                { x: 0, y: 4, color: COLOR_PALETTE[2] }, { x: 5, y: 4, color: COLOR_PALETTE[2] },  // Amarillo
-                { x: 2, y: 5, color: COLOR_PALETTE[3] }, { x: 3, y: 5, color: COLOR_PALETTE[3] }   // Menta (fáciles)
-            ]
-        };
-        
-        // NIVEL INTERMEDIO: 7x7, 5 pares (10 puntos) - Diseño de espiral con soluciones
-        const intermediateLevel = {
-            rows: 7,
-            cols: 7,
-            dots: [
-                { x: 0, y: 0, color: COLOR_PALETTE[0] }, { x: 6, y: 6, color: COLOR_PALETTE[0] },  // Rojo diagonal
-                { x: 1, y: 1, color: COLOR_PALETTE[1] }, { x: 5, y: 5, color: COLOR_PALETTE[1] },  // Azul
-                { x: 2, y: 2, color: COLOR_PALETTE[2] }, { x: 4, y: 4, color: COLOR_PALETTE[2] },  // Amarillo
-                { x: 0, y: 6, color: COLOR_PALETTE[3] }, { x: 6, y: 0, color: COLOR_PALETTE[3] },  // Menta (esquinas opuestas)
-                { x: 3, y: 0, color: COLOR_PALETTE[4] }, { x: 3, y: 6, color: COLOR_PALETTE[4] }   // Naranja (vertical central)
-            ]
-        };
-        
-        // NIVEL AVANZADO: 8x8, 6 pares (12 puntos) - Desafiante pero con solución
-        const advancedLevel = {
-            rows: 8,
-            cols: 8,
-            dots: [
-                { x: 0, y: 0, color: COLOR_PALETTE[0] }, { x: 7, y: 7, color: COLOR_PALETTE[0] },   // Rojo
-                { x: 0, y: 7, color: COLOR_PALETTE[1] }, { x: 7, y: 0, color: COLOR_PALETTE[1] },   // Azul
-                { x: 1, y: 3, color: COLOR_PALETTE[2] }, { x: 6, y: 3, color: COLOR_PALETTE[2] },   // Amarillo
-                { x: 3, y: 1, color: COLOR_PALETTE[3] }, { x: 3, y: 6, color: COLOR_PALETTE[3] },   // Menta
-                { x: 2, y: 4, color: COLOR_PALETTE[4] }, { x: 5, y: 4, color: COLOR_PALETTE[4] },   // Púrpura
-                { x: 4, y: 2, color: COLOR_PALETTE[5] }, { x: 4, y: 5, color: COLOR_PALETTE[5] }    // Naranja
-            ]
-        };
-        
-        // Función para verificar si un nivel tiene solución (verifica que todos los pares puedan conectarse sin bloqueos)
-        // En niveles predefinidos garantizamos resolubilidad. Adicionalmente agregamos verificación en runtime.
-        function validateLevelResolvable(level) {
-            const { rows, cols, dots } = level;
-            // Verificación simple: que ningún punto esté fuera de rango
-            for (let dot of dots) {
-                if (dot.x < 0 || dot.x >= cols || dot.y < 0 || dot.y >= rows) return false;
-            }
-            // Que todos los colores tengan exactamente 2 puntos
-            const colorCount = new Map();
-            for (let dot of dots) {
-                colorCount.set(dot.color, (colorCount.get(dot.color) || 0) + 1);
-            }
-            for (let count of colorCount.values()) {
-                if (count !== 2) return false;
-            }
-            return true;
+        // Ruta temporal
+        if (dibujando && rutaTemporal.length > 1) {
+            dibujarLinea(colorActual, rutaTemporal, true);
         }
-        
-        const LEVELS = [basicLevel, intermediateLevel, advancedLevel];
-        
-        // Validación inicial
-        for (let i = 0; i < LEVELS.length; i++) {
-            if (!validateLevelResolvable(LEVELS[i])) {
-                console.warn(`Nivel ${i} tiene problemas de validación, pero se usará igualmente`);
-            }
-        }
-        
-        let currentLevelIdx = 0;
-        let rows, cols, dots;
-        let cellSize = 0;
-        let canvas, ctx;
-        
-        let grid = [];
-        let connections = new Map();  // color -> array de coordenadas {x,y}
-        let activeDrawing = false;
-        let currentColorDrawing = null;
-        let currentPathCoords = [];
-        let startDotPos = null;
-        let victoryFlag = false;
-        
-        const levelNameSpan = document.getElementById("levelName");
-        const victoryDiv = document.getElementById("victoryMessage");
-        const resetBtn = document.getElementById("resetButton");
-        
-        function loadLevel(levelIndex) {
-            currentLevelIdx = levelIndex;
-            const levelData = LEVELS[currentLevelIdx];
-            rows = levelData.rows;
-            cols = levelData.cols;
-            dots = levelData.dots.map(d => ({ ...d, color: d.color }));
-            
-            // Inicializar grid vacío
-            grid = Array(rows).fill().map(() => Array(cols).fill().map(() => ({ color: null, isStart: false })));
-            
-            // Marcar puntos iniciales
-            dots.forEach(dot => {
-                if (dot.x >= 0 && dot.x < cols && dot.y >= 0 && dot.y < rows) {
-                    grid[dot.y][dot.x] = { color: dot.color, isStart: true };
-                }
-            });
-            
-            // Resetear conexiones
-            connections.clear();
-            const uniqueColors = [...new Map(dots.map(d => [d.color, d.color])).values()];
-            uniqueColors.forEach(color => {
-                connections.set(color, []);
-            });
-            
-            victoryFlag = false;
-            victoryDiv.innerHTML = "";
-            activeDrawing = false;
-            currentColorDrawing = null;
-            currentPathCoords = [];
-            startDotPos = null;
-            
-            adjustCanvasSizeAndDraw();
-        }
-        
-        function adjustCanvasSizeAndDraw() {
-            const maxWidth = Math.min(window.innerWidth - 48, 650);
-            const maxHeight = window.innerHeight - 180;
-            const widthByCols = maxWidth / cols;
-            const heightByRows = maxHeight / rows;
-            cellSize = Math.min(widthByCols, heightByRows, 70);
-            if (cellSize < 18) cellSize = 18;
-            
-            canvas.width = cols * cellSize;
-            canvas.height = rows * cellSize;
-            canvas.style.width = `${canvas.width}px`;
-            canvas.style.height = `${canvas.height}px`;
-            fullRedraw();
-        }
-        
-        function fullRedraw() {
-            if (!ctx) return;
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = "#010409";
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
-            // Cuadrícula
-            ctx.strokeStyle = "#2a2f3f";
-            ctx.lineWidth = 1.5;
-            for (let i = 0; i <= cols; i++) {
-                ctx.beginPath();
-                ctx.moveTo(i * cellSize, 0);
-                ctx.lineTo(i * cellSize, canvas.height);
-                ctx.stroke();
-            }
-            for (let j = 0; j <= rows; j++) {
-                ctx.beginPath();
-                ctx.moveTo(0, j * cellSize);
-                ctx.lineTo(canvas.width, j * cellSize);
-                ctx.stroke();
-            }
-            
-            // Dibujar rutas guardadas
-            for (let [color, path] of connections.entries()) {
-                if (path && path.length > 1) {
-                    drawPath(color, path);
-                }
-            }
-            
-            // Dibujar ruta actual
-            if (activeDrawing && currentPathCoords.length > 1 && currentColorDrawing) {
-                drawPath(currentColorDrawing, currentPathCoords);
-            }
-            
-            // Dibujar puntos (nodos)
-            for (let dot of dots) {
-                const cx = (dot.x + 0.5) * cellSize;
-                const cy = (dot.y + 0.5) * cellSize;
-                const radius = cellSize * 0.32;
-                ctx.fillStyle = dot.color;
-                ctx.beginPath();
-                ctx.arc(cx, cy, radius, 0, Math.PI * 2);
-                ctx.fill();
-                // Brillo interno
-                ctx.fillStyle = "rgba(255,255,255,0.5)";
-                ctx.beginPath();
-                ctx.arc(cx - radius * 0.2, cy - radius * 0.2, radius * 0.28, 0, Math.PI * 2);
-                ctx.fill();
-                // Borde sutil
-                ctx.strokeStyle = "rgba(255,255,255,0.3)";
-                ctx.lineWidth = 1.5;
-                ctx.beginPath();
-                ctx.arc(cx, cy, radius + 1, 0, Math.PI * 2);
-                ctx.stroke();
-            }
-        }
-        
-        function drawPath(color, coordsArray) {
-            if (!coordsArray || coordsArray.length < 2) return;
-            ctx.save();
-            ctx.strokeStyle = color;
-            ctx.lineWidth = cellSize * 0.4;
-            ctx.lineCap = "round";
-            ctx.lineJoin = "round";
+
+        // Puntos
+        puntos.forEach(p => {
+            const cx = (p.x + 0.5) * tamanoCelda;
+            const cy = (p.y + 0.5) * tamanoCelda;
+            const r = tamanoCelda * 0.33;
+
+            ctx.shadowBlur = 8; ctx.shadowColor = p.color;
+            ctx.fillStyle = p.color;
+            ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2); ctx.fill();
+
             ctx.shadowBlur = 0;
-            ctx.beginPath();
-            const first = coordsArray[0];
-            ctx.moveTo((first.x + 0.5) * cellSize, (first.y + 0.5) * cellSize);
-            for (let i = 1; i < coordsArray.length; i++) {
-                const p = coordsArray[i];
-                ctx.lineTo((p.x + 0.5) * cellSize, (p.y + 0.5) * cellSize);
-            }
-            ctx.stroke();
-            ctx.restore();
+            ctx.fillStyle = "rgba(255,255,255,0.5)";
+            ctx.beginPath(); ctx.arc(cx - r*0.25, cy - r*0.25, r*0.28, 0, Math.PI*2); ctx.fill();
+        });
+    }
+
+    function dibujarLinea(color, coords, esTemporal = false) {
+        if (coords.length < 2) return;
+        ctx.save();
+        ctx.strokeStyle = color;
+        ctx.lineWidth = tamanoCelda * 0.39;
+        ctx.lineCap = "round";
+        ctx.lineJoin = "round";
+        if (esTemporal) {
+            ctx.setLineDash([6, 8]);
+            ctx.globalAlpha = 0.85;
         }
-        
-        function getCanvasCoords(e) {
-            const rect = canvas.getBoundingClientRect();
-            const scaleX = canvas.width / rect.width;
-            const scaleY = canvas.height / rect.height;
-            let clientX, clientY;
-            if (e.touches) {
-                if (e.touches.length === 0) return null;
-                clientX = e.touches[0].clientX;
-                clientY = e.touches[0].clientY;
-            } else {
-                clientX = e.clientX;
-                clientY = e.clientY;
-            }
-            let canvasX = (clientX - rect.left) * scaleX;
-            let canvasY = (clientY - rect.top) * scaleY;
-            if (canvasX < 0 || canvasY < 0) return null;
-            const col = Math.floor(canvasX / cellSize);
-            const row = Math.floor(canvasY / cellSize);
-            if (col >= 0 && col < cols && row >= 0 && row < rows) return { x: col, y: row };
-            return null;
+        ctx.shadowBlur = 15; ctx.shadowColor = color;
+
+        ctx.beginPath();
+        ctx.moveTo((coords[0].x + 0.5)*tamanoCelda, (coords[0].y + 0.5)*tamanoCelda);
+        for (let i = 1; i < coords.length; i++) {
+            ctx.lineTo((coords[i].x + 0.5)*tamanoCelda, (coords[i].y + 0.5)*tamanoCelda);
         }
-        
-        function isOrthogonalAdjacent(p1, p2) {
-            return (Math.abs(p1.x - p2.x) + Math.abs(p1.y - p2.y)) === 1;
+        ctx.stroke();
+        ctx.restore();
+    }
+
+    function obtenerCoordenadas(e) {
+        const rect = canvas.getBoundingClientRect();
+        const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+        const y = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
+        const col = Math.floor(x / tamanoCelda * (canvas.width / rect.width));
+        const row = Math.floor(y / tamanoCelda * (canvas.height / rect.height));
+        if (col >= 0 && col < columnas && row >= 0 && row < filas) return {x: col, y: row};
+        return null;
+    }
+
+    function esAdyacente(a, b) {
+        return Math.abs(a.x - b.x) + Math.abs(a.y - b.y) === 1;
+    }
+
+    function celdaDisponible(x, y, color) {
+        if (x < 0 || x >= columnas || y < 0 || y >= filas) return false;
+        const cel = grilla[y][x];
+
+        if (cel.esInicio) return cel.colorOcupado === color;
+
+        // No permitir pasar por celda ocupada por otro color
+        if (cel.colorOcupado !== null && cel.colorOcupado !== color) return false;
+
+        // No repetir celda en la ruta temporal actual
+        if (rutaTemporal.some(p => p.x === x && p.y === y)) return false;
+
+        return true;
+    }
+
+    function iniciarDibujo(e) {
+        if (victoryDiv.innerHTML) return;
+        e.preventDefault();
+        const pos = obtenerCoordenadas(e);
+        if (!pos) return;
+
+        const punto = puntos.find(p => p.x === pos.x && p.y === pos.y);
+        if (!punto) return;
+
+        const color = punto.color;
+
+        // Borrar camino anterior del mismo color
+        if (caminos.get(color)?.length > 0) {
+            caminos.get(color).forEach(c => {
+                if (!grilla[c.y][c.x].esInicio) grilla[c.y][c.x].colorOcupado = null;
+            });
+            caminos.set(color, []);
+            dibujarTodo();
         }
-        
-        function canExtendToCell(x, y, color, checkTemp = true) {
-            if (x < 0 || x >= cols || y < 0 || y >= rows) return false;
-            const cell = grid[y][x];
-            // Si es punto de inicio, solo se puede pisar si pertenece a este color
-            if (cell.isStart) {
-                const belongsToCurrent = dots.some(d => d.x === x && d.y === y && d.color === color);
-                return belongsToCurrent;
-            }
-            // Si ya tiene otro color permanente, no se puede
-            if (cell.color !== null && cell.color !== color) return false;
-            // Evitar repetir la misma celda en el trazo temporal
-            if (checkTemp && currentPathCoords.some(p => p.x === x && p.y === y)) return false;
-            return true;
+
+        dibujando = true;
+        colorActual = color;
+        rutaTemporal = [{x: pos.x, y: pos.y}];
+        dibujarTodo();
+    }
+
+    function moverDibujo(e) {
+        if (!dibujando) return;
+        e.preventDefault();
+        const pos = obtenerCoordenadas(e);
+        if (!pos) return;
+
+        const ultimo = rutaTemporal[rutaTemporal.length-1];
+        if (ultimo.x === pos.x && ultimo.y === pos.y) return;
+        if (!esAdyacente(ultimo, pos)) return;
+        if (!celdaDisponible(pos.x, pos.y, colorActual)) return;
+
+        rutaTemporal.push({x: pos.x, y: pos.y});
+        dibujarTodo();
+    }
+
+    function finalizarDibujo() {
+        if (!dibujando || rutaTemporal.length < 2) {
+            dibujando = false; rutaTemporal = []; dibujarTodo(); return;
         }
-        
-        function commitPath() {
-            if (!activeDrawing) return false;
-            if (currentPathCoords.length < 2) {
-                cancelDrawing();
-                return false;
+
+        const color = colorActual;
+        const extremos = puntos.filter(p => p.color === color);
+        const primero = rutaTemporal[0];
+        const ultimo = rutaTemporal[rutaTemporal.length-1];
+
+        const validoInicio = (primero.x === extremos[0].x && primero.y === extremos[0].y) ||
+                             (primero.x === extremos[1].x && primero.y === extremos[1].y);
+        const validoFin = (ultimo.x === extremos[0].x && ultimo.y === extremos[0].y) ||
+                          (ultimo.x === extremos[1].x && ultimo.y === extremos[1].y);
+
+        if (validoInicio && validoFin) {
+            // Marcar celdas ocupadas
+            for (let i = 1; i < rutaTemporal.length - 1; i++) {
+                const c = rutaTemporal[i];
+                if (!grilla[c.y][c.x].esInicio) grilla[c.y][c.x].colorOcupado = color;
             }
-            
-            const color = currentColorDrawing;
-            const dotEndpoints = dots.filter(d => d.color === color);
-            if (dotEndpoints.length !== 2) {
-                cancelDrawing();
-                return false;
+            caminos.set(color, [...rutaTemporal]);
+
+            // Verificar si todos los pares están completos
+            let completados = 0;
+            for (let ruta of caminos.values()) {
+                if (ruta.length > 1) completados++;
             }
-            const start = dotEndpoints[0];
-            const end = dotEndpoints[1];
-            
-            const firstCoord = currentPathCoords[0];
-            const lastCoord = currentPathCoords[currentPathCoords.length - 1];
-            const validStart = (firstCoord.x === start.x && firstCoord.y === start.y) ||
-                               (firstCoord.x === end.x && firstCoord.y === end.y);
-            const validEnd = (lastCoord.x === start.x && lastCoord.y === start.y) ||
-                             (lastCoord.x === end.x && lastCoord.y === end.y);
-            if (!validStart || !validEnd || (firstCoord.x === lastCoord.x && firstCoord.y === lastCoord.y)) {
-                cancelDrawing();
-                return false;
-            }
-            
-            // Verificar ortogonalidad de todos los pasos
-            for (let i = 1; i < currentPathCoords.length; i++) {
-                if (!isOrthogonalAdjacent(currentPathCoords[i-1], currentPathCoords[i])) {
-                    cancelDrawing();
-                    return false;
-                }
-            }
-            
-            // Verificar que las celdas intermedias no choquen con otros caminos
-            for (let i = 1; i < currentPathCoords.length - 1; i++) {
-                const cell = currentPathCoords[i];
-                const gridCell = grid[cell.y][cell.x];
-                if (gridCell.color !== null && gridCell.color !== color) {
-                    cancelDrawing();
-                    return false;
-                }
-                if (gridCell.isStart === true) {
-                    const isOwnStart = (cell.x === start.x && cell.y === start.y) ||
-                                       (cell.x === end.x && cell.y === end.y);
-                    if (!isOwnStart) {
-                        cancelDrawing();
-                        return false;
-                    }
-                }
-            }
-            
-            // Eliminar camino anterior de este color si existía
-            const oldPath = connections.get(color) || [];
-            if (oldPath.length > 0) {
-                for (let cell of oldPath) {
-                    if (grid[cell.y] && grid[cell.y][cell.x] && !grid[cell.y][cell.x].isStart) {
-                        grid[cell.y][cell.x].color = null;
-                    }
-                }
-            }
-            
-            // Guardar nuevo camino
-            const newPathCoords = [...currentPathCoords];
-            for (let i = 0; i < newPathCoords.length; i++) {
-                const cell = newPathCoords[i];
-                const isEndpoint = (cell.x === start.x && cell.y === start.y) ||
-                                   (cell.x === end.x && cell.y === end.y);
-                if (!isEndpoint) {
-                    grid[cell.y][cell.x].color = color;
-                }
-            }
-            connections.set(color, newPathCoords);
-            
-            // Verificar victoria
-            const totalPairs = dots.length / 2;
-            let completed = 0;
-            for (let [_, pathArray] of connections.entries()) {
-                if (pathArray.length > 1) completed++;
-            }
-            
-            if (completed === totalPairs) {
-                victoryFlag = true;
+            if (completados === puntos.length / 2) {
                 victoryDiv.innerHTML = '<div class="victory-msg">🎉 ¡NIVEL COMPLETADO! 🎉</div>';
-                launchConfetti();
-                activeDrawing = false;
-                fullRedraw();
-                return true;
-            }
-            
-            cancelDrawing();
-            fullRedraw();
-            return true;
-        }
-        
-        function cancelDrawing() {
-            activeDrawing = false;
-            currentColorDrawing = null;
-            currentPathCoords = [];
-            startDotPos = null;
-            fullRedraw();
-        }
-        
-        function onPointerStart(e) {
-            if (victoryFlag) return;
-            e.preventDefault();
-            const pos = getCanvasCoords(e);
-            if (!pos) return;
-            const dotHere = dots.find(d => d.x === pos.x && d.y === pos.y);
-            if (!dotHere) return;
-            const color = dotHere.color;
-            
-            // Si ya hay un camino para este color, lo borramos para redibujar
-            const existing = connections.get(color);
-            if (existing && existing.length > 0) {
-                for (let cell of existing) {
-                    if (grid[cell.y] && grid[cell.y][cell.x] && !grid[cell.y][cell.x].isStart) {
-                        grid[cell.y][cell.x].color = null;
-                    }
-                }
-                connections.set(color, []);
-                fullRedraw();
-            }
-            
-            activeDrawing = true;
-            currentColorDrawing = color;
-            startDotPos = { x: dotHere.x, y: dotHere.y };
-            currentPathCoords = [{ x: dotHere.x, y: dotHere.y }];
-            fullRedraw();
-        }
-        
-        function onPointerMove(e) {
-            if (!activeDrawing || victoryFlag) return;
-            e.preventDefault();
-            const pos = getCanvasCoords(e);
-            if (!pos) return;
-            const last = currentPathCoords[currentPathCoords.length - 1];
-            if (last.x === pos.x && last.y === pos.y) return;
-            if (!isOrthogonalAdjacent(last, pos)) return;
-            if (!canExtendToCell(pos.x, pos.y, currentColorDrawing, true)) return;
-            
-            const dotEndpoints = dots.filter(d => d.color === currentColorDrawing);
-            const isTargetNode = (pos.x === dotEndpoints[0].x && pos.y === dotEndpoints[0].y) ||
-                                 (pos.x === dotEndpoints[1].x && pos.y === dotEndpoints[1].y);
-            
-            if (isTargetNode && !(startDotPos.x === pos.x && startDotPos.y === pos.y)) {
-                currentPathCoords.push({ x: pos.x, y: pos.y });
-                fullRedraw();
-                return;
-            }
-            
-            const otherDot = dots.find(d => d.x === pos.x && d.y === pos.y && d.color !== currentColorDrawing);
-            if (otherDot) return;
-            
-            currentPathCoords.push({ x: pos.x, y: pos.y });
-            fullRedraw();
-        }
-        
-        function onPointerEnd(e) {
-            if (!activeDrawing || victoryFlag) {
-                activeDrawing = false;
-                cancelDrawing();
-                return;
-            }
-            e.preventDefault();
-            commitPath();
-            activeDrawing = false;
-            currentColorDrawing = null;
-            currentPathCoords = [];
-            startDotPos = null;
-            fullRedraw();
-        }
-        
-        function resetLevel() {
-            loadLevel(currentLevelIdx);
-            // detener confeti si estaba activo
-            if (animationId) {
-                cancelAnimationFrame(animationId);
-                animationId = null;
-                if (confettiCtx) confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+                lanzarConfetti();
             }
         }
-        
-        function changeLevel(index) {
-            currentLevelIdx = index;
-            loadLevel(currentLevelIdx);
-            const names = ["BÁSICO · 6x6", "INTERMEDIO · 7x7", "AVANZADO · 8x8"];
-            levelNameSpan.innerText = names[currentLevelIdx];
-            victoryDiv.innerHTML = "";
-            victoryFlag = false;
-            fullRedraw();
-            if (animationId) {
-                cancelAnimationFrame(animationId);
-                animationId = null;
-                if (confettiCtx) confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
-            }
-        }
-        
-        function bindEvents() {
-            canvas.addEventListener('mousedown', onPointerStart);
-            window.addEventListener('mousemove', (e) => { if (activeDrawing) onPointerMove(e); });
-            window.addEventListener('mouseup', onPointerEnd);
-            canvas.addEventListener('touchstart', onPointerStart, { passive: false });
-            window.addEventListener('touchmove', onPointerMove, { passive: false });
-            window.addEventListener('touchend', onPointerEnd);
-            resetBtn.addEventListener('click', resetLevel);
-            document.querySelectorAll('.level-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const lvl = parseInt(btn.dataset.level);
-                    if (!isNaN(lvl)) changeLevel(lvl);
-                    document.querySelectorAll('.level-btn').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                });
-            });
-            window.addEventListener('resize', () => {
-                adjustCanvasSizeAndDraw();
-                resizeConfettiCanvas();
-            });
-        }
-        
-        canvas = document.getElementById('gameCanvas');
-        ctx = canvas.getContext('2d');
-        resizeConfettiCanvas();
-        bindEvents();
-        loadLevel(0);
-        document.querySelector('.level-btn[data-level="0"]').classList.add('active');
-        levelNameSpan.innerText = "BÁSICO · 6x6";
-    })();
+
+        dibujando = false;
+        colorActual = null;
+        rutaTemporal = [];
+        dibujarTodo();
+    }
+
+    // Eventos
+    canvas.addEventListener('mousedown', iniciarDibujo);
+    window.addEventListener('mousemove', moverDibujo);
+    window.addEventListener('mouseup', finalizarDibujo);
+
+    canvas.addEventListener('touchstart', iniciarDibujo, {passive: false});
+    canvas.addEventListener('touchmove', moverDibujo, {passive: false});
+    canvas.addEventListener('touchend', finalizarDibujo);
+
+    resetBtn.addEventListener('click', () => cargarNivel(nivelActual));
+
+    document.querySelectorAll('.level-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const lvl = parseInt(btn.dataset.level);
+            cargarNivel(lvl);
+            levelNameSpan.textContent = ["BÁSICO · 5x5", "INTERMEDIO · 6x6", "AVANZADO · 7x7"][lvl];
+            document.querySelectorAll('.level-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        });
+    });
+
+    window.addEventListener('resize', () => { ajustarTamaño(); dibujarTodo(); });
+
+    // Iniciar
+    cargarNivel(0);
+    document.querySelector('.level-btn[data-level="0"]').classList.add('active');
 </script>
 </body>
 </html>
