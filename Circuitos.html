@@ -78,36 +78,88 @@
 ];
 
 const LEVELS = [
-    {   // Básico: 7x5 con 5 colores (10 puntos). Patrón de entrelazado.
+    {   // Básico: 7x5 con 5 colores
         rows: 5, cols: 7,
-        dots: [
-            { x: 0, y: 0, color: COLORS[0] }, { x: 3, y: 4, color: COLORS[0] },
-            { x: 2, y: 2, color: COLORS[1] }, { x: 5, y: 4, color: COLORS[1] },
-            { x: 5, y: 0, color: COLORS[2] }, { x: 6, y: 4, color: COLORS[2] },
-            { x: 0, y: 1, color: COLORS[3] }, { x: 2, y: 4, color: COLORS[3] },
-            { x: 3, y: 1, color: COLORS[4] }, { x: 4, y: 4, color: COLORS[4] }
+        variations: [
+            [
+                { x: 0, y: 0, color: COLORS[0] }, { x: 3, y: 4, color: COLORS[0] },
+                { x: 2, y: 2, color: COLORS[1] }, { x: 5, y: 4, color: COLORS[1] },
+                { x: 5, y: 0, color: COLORS[2] }, { x: 6, y: 4, color: COLORS[2] },
+                { x: 0, y: 1, color: COLORS[3] }, { x: 2, y: 4, color: COLORS[3] },
+                { x: 3, y: 1, color: COLORS[4] }, { x: 4, y: 4, color: COLORS[4] }
+            ],
+            [   // Espejo X
+                { x: 6, y: 0, color: COLORS[0] }, { x: 3, y: 4, color: COLORS[0] },
+                { x: 4, y: 2, color: COLORS[1] }, { x: 1, y: 4, color: COLORS[1] },
+                { x: 1, y: 0, color: COLORS[2] }, { x: 0, y: 4, color: COLORS[2] },
+                { x: 6, y: 1, color: COLORS[3] }, { x: 4, y: 4, color: COLORS[3] },
+                { x: 3, y: 1, color: COLORS[4] }, { x: 2, y: 4, color: COLORS[4] }
+            ],
+            [   // Espejo Y
+                { x: 0, y: 4, color: COLORS[0] }, { x: 3, y: 0, color: COLORS[0] },
+                { x: 2, y: 2, color: COLORS[1] }, { x: 5, y: 0, color: COLORS[1] },
+                { x: 5, y: 4, color: COLORS[2] }, { x: 6, y: 0, color: COLORS[2] },
+                { x: 0, y: 3, color: COLORS[3] }, { x: 2, y: 0, color: COLORS[3] },
+                { x: 3, y: 3, color: COLORS[4] }, { x: 4, y: 0, color: COLORS[4] }
+            ]
         ]
     },
-    {   // Intermedio: 9x9 con 6 colores (12 puntos). Puzle real complejo (algoritmo Hamiltoniano).
+    {   // Intermedio: 9x9 con 6 colores
         rows: 9, cols: 9,
-        dots: [
-            { x: 4, y: 2, color: COLORS[0] }, { x: 6, y: 5, color: COLORS[0] },
-            { x: 8, y: 5, color: COLORS[1] }, { x: 0, y: 8, color: COLORS[1] },
-            { x: 0, y: 6, color: COLORS[2] }, { x: 0, y: 0, color: COLORS[2] },
-            { x: 3, y: 4, color: COLORS[3] }, { x: 4, y: 3, color: COLORS[3] },
-            { x: 6, y: 4, color: COLORS[4] }, { x: 8, y: 4, color: COLORS[4] },
-            { x: 1, y: 0, color: COLORS[5] }, { x: 3, y: 3, color: COLORS[5] }
+        variations: [
+            [
+                { x: 4, y: 2, color: COLORS[0] }, { x: 6, y: 5, color: COLORS[0] },
+                { x: 8, y: 5, color: COLORS[1] }, { x: 0, y: 8, color: COLORS[1] },
+                { x: 0, y: 6, color: COLORS[2] }, { x: 0, y: 0, color: COLORS[2] },
+                { x: 3, y: 4, color: COLORS[3] }, { x: 4, y: 3, color: COLORS[3] },
+                { x: 6, y: 4, color: COLORS[4] }, { x: 8, y: 4, color: COLORS[4] },
+                { x: 1, y: 0, color: COLORS[5] }, { x: 3, y: 3, color: COLORS[5] }
+            ],
+            [   // Espejo X
+                { x: 4, y: 2, color: COLORS[0] }, { x: 2, y: 5, color: COLORS[0] },
+                { x: 0, y: 5, color: COLORS[1] }, { x: 8, y: 8, color: COLORS[1] },
+                { x: 8, y: 6, color: COLORS[2] }, { x: 8, y: 0, color: COLORS[2] },
+                { x: 5, y: 4, color: COLORS[3] }, { x: 4, y: 3, color: COLORS[3] },
+                { x: 2, y: 4, color: COLORS[4] }, { x: 0, y: 4, color: COLORS[4] },
+                { x: 7, y: 0, color: COLORS[5] }, { x: 5, y: 3, color: COLORS[5] }
+            ],
+            [   // Espejo Y
+                { x: 4, y: 6, color: COLORS[0] }, { x: 6, y: 3, color: COLORS[0] },
+                { x: 8, y: 3, color: COLORS[1] }, { x: 0, y: 0, color: COLORS[1] },
+                { x: 0, y: 2, color: COLORS[2] }, { x: 0, y: 8, color: COLORS[2] },
+                { x: 3, y: 4, color: COLORS[3] }, { x: 4, y: 5, color: COLORS[3] },
+                { x: 6, y: 4, color: COLORS[4] }, { x: 8, y: 4, color: COLORS[4] },
+                { x: 1, y: 8, color: COLORS[5] }, { x: 3, y: 5, color: COLORS[5] }
+            ]
         ]
     },
-    {   // Avanzado: 8x11 con 6 colores (12 puntos). Puzle real complejo (algoritmo Hamiltoniano).
+    {   // Avanzado: 8x11 con 6 colores
         rows: 8, cols: 11,
-        dots: [
-            { x: 0, y: 5, color: COLORS[0] }, { x: 3, y: 1, color: COLORS[0] },
-            { x: 4, y: 2, color: COLORS[1] }, { x: 5, y: 1, color: COLORS[1] },
-            { x: 7, y: 6, color: COLORS[2] }, { x: 4, y: 3, color: COLORS[2] },
-            { x: 4, y: 1, color: COLORS[3] }, { x: 9, y: 2, color: COLORS[3] },
-            { x: 3, y: 2, color: COLORS[4] }, { x: 6, y: 6, color: COLORS[4] },
-            { x: 9, y: 3, color: COLORS[5] }, { x: 0, y: 6, color: COLORS[5] }
+        variations: [
+            [
+                { x: 0, y: 5, color: COLORS[0] }, { x: 3, y: 1, color: COLORS[0] },
+                { x: 4, y: 2, color: COLORS[1] }, { x: 5, y: 1, color: COLORS[1] },
+                { x: 7, y: 6, color: COLORS[2] }, { x: 4, y: 3, color: COLORS[2] },
+                { x: 4, y: 1, color: COLORS[3] }, { x: 9, y: 2, color: COLORS[3] },
+                { x: 3, y: 2, color: COLORS[4] }, { x: 6, y: 6, color: COLORS[4] },
+                { x: 9, y: 3, color: COLORS[5] }, { x: 0, y: 6, color: COLORS[5] }
+            ],
+            [   // Espejo X
+                { x: 10, y: 5, color: COLORS[0] }, { x: 7, y: 1, color: COLORS[0] },
+                { x: 6, y: 2, color: COLORS[1] }, { x: 5, y: 1, color: COLORS[1] },
+                { x: 3, y: 6, color: COLORS[2] }, { x: 6, y: 3, color: COLORS[2] },
+                { x: 6, y: 1, color: COLORS[3] }, { x: 1, y: 2, color: COLORS[3] },
+                { x: 7, y: 2, color: COLORS[4] }, { x: 4, y: 6, color: COLORS[4] },
+                { x: 1, y: 3, color: COLORS[5] }, { x: 10, y: 6, color: COLORS[5] }
+            ],
+            [   // Espejo Y
+                { x: 0, y: 2, color: COLORS[0] }, { x: 3, y: 6, color: COLORS[0] },
+                { x: 4, y: 5, color: COLORS[1] }, { x: 5, y: 6, color: COLORS[1] },
+                { x: 7, y: 1, color: COLORS[2] }, { x: 4, y: 4, color: COLORS[2] },
+                { x: 4, y: 6, color: COLORS[3] }, { x: 9, y: 5, color: COLORS[3] },
+                { x: 3, y: 5, color: COLORS[4] }, { x: 6, y: 1, color: COLORS[4] },
+                { x: 9, y: 4, color: COLORS[5] }, { x: 0, y: 1, color: COLORS[5] }
+            ]
         ]
     }
 ];
@@ -133,7 +185,10 @@ const LEVELS = [
         nivelActual = indice;
         const datos = LEVELS[indice];
         filas = datos.rows; columnas = datos.cols;
-        puntos = datos.dots.map(p => ({...p}));
+        
+        // Elegir una variación al azar para no jugar siempre el mismo mapa
+        const idxVar = Math.floor(Math.random() * datos.variations.length);
+        puntos = datos.variations[idxVar].map(p => ({...p}));
 
         grilla = Array.from({length: filas}, () => 
             Array.from({length: columnas}, () => ({colorOcupado: null, esInicio: false}))
