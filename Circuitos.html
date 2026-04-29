@@ -312,24 +312,49 @@ const LEVELS = [
         const pos = obtenerCoordenadas(e);
         if (!pos) return;
 
+        // 1. ¿Hicimos clic en un punto de inicio/fin oficial?
         const punto = puntos.find(p => p.x === pos.x && p.y === pos.y);
-        if (!punto) return;
+        
+        if (punto) {
+            const color = punto.color;
 
-        const color = punto.color;
+            // Borrar camino anterior del mismo color (reinicia el trazo desde el origen)
+            if (caminos.get(color)?.length > 0) {
+                caminos.get(color).forEach(c => {
+                    if (!grilla[c.y][c.x].esInicio) grilla[c.y][c.x].colorOcupado = null;
+                });
+                caminos.set(color, []);
+            }
 
-        // Borrar camino anterior del mismo color
-        if (caminos.get(color)?.length > 0) {
-            caminos.get(color).forEach(c => {
-                if (!grilla[c.y][c.x].esInicio) grilla[c.y][c.x].colorOcupado = null;
-            });
-            caminos.set(color, []);
+            dibujando = true;
+            colorActual = color;
+            rutaTemporal = [{x: pos.x, y: pos.y}];
             dibujarTodo();
+            return;
         }
 
-        dibujando = true;
-        colorActual = color;
-        rutaTemporal = [{x: pos.x, y: pos.y}];
-        dibujarTodo();
+        // 2. ¿Hicimos clic en un camino ya dibujado para continuarlo o cortarlo?
+        for (let [color, ruta] of caminos.entries()) {
+            const idx = ruta.findIndex(p => p.x === pos.x && p.y === pos.y);
+            if (idx !== -1) {
+                // Cortamos el camino en este punto para que se convierta en la ruta temporal
+                const nuevaRuta = ruta.slice(0, idx + 1);
+                
+                // Liberar de la grilla lo que se recortó
+                for (let i = idx + 1; i < ruta.length; i++) {
+                    const c = ruta[i];
+                    if (!grilla[c.y][c.x].esInicio) grilla[c.y][c.x].colorOcupado = null;
+                }
+                
+                caminos.set(color, []);
+                
+                dibujando = true;
+                colorActual = color;
+                rutaTemporal = nuevaRuta;
+                dibujarTodo();
+                return;
+            }
+        }
     }
 
     function moverDibujo(e) {
@@ -345,7 +370,10 @@ const LEVELS = [
         if (rutaTemporal.length > 1) {
             const penultimo = rutaTemporal[rutaTemporal.length-2];
             if (penultimo.x === pos.x && penultimo.y === pos.y) {
-                rutaTemporal.pop(); // Borra la pisada
+                const descartado = rutaTemporal.pop(); // Borra la pisada
+                if (!grilla[descartado.y][descartado.x].esInicio) {
+                    grilla[descartado.y][descartado.x].colorOcupado = null;
+                }
                 dibujarTodo();
                 return;
             }
@@ -363,7 +391,6 @@ const LEVELS = [
                 const idx = rutaCortada.findIndex(p => p.x === pos.x && p.y === pos.y);
                 if (idx !== -1) {
                     const nuevaRuta = rutaCortada.slice(0, idx); // Hasta el corte
-                    // Quitar registro de grilla del tramo que queda suelto
                     for (let i = idx; i < rutaCortada.length; i++) {
                         const c = rutaCortada[i];
                         if (!grilla[c.y][c.x].esInicio) grilla[c.y][c.x].colorOcupado = null;
@@ -383,45 +410,41 @@ const LEVELS = [
         }
 
         const color = colorActual;
-        const extremos = puntos.filter(p => p.color === color);
-        const primero = rutaTemporal[0];
-        const ultimo = rutaTemporal[rutaTemporal.length-1];
+        
+        // Guardar el progreso parcial o total
+        for (let i = 0; i < rutaTemporal.length; i++) {
+            const c = rutaTemporal[i];
+            if (!grilla[c.y][c.x].esInicio) grilla[c.y][c.x].colorOcupado = color;
+        }
+        caminos.set(color, [...rutaTemporal]);
 
-        // LÓGICA DE VICTORIA: Validamos estrictamente conectar extremo 0 al extremo 1
-        const conectaExtremo0 = (primero.x === extremos[0].x && primero.y === extremos[0].y) || 
-                                (ultimo.x === extremos[0].x && ultimo.y === extremos[0].y);
-        const conectaExtremo1 = (primero.x === extremos[1].x && primero.y === extremos[1].y) || 
-                                (ultimo.x === extremos[1].x && ultimo.y === extremos[1].y);
-
-        if (conectaExtremo0 && conectaExtremo1) {
-            // Marcar celdas ocupadas oficiales
-            for (let i = 1; i < rutaTemporal.length - 1; i++) {
-                const c = rutaTemporal[i];
-                if (!grilla[c.y][c.x].esInicio) grilla[c.y][c.x].colorOcupado = color;
+        // Comprobar completados
+        let completados = 0;
+        for (let [col, ruta] of caminos.entries()) {
+            if (ruta.length > 1) {
+                const ext = puntos.filter(p => p.color === col);
+                const p1 = ruta[0];
+                const p2 = ruta[ruta.length-1];
+                const con0 = (p1.x === ext[0].x && p1.y === ext[0].y) || (p2.x === ext[0].x && p2.y === ext[0].y);
+                const con1 = (p1.x === ext[1].x && p1.y === ext[1].y) || (p2.x === ext[1].x && p2.y === ext[1].y);
+                if (con0 && con1) completados++;
             }
-            caminos.set(color, [...rutaTemporal]);
+        }
 
-            // Comprobar completados
-            let completados = 0;
-            for (let ruta of caminos.values()) {
-                if (ruta.length > 1) completados++;
+        // Comprobar que no hayan quedado casillas vacías (Regla del Flow)
+        let celdasVacias = 0;
+        for (let y = 0; y < filas; y++) {
+            for (let x = 0; x < columnas; x++) {
+                if (grilla[y][x].colorOcupado === null) celdasVacias++;
             }
+        }
 
-            // Comprobar que no hayan quedado casillas vacías (Regla del Flow)
-            let celdasVacias = 0;
-            for (let y = 0; y < filas; y++) {
-                for (let x = 0; x < columnas; x++) {
-                    if (grilla[y][x].colorOcupado === null) celdasVacias++;
-                }
-            }
-
-            if (completados === puntos.length / 2) {
-                if (celdasVacias === 0) {
-                    victoryDiv.innerHTML = '<div class="victory-msg">🎉 ¡NIVEL COMPLETADO! 🎉</div>';
-                    lanzarConfetti();
-                } else {
-                    victoryDiv.innerHTML = '<div class="victory-msg" style="background:#d4841b; color:#fff;">⚠️ ¡Faltan celdas por cubrir!</div>';
-                }
+        if (completados === puntos.length / 2) {
+            if (celdasVacias === 0) {
+                victoryDiv.innerHTML = '<div class="victory-msg">🎉 ¡NIVEL COMPLETADO! 🎉</div>';
+                lanzarConfetti();
+            } else {
+                victoryDiv.innerHTML = '<div class="victory-msg" style="background:#d4841b; color:#fff;">⚠️ ¡Faltan celdas por cubrir!</div>';
             }
         }
 
