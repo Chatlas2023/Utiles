@@ -699,71 +699,40 @@
 
         // 🔥 NUEVA FUNCIÓN: Cargar desde RSS de medios en español (GRATUITO)
         async function loadFromRSSFeeds() {
-            updateLoadingText("Cargando desde medios en español...");
+    updateLoadingText("Cargando desde medios en español...");
+    
+    const rssFeeds = [
+        'https://rss.lanacion.com.ar/rss/ultimas-noticias',
+        'https://www.clarin.com/rss/lo-ultimo/',
+        'https://feeds.elpais.com/mrss-s/pages/ep/site/elpais.com/portada'
+    ];
+    
+    for (let feedUrl of rssFeeds) {
+        try {
+            const apiUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feedUrl)}`;
+            const response = await fetch(apiUrl);
             
-            // RSS feeds de medios en español (gratuitos)
-            const rssFeeds = [
-                'https://feeds.elpais.com/mrss-s/pages/ep/site/elpais.com/portada',
-                'https://www.clarin.com/rss/lo-ultimo/',
-                'https://www.infobae.com/feeds/rss/',
-                'https://rss.lanacion.com.ar/rss/ultimas-noticias'
-            ];
-            
-            try {
-                // Intentar cargar el primer RSS feed disponible
-                for (let feedUrl of rssFeeds) {
-                    try {
-                        const proxyUrl = 'https://api.allorigins.win/get?url=';
-                        const response = await fetch(proxyUrl + encodeURIComponent(feedUrl));
-                        
-                        if (response.ok) {
-                            const data = await response.json();
-                            const parser = new DOMParser();
-                            const xml = parser.parseFromString(data.contents, "text/xml");
-                            
-                            const items = xml.querySelectorAll('item');
-                            const articles = [];
-                            
-                            items.forEach(item => {
-                                const title = item.querySelector('title')?.textContent || '';
-                                const link = item.querySelector('link')?.textContent || '';
-                                const description = item.querySelector('description')?.textContent || '';
-                                
-                                // Extraer imagen de description (común en RSS)
-                                let imageUrl = '';
-                                const imgMatch = description.match(/<img[^>]+src="([^">]+)"/);
-                                if (imgMatch) {
-                                    imageUrl = imgMatch[1];
-                                }
-                                
-                                if (title && title.length > 10) {
-                                    articles.push({
-                                        title: title,
-                                        url: link,
-                                        image: imageUrl,
-                                        source: { name: 'Medio RSS' }
-                                    });
-                                }
-                            });
-                            
-                            if (articles.length >= 5) {
-                                console.log(`✅ RSS exitoso. Artículos: ${articles.length}`);
-                                return generateQuestionsFromArticles(articles.slice(0, 10));
-                            }
-                        }
-                    } catch (error) {
-                        console.warn(`❌ RSS fallido: ${feedUrl}`, error);
-                        continue;
-                    }
+            if (response.ok) {
+                const data = await response.json();
+                if (data.status === 'ok' && data.items && data.items.length > 0) {
+                    const articles = data.items.map(item => ({
+                        title: item.title,
+                        url: item.link,
+                        image: item.thumbnail || item.enclosure?.link || '',
+                        source: { name: data.feed.title || 'Noticias' }
+                    }));
+                    
+                    return generateQuestionsFromArticles(articles);
                 }
-                
-                throw new Error('Todos los RSS feeds fallaron');
-            } catch (error) {
-                console.warn('Error con RSS feeds:', error);
-                // Si RSS falla, cargar noticias locales
-                return loadLocalNews();
             }
+        } catch (error) {
+            console.warn(`Error cargando feed: ${feedUrl}`, error);
         }
+    }
+    
+    // Si los RSS fallan, recurre a las noticias locales predefinidas
+    return loadLocalNews();
+}
 
         // 🔥 FUNCIÓN MEJORADA: Cargar noticias locales predefinidas (GRATUITO)
         async function loadLocalNews() {
